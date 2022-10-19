@@ -179,7 +179,7 @@ class ReadOnlyCheckableTableWidgetItem(ReadOnlyTableWidgetItem):
     For use in a table cell, displays a checkbox next to some text the user cannot select or modify.
     '''
     def __init__(self, text, checked=False, is_tristate=False):
-        ReadOnlyCheckableTableWidgetItem.__init__(self, text)
+        ReadOnlyTableWidgetItem.__init__(self, text)
         try: # For Qt Backwards compatibility.
             self.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsUserCheckable | Qt.ItemFlag.ItemIsEnabled )
         except:
