@@ -41,7 +41,7 @@ from calibre import prints
 from calibre.gui2 import gprefs, Application
 from calibre.gui2.keyboard import ShortcutConfig
 
-from . import GUI, PREFS_NAMESPACE, get_icon, CustomExceptionErrorDialog
+from . import GUI, PREFS_NAMESPACE, get_icon
 
 
 class SizePersistedDialog(QDialog):
