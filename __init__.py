@@ -68,7 +68,6 @@ def debug_print(*args):
 # ----------------------------------------------
 #          Icon Management functions
 # ----------------------------------------------
-def __Icon_Management__(): pass
 
 try:
     from qt.core import QIcon, QPixmap, QApplication
@@ -76,7 +75,6 @@ except ImportError:
     from PyQt5.Qt import QIcon, QPixmap, QApplication
 
 from calibre.constants import iswindows
-from calibre.constants import numeric_version as calibre_version
 from calibre.utils.config import config_dir
 
 # Global definition of our plugin resources. Used to share between the xxxAction and xxxBase
@@ -223,7 +221,7 @@ from calibre.utils.config import JSONConfig, DynamicConfig
 
 def current_db():
     """Safely provides the current_db or None"""
-    return getattr(get_gui(),'current_db', None)
+    return getattr(GUI,'current_db', None)
     # db.library_id
 
 def has_restart_pending(show_warning=True, msg_warning=None):

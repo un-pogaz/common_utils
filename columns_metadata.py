@@ -30,7 +30,6 @@ except ImportError:
         return d.itervalues()
 
 from calibre import prints
-from calibre.gui2.ui import get_gui
 from calibre.library.field_metadata import FieldMetadata
 
 from . import debug_print, current_db, regex

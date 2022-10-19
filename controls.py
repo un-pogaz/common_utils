@@ -30,16 +30,7 @@ except ImportError:
         return d.itervalues()
 
 from calibre import prints
-from calibre.constants import DEBUG, numeric_version as calibre_version
-from calibre.gui2.ui import get_gui
 
-GUI = get_gui()
-
-
-# ----------------------------------------------
-#               Controls
-# ----------------------------------------------
-def __Controls__(): pass
 
 class ReadOnlyLineEdit(QLineEdit):
     def __init__(self, text, parent):

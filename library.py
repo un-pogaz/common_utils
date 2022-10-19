@@ -30,10 +30,9 @@ except ImportError:
         return d.itervalues()
 
 from calibre import prints
-from calibre.constants import DEBUG, numeric_version as calibre_version
-from calibre.gui2.ui import get_gui
 
-GUI = get_gui()
+from . import GUI
+
 
 def no_launch_error(title, name=None, msg=None):
     """Show a error dialog  for an operation that cannot be launched"""

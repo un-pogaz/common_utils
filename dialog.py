@@ -30,15 +30,11 @@ except ImportError:
         return d.itervalues()
 
 from calibre import prints
-from calibre.constants import DEBUG, numeric_version as calibre_version
-from calibre.gui2.ui import get_gui
+from calibre.gui2 import gprefs, Application
+from calibre.gui2.keyboard import ShortcutConfig
 
-GUI = get_gui()
+from . import GUI
 
-# ----------------------------------------------
-#               Dialog functions
-# ----------------------------------------------
-def __Dialog__(): pass
 
 try:
     from qt.core import (QDialog, QDialogButtonBox, QVBoxLayout, QHBoxLayout, 
@@ -48,9 +44,6 @@ except ImportError:
     from PyQt5.Qt import (QDialog, QDialogButtonBox, QVBoxLayout, QHBoxLayout, 
                         QListWidget, QProgressBar, QAbstractItemView, QTextEdit, 
                         QApplication, Qt, QTextBrowser, QSize, QLabel)
-
-from calibre.gui2 import gprefs, Application
-from calibre.gui2.keyboard import ShortcutConfig
 
 class SizePersistedDialog(QDialog):
     """

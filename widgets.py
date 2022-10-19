@@ -30,15 +30,9 @@ except ImportError:
         return d.itervalues()
 
 from calibre import prints
-from calibre.constants import DEBUG, numeric_version as calibre_version
-from calibre.gui2.ui import get_gui
 
-GUI = get_gui()
+from . import GUI
 
-# ----------------------------------------------
-#               Widgets
-# ----------------------------------------------
-def __Widgets__(): pass
 
 try:
     from qt.core import (Qt, QTableWidgetItem, QComboBox, QHBoxLayout, QLabel, QFont, 

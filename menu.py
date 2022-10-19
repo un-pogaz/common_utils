@@ -30,17 +30,10 @@ except ImportError:
         return d.itervalues()
 
 from calibre import prints
-from calibre.constants import DEBUG, numeric_version as calibre_version
-from calibre.gui2.ui import get_gui
-
-GUI = get_gui()
-
-# ----------------------------------------------
-#                Menu functions
-# ----------------------------------------------
-def __Menu__(): pass
-
 from calibre.gui2.actions import menu_action_unique_name
+
+from . import calibre_version, GUI
+
 
 # Global definition of our menu actions. Used to ensure we can cleanly unregister
 # keyboard shortcuts when rebuilding our menus.
