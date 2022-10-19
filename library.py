@@ -31,7 +31,7 @@ except ImportError:
 
 from calibre import prints
 
-from . import GUI
+from . import GUI, PLUGIN_NAME
 
 
 def no_launch_error(title, name=None, msg=None):

@@ -31,7 +31,7 @@ except ImportError:
 
 from calibre import prints
 
-from . import GUI
+from . import get_pixmap
 
 
 try:
@@ -44,6 +44,9 @@ except ImportError:
 from calibre.gui2 import error_dialog, UNDEFINED_QDATETIME
 from calibre.utils.date import now, format_date, UNDEFINED_DATE
 from calibre.gui2.library.delegates import DateDelegate as _DateDelegate
+
+from . import get_date_format
+
 
 class ImageTitleLayout(QHBoxLayout):
     """

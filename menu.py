@@ -32,7 +32,7 @@ except ImportError:
 from calibre import prints
 from calibre.gui2.actions import menu_action_unique_name
 
-from . import calibre_version, GUI
+from . import calibre_version, GUI, get_icon
 
 
 # Global definition of our menu actions. Used to ensure we can cleanly unregister

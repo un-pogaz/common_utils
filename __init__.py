@@ -30,8 +30,10 @@ except ImportError:
         return d.itervalues()
 
 from calibre import prints
-from calibre.constants import DEBUG, numeric_version as calibre_version
+from calibre.constants import DEBUG, iswindows, numeric_version as calibre_version
+from calibre.gui2 import error_dialog, show_restart_warning
 from calibre.gui2.ui import get_gui
+from calibre.utils.config import config_dir, JSONConfig, DynamicConfig
 
 GUI = get_gui()
 
@@ -74,9 +76,6 @@ try:
 except ImportError:
     from PyQt5.Qt import QIcon, QPixmap, QApplication
 
-from calibre.constants import iswindows
-from calibre.utils.config import config_dir
-
 # Global definition of our plugin resources. Used to share between the xxxAction and xxxBase
 # classes if you need any zip images to be displayed on the configuration dialog.
 PLUGIN_RESOURCES = {}
@@ -92,7 +91,8 @@ def get_theme_color():
 def get_icon_themed(icon_name, theme_color=None):
     """Apply the theme color to a path"""
     theme_color = get_theme_color() if theme_color is None else theme_color
-    return icon_name.replace('/', '/'+theme_color+'/', 1).replace('//', '/')
+    path, ext = os.path.splitext(icon_name)
+    return (path+('' if not theme_color else '-'+ theme_color)+ext).replace('//', '/')
 
 def load_plugin_resources(plugin_path, names=[]):
     """
@@ -201,7 +201,6 @@ def get_local_resource(*subfolder):
 # ----------------------------------------------
 #               Functions
 # ----------------------------------------------
-def __Functions__(): pass
 
 def get_date_format(tweak_name='gui_timestamp_display_format', default_fmt='dd MMM yyyy'):
     from calibre.utils.config import tweaks
@@ -214,10 +213,6 @@ def get_date_format(tweak_name='gui_timestamp_display_format', default_fmt='dd M
 # ----------------------------------------------
 #               Ohters
 # ----------------------------------------------
-def __Ohters__(): pass
-
-from calibre.gui2 import error_dialog, show_restart_warning
-from calibre.utils.config import JSONConfig, DynamicConfig
 
 def current_db():
     """Safely provides the current_db or None"""
