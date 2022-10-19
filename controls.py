@@ -12,14 +12,13 @@ import os, sys, copy, time
 from six.moves import range
 from six import text_type as unicode
 
+from collections import OrderedDict
+from functools import partial
+
 try:
     load_translations()
 except NameError:
     pass # load_translations() added in calibre 1.9
-
-from datetime import datetime
-from collections import defaultdict, OrderedDict
-from functools import partial
 
 try: #polyglot added in calibre 4.0
     from polyglot.builtins import iteritems, itervalues
@@ -28,6 +27,11 @@ except ImportError:
         return d.iteritems()
     def itervalues(d):
         return d.itervalues()
+
+try:
+    from qt.core import Qt, QComboBox, QFont, QLineEdit
+except ImportError:
+    from PyQt5.Qt import Qt, QComboBox, QFont, QLineEdit
 
 from calibre import prints
 

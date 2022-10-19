@@ -12,14 +12,13 @@ import os, sys, copy, time
 from six.moves import range
 from six import text_type as unicode
 
+from collections import OrderedDict
+from functools import partial
+
 try:
     load_translations()
 except NameError:
     pass # load_translations() added in calibre 1.9
-
-from datetime import datetime
-from collections import defaultdict, OrderedDict
-from functools import partial
 
 try: #polyglot added in calibre 4.0
     from polyglot.builtins import iteritems, itervalues
@@ -29,23 +28,19 @@ except ImportError:
     def itervalues(d):
         return d.itervalues()
 
-from calibre import prints
-
-from . import get_pixmap
-
-
 try:
-    from qt.core import (Qt, QTableWidgetItem, QComboBox, QHBoxLayout, QLabel, QFont, 
-                        QDateTime, QStyledItemDelegate, QLineEdit)
+    from qt.core import (Qt, QTableWidgetItem, QHBoxLayout, QLabel, QFont,
+                        QDateTime, QStyledItemDelegate)
 except ImportError:
-    from PyQt5.Qt import (Qt, QTableWidgetItem, QComboBox, QHBoxLayout, QLabel, QFont, 
-                        QDateTime, QStyledItemDelegate, QLineEdit)
+    from PyQt5.Qt import (Qt, QTableWidgetItem, QHBoxLayout, QLabel, QFont,
+                        QDateTime, QStyledItemDelegate)
 
+from calibre import prints
 from calibre.gui2 import error_dialog, UNDEFINED_QDATETIME
 from calibre.utils.date import now, format_date, UNDEFINED_DATE
 from calibre.gui2.library.delegates import DateDelegate as _DateDelegate
 
-from . import get_date_format
+from . import get_pixmap, get_date_format
 
 
 class ImageTitleLayout(QHBoxLayout):

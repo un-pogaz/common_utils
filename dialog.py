@@ -12,14 +12,13 @@ import os, sys, copy, time
 from six.moves import range
 from six import text_type as unicode
 
+from collections import OrderedDict
+from functools import partial
+
 try:
     load_translations()
 except NameError:
     pass # load_translations() added in calibre 1.9
-
-from datetime import datetime
-from collections import defaultdict, OrderedDict
-from functools import partial
 
 try: #polyglot added in calibre 4.0
     from polyglot.builtins import iteritems, itervalues
@@ -29,21 +28,21 @@ except ImportError:
     def itervalues(d):
         return d.itervalues()
 
+try:
+    from qt.core import (Qt, QDialog, QDialogButtonBox, QVBoxLayout, QHBoxLayout,
+                        QListWidget, QProgressBar, QAbstractItemView, QTextEdit,
+                        QApplication, QTextBrowser, QSize, QLabel)
+except ImportError:
+    from PyQt5.Qt import (Qt, QDialog, QDialogButtonBox, QVBoxLayout, QHBoxLayout,
+                        QListWidget, QProgressBar, QAbstractItemView, QTextEdit,
+                        QApplication, QTextBrowser, QSize, QLabel)
+
 from calibre import prints
 from calibre.gui2 import gprefs, Application
 from calibre.gui2.keyboard import ShortcutConfig
 
 from . import GUI, PREFS_NAMESPACE, get_icon, CustomExceptionErrorDialog
 
-
-try:
-    from qt.core import (QDialog, QDialogButtonBox, QVBoxLayout, QHBoxLayout, 
-                        QListWidget, QProgressBar, QAbstractItemView, QTextEdit, 
-                        QApplication, Qt, QTextBrowser, QSize, QLabel)
-except ImportError:
-    from PyQt5.Qt import (QDialog, QDialogButtonBox, QVBoxLayout, QHBoxLayout, 
-                        QListWidget, QProgressBar, QAbstractItemView, QTextEdit, 
-                        QApplication, Qt, QTextBrowser, QSize, QLabel)
 
 class SizePersistedDialog(QDialog):
     """
