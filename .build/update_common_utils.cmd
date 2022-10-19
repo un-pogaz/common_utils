@@ -1,3 +1,3 @@
 @echo off
 echo Retrive common_utils
-git submodule update --remote
+git submodule update -f --remote
