@@ -294,39 +294,6 @@ class regex():
 regex = regex()
 """Easy Regex"""
 
-
-def CustomExceptionErrorDialog(exception, custome_title=None, custome_msg=None, show=True):
-    
-    from polyglot.io import PolyglotStringIO
-    import traceback
-    from calibre import as_unicode, prepare_string_for_xml
-    
-    sio = PolyglotStringIO(errors='replace')
-    try:
-        from calibre.debug import print_basic_debug_info
-        print_basic_debug_info(out=sio)
-    except:
-        pass
-    
-    try:
-        traceback.print_exception(type(exception), exception, exception.__traceback__, file=sio)
-    except:
-        traceback.print_exception(type(exception), exception, sys.exc_traceback, file=sio)
-        pass
-    
-    fe = sio.getvalue()
-    
-    if not custome_title:
-        custome_title = _('Unhandled exception')
-    
-    msg = []
-    msg.append('<span>' + prepare_string_for_xml(as_unicode(_('The {:s} plugin has encounter a unhandled exception.').format(PLUGIN_NAME))))
-    if custome_msg: msg.append(custome_msg)
-    msg.append('<b>{:s}</b>: '.format(exception.__class__.__name__) + prepare_string_for_xml(as_unicode(str(exception))))
-    
-    return error_dialog(GUI, custome_title, '\n'.join(msg).replace('\n', '<br>'), det_msg=fe, show=show, show_copy_button=True)
-
-
 class PREFS_json(JSONConfig):
     """
     Use plugin name to create a JSONConfig file
