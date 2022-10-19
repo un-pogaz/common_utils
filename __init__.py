@@ -240,7 +240,7 @@ class regex():
         #set the default flag
         self.flag = flag
         if not self.flag:
-            if sys.version_info < (2,):
+            if sys.version_info < (3,):
                 self.flag = regex._re.MULTILINE + regex._re.DOTALL
             else:
                 self.flag = regex._re.ASCII + regex._re.MULTILINE + regex._re.DOTALL
