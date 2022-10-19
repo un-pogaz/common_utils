@@ -34,6 +34,22 @@ from calibre import prints
 from . import GUI, PLUGIN_NAME
 
 
+try:
+    authors_split_regex = tweaks['authors_split_regex']
+    re.compile(authors_split_regex)
+except Exception:
+    authors_split_regex = r'(?i),?\s+(and|with)\s+'
+    """tweaks split regex for authors"""
+
+def string_to_authors(raw_string):
+    """
+    Split a string into a list of authors
+    
+    return: list(str)
+    """
+    from calibre.ebooks.metadata import string_to_authors
+    return string_to_authors(raw_string)
+
 def no_launch_error(title, name=None, msg=None):
     """Show a error dialog  for an operation that cannot be launched"""
     
@@ -77,7 +93,7 @@ def get_BookIds_filtered(show_error=False):
 
 def get_BookIds_search(show_error=False):
     """return the books id of the current search"""
-    ids = get_BookIds(get_last_search(), use_search_restriction=True, use_virtual_library=True)
+    ids = get_BookIds(get_curent_search(), use_search_restriction=True, use_virtual_library=True)
     return _BookIds_error(ids, show_error, _('No book in the current search'))
 
 def get_BookIds(query, use_search_restriction=True, use_virtual_library=True):

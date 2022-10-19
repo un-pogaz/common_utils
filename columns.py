@@ -42,23 +42,6 @@ class typeproperty(property):
         typeproperty_registry.append(func)
 
 
-try:
-    authors_split_regex = tweaks['authors_split_regex']
-    re.compile(authors_split_regex)
-except Exception:
-    authors_split_regex = r'(?i),?\s+(and|with)\s+'
-    """tweaks split regex for authors"""
-
-def string_to_authors(raw_string):
-    """
-    Split a string into a list of authors
-    
-    return: list(str)
-    """
-    from calibre.ebooks.metadata import string_to_authors
-    return string_to_authors(raw_string)
-
-
 def get_columns_from_dict(src_dict, predicate=None):
     """
     Convert a FieldMetadata dict to a ColumnMetadata dict
