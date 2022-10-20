@@ -103,12 +103,10 @@ def build_plugin():
     run_command([get_calibre_bin('calibre-customize'), '-a', PLUGIN], wait=True)
     
     versioning = os.path.join(os.getcwd(), '-- versioning')
-    if os.path.exists(versioning) and os.path.isdir(versioning):
-        out = os.path.join(versioning, PLUGIN)
-        if os.path.exists(out): os.remove(out)
-        os.rename(PLUGIN, out)
-    else:
-        os.remove(PLUGIN)
+    os.makedirs(versioning, exist_ok=True)
+    out = os.path.join(versioning, PLUGIN)
+    if os.path.exists(out): os.remove(out)
+    os.rename(PLUGIN, out)
     
     print("Plugin '{}' build with succes.".format(PLUGIN))
 
