@@ -146,6 +146,7 @@ class DateTableWidgetItem(QTableWidgetItem):
         if is_read_only:
             QTableWidgetItem.__init__(self, format_date(date_read, fmt))
             self.setFlags(Qt.ItemIsSelectable|Qt.ItemIsEnabled)
+            self.setData(Qt.DisplayRole, QDateTime(date_read))
         else:
             QTableWidgetItem.__init__(self, '')
             self.setData(Qt.DisplayRole, QDateTime(date_read))
