@@ -41,7 +41,7 @@ from calibre import prints
 from calibre.gui2 import gprefs, Application
 from calibre.gui2.keyboard import ShortcutConfig
 
-from . import GUI, PREFS_NAMESPACE, get_icon
+from . import GUI, PLUGIN_NAME, PREFS_NAMESPACE, get_icon
 
 
 class SizePersistedDialog(QDialog):
@@ -51,7 +51,7 @@ class SizePersistedDialog(QDialog):
     """
     def __init__(self, parent, unique_pref_name):
         QDialog.__init__(self, parent)
-        self.unique_pref_name = unique_pref_name
+        self.unique_pref_name = PLUGIN_NAME+':'+ unique_pref_name
         self.geom = gprefs.get(unique_pref_name, None)
         self.finished.connect(self.dialog_closing)
     
