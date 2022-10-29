@@ -30,7 +30,7 @@ except ImportError:
 
 from calibre import prints
 from calibre.constants import DEBUG, iswindows, numeric_version as calibre_version
-from calibre.gui2 import error_dialog, show_restart_warning
+from calibre.gui2 import show_restart_warning
 from calibre.gui2.ui import get_gui
 from calibre.utils.config import config_dir, JSONConfig, DynamicConfig
 

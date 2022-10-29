@@ -38,7 +38,7 @@ except ImportError:
                         QApplication, QTextBrowser, QSize, QLabel)
 
 from calibre import prints
-from calibre.gui2 import gprefs, Application
+from calibre.gui2 import error_dialog, gprefs, Application
 from calibre.gui2.keyboard import ShortcutConfig
 
 from . import GUI, PLUGIN_NAME, PREFS_NAMESPACE, get_icon

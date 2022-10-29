@@ -29,6 +29,7 @@ except ImportError:
         return d.itervalues()
 
 from calibre import prints
+from calibre.gui2 import error_dialog
 
 from . import GUI, PLUGIN_NAME
 
