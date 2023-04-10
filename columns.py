@@ -227,16 +227,6 @@ def get_bool(only_custom=None):
     return: dict(ColumnMetadata)
     """
     return _get_columns_type(ColumnTypes.bool, only_custom)
-def get_comments(only_custom=None):
-    """
-    only_custom:
-        True= Only custom
-        False= Only default
-        None= Both
-    
-    return: dict(ColumnMetadata)
-    """
-    return _get_columns_type(ColumnTypes.comments, only_custom)
 def get_html(only_custom=None):
     """
     only_custom:
