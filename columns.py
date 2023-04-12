@@ -7,7 +7,7 @@ __license__   = 'GPL v3'
 __copyright__ = '2021, un_pogaz <un.pogaz@gmail.com>'
 __docformat__ = 'restructuredtext en'
 
-import os, sys, copy, time
+import os, sys, copy, time, re
 # python3 compatibility
 from six.moves import range
 from six import text_type as unicode
@@ -31,7 +31,11 @@ except ImportError:
 from calibre import prints
 from calibre.library.field_metadata import FieldMetadata
 
-from . import debug_print, current_db, regex
+
+def current_db():
+    """Safely provides the current_db or None"""
+    from calibre.gui2.ui import get_gui
+    return getattr(get_gui(),'current_db', None)
 
 
 typeproperty_registry = []
@@ -474,7 +478,7 @@ class ColumnMetadata():
         self._type = None
         for func in typeproperty_registry:
             if func.__call__(self):
-                self._type = regex.simple(r'^_is_', '', func.__name__)
+                self._type = re.sub(r'^_is_', '', func.__name__)
         
         if not self._type:
             prints(self.name)
