@@ -29,6 +29,7 @@ except ImportError:
         return d.itervalues()
 
 from calibre import prints
+from calibre.constants import numeric_version as calibre_version
 from calibre.library.field_metadata import FieldMetadata
 
 
@@ -300,7 +301,7 @@ def get_possible_fields():
     return: all_fields -> list(str), writable_fields -> list(str)
     """
     def predicate(column):
-        if column.name not in ['id' , 'au_map', 'timestamp', 'formats', 'ondevice', 'news', 'series_sort', 'path', 'in_tag_browser'] or column.type:
+        if column.name not in ['id' , 'au_map', 'timestamp', 'formats', 'ondevice', 'news', 'series_sort', 'path', 'in_tag_browser'] and column.type:
             return True
         else:
             return False
@@ -321,6 +322,9 @@ def get_possible_columns():
     return: list(str)
     """
     standard = ['title', 'authors', 'tags', 'series', 'publisher', 'pubdate', 'rating', 'languages', 'last_modified', 'timestamp', 'comments', 'author_sort', 'title_sort', 'marked']
+    if calibre_version >= (6, 17, 0):
+        standard += ['id', 'path']
+    
     def predicate(column):
         if column.is_custom and not (column.is_composite or column._is_series_index):
             return True
@@ -782,3 +786,41 @@ class MutipleValue():
     @property
     def cache_to_list(self):
         return self._data.get('cache_to_list', None)
+
+if __name__ == '__main__':
+    if len(sys.argv) <= 1:
+        prints('Need to parse a library path as arguments')
+        exit()
+    
+    path = os.path.abspath(sys.argv[1])
+    if not os.path.exists(path):
+        prints(f'The path "{path}" don\'t exists')
+        exit()
+    
+    from calibre.library import db
+    
+    def current_db():
+        return current_db.db
+    
+    prints('Loading library:', path)
+    current_db.db = db(path=path, read_only=True)
+    prints()
+    
+    prints('All columns:')
+    for k,c in get_all_columns().items():
+        prints(k,c)
+    prints()
+    
+    prints('All functions:')
+    for f in [get_all_columns,
+              get_names, get_tags, get_enumeration, get_float, get_datetime, get_rating, get_title,
+              get_series, get_series_index, get_text, get_bool, get_html, get_markdown, get_long_text,
+              get_composite_text, get_composite_tag]:
+        prints(f.__name__, list(f().keys()))
+        prints()
+    
+    for f in [get_possible_fields, get_possible_columns]:
+        prints(f.__name__, f())
+        prints()
+    
+    current_db.db.close()
