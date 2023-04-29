@@ -9,5 +9,5 @@ This module repository was only created for my personal comfort and rearranged i
 ```
 git submodule add --name common_utils https://github.com/un-pogaz/common_utils_plugins.git common_utils
 git submodule init
-git submodule update --remote
+git submodule update --remote --merge --single-branch
 ```
