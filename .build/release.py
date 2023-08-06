@@ -70,24 +70,25 @@ def read_change_log_for_version(version):
     changeLines = []
     for line in content:
         if not foundVersion:
-            if line.startswith('### version '+version):
+            if line.startswith(f'## [{version}]'):
                 foundVersion = True
             continue
         # We are within the current version - include content unless we hit the previous version
-        if line.startswith('### version'):
+        if line.startswith('## ['):
             break
-        changeLines.append(line)
+        changeLines.append(line.rstrip())
 
     if len(changeLines) == 0:
         print('ERROR: No change log details found for this version: {}'.format(version))
         raise RuntimeError('Missing details in changelog')
 
-    # Trim trailing blank lines
-    while changeLines and len(changeLines[-1]) <= 2:
-        changeLines.pop()
+    # Trim trailing blank lines (start/end)
+    for idx in [0, -1]:
+        while changeLines and len(changeLines[idx].strip()) == 0:
+            changeLines.pop(idx)
 
     print('ChangeLog details found: {0} lines'.format(len(changeLines)))
-    return ''.join(changeLines)
+    return '\n'.join(changeLines)
 
 def check_if_release_exists(api_repo_url, api_token, tag_name):
     # If we have already released this plugin version then we have a problem
