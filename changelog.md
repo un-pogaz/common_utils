@@ -1,5 +1,8 @@
 # Changelog - common_utils
 
+## 2023/08/07
+- Add build_MobileRead_post() to release.py
+
 ## 2023/08/06
 - Edit Changelog to [Common Changelog](https://common-changelog.org)
 - Update release.py to the new Changelog format
@@ -8,8 +11,8 @@
 - update build
 
 ## 2023/04/28
-- fix `possible_fields()`
 - add 'id', 'path' to possible_columns ; self test/debug
+- fix `possible_fields()`
 
 ## 2023/04/12
 - standalone columns.py

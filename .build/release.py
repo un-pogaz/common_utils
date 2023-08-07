@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 __license__   = 'GPL v3'
-__copyright__ = '2022, Grant Drake'
+__copyright__ = '2022, un_pogaz based on code from Grant Drake'
 
 '''
 Creates a GitHub release for a plugin, including uploading the zip file.
@@ -58,7 +58,7 @@ def get_plugin_zip_path(plugin_name):
     return zip_file
 
 def read_change_log_for_version(version):
-    changeLogFile = os.path.join(os.getcwd(), 'CHANGELOG.md')
+    changeLogFile = os.path.join(os.getcwd(), 'changelog.md')
     if not os.path.exists(changeLogFile):
         print('ERROR: No change log found for this plugin at: {}'.format(changeLogFile))
         raise FileNotFoundError(changeLogFile)
@@ -161,6 +161,82 @@ def upload_zip_to_release(api_token, upload_url, zip_file, tag_name):
         raise RuntimeError('Failed to upload zip due to:',e)
 
 
+def build_MobileRead_post():
+    output_file = 'MobileRead_post.bbcode'
+    MobileRead_body = os.path.join(os.getcwd(), 'readme.bbcode')
+    if not os.path.exists(MobileRead_body):
+        print(f'Creating {output_file} aborted: no body found')
+        return
+    
+    with open(MobileRead_body, 'r') as f:
+        MobileRead_body = f.read().strip()
+    
+    with open(os.path.join(os.getcwd(), 'changelog.md'), 'r') as f:
+        changelog_src = f.read().strip().splitlines()
+    
+    changelog = []
+    global bb_list_level, list_prefix_last
+    bb_list_level = 0
+    list_prefix_last = None
+    
+    def md2bb(line):
+        line = line.replace('`', '')
+        line = line.replace('<br>', '\n')
+        line = re.sub(r'\*\*\*(.+?)\*\*\*', r'[B][I]\1[/I][/B]', line)
+        line = re.sub(r'\*\*(.+?)\*\*', r'[B]\1[/B]', line)
+        line = re.sub(r'\*(.+?)\*', r'[I]\1[/I]', line)
+        
+        return line
+    
+    def bb_list_close():
+        global bb_list_level, list_prefix_last
+        for idx in range(bb_list_level):
+            changelog.append('[/LIST]')
+        bb_list_level = 0
+        list_prefix_last = None
+    
+    for line in changelog_src:
+        
+        if line.startswith('# '):
+            pass
+        
+        if line.startswith('## '):
+            bb_list_close()
+            line = line.replace('#', '').replace('[', '').replace(']', '').strip()
+            changelog.append('\n[B]version '+line+'[/B]')
+        
+        if line.startswith('### '):
+            bb_list_close()
+            changelog.append(line.replace('#', '').strip())
+        
+        if re.match(r'\s*- ', line):
+            list_prefix = line.split('-', maxsplit=1)[0]
+            if list_prefix != list_prefix_last:
+                if list_prefix_last is None or len(list_prefix_last) < len(list_prefix):
+                    bb_list_level = bb_list_level + 1
+                    changelog.append('[LIST]')
+                elif len(list_prefix_last) == len(list_prefix):
+                    pass
+                elif len(list_prefix_last) > len(list_prefix):
+                    bb_list_level = bb_list_level - 1
+                    changelog.append('[/LIST]')
+                
+                list_prefix_last = list_prefix
+            
+            line = line.strip().removeprefix('- ')
+            changelog.append('[*]'+md2bb(line))
+    
+    bb_list_close()
+    
+    
+    with open(output_file, 'w', newline='\n') as f:
+        f.write(MobileRead_body)
+        f.write('\n\n[B]Version History:[/B]\n')
+        f.write('[SPOILER]'+'\n'.join(changelog).strip()+'[/SPOILER]')
+    
+    print(f'{output_file} builded')
+
+
 if __name__=="__main__":
     api_token = sys.argv[1]
     if not api_token:
@@ -184,3 +260,5 @@ if __name__=="__main__":
     html_url, upload_url = create_GitHub_release(api_repo_url, api_token, plugin_name, tag_name, changeBody)
     upload_zip_to_release(api_token, upload_url, zip_file, tag_name)
     print('Github release completed: {}'.format(html_url))
+    
+    build_MobileRead_post()
