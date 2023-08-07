@@ -2,6 +2,7 @@
 
 ## 2023/08/07
 - Add build_MobileRead_post() to release.py
+- Add truncate_title()
 
 ## 2023/08/06
 - Edit Changelog to [Common Changelog](https://common-changelog.org)

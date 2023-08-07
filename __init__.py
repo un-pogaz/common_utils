@@ -208,6 +208,8 @@ def get_date_format(tweak_name='gui_timestamp_display_format', default_fmt='dd M
         format = default_fmt
     return format
 
+def truncate_title(title, length=75):
+    return (title[:length] + '…') if len(title) > length else title
 
 # ----------------------------------------------
 #               Ohters
