@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2022-10-19 12:09+0200\n"
+"POT-Creation-Date: 2023-08-07 09:36+0200\n"
 "PO-Revision-Date: 2020-10-12 14:49+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -11,86 +11,86 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 3.1.1\n"
+"X-Generator: Poedit 3.3.2\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: common_utils.py:220
-msgid "Could not to launch {:s}"
-msgstr ""
-
-#: common_utils.py:235
-msgid "No book selected"
-msgstr ""
-
-#: common_utils.py:240
-msgid "No book in the library"
-msgstr ""
-
-#: common_utils.py:245 common_utils.py:251
-msgid "No book in the virtual library"
-msgstr ""
-
-#: common_utils.py:256
-msgid "No book in the current search"
-msgstr ""
-
-#: common_utils.py:529
-msgid "Restart required"
-msgstr ""
-
-#: common_utils.py:530
-msgid "Title image not found - you must restart Calibre before using this plugin!"
-msgstr ""
-
-#: common_utils.py:579
-msgid "Undefined"
-msgstr ""
-
-#: common_utils.py:976
-msgid "Keyboard shortcuts"
-msgstr ""
-
-#: common_utils.py:1010
-msgid "Preferences for:"
-msgstr ""
-
-#: common_utils.py:1044
-msgid "Clear"
-msgstr ""
-
-#: common_utils.py:1046
-msgid "Clear all settings for this plugin"
-msgstr ""
-
-#: common_utils.py:1083
-msgid "The changes cannot be applied."
-msgstr ""
-
-#: common_utils.py:1087
-msgid "Are you sure you want to change your settings in this library for this plugin?"
-msgstr ""
-
-#: common_utils.py:1088 common_utils.py:1100
-msgid "Any settings in other libraries or stored in a JSON file in your calibre plugins folder will not be touched."
-msgstr ""
-
-#: common_utils.py:1099
-msgid "Are you sure you want to clear your settings in this library for this plugin?"
-msgstr ""
-
-#: common_utils.py:1181
-msgid "Copy to clipboard"
-msgstr ""
-
-#: common_utils.py:1213
+#: __init__.py:224
 msgid "You cannot configure this plugin before calibre is restarted."
 msgstr ""
 
-#: common_utils.py:1309
+#: dialog.py:94
+msgid "Keyboard shortcuts"
+msgstr ""
+
+#: dialog.py:128
+msgid "Preferences for:"
+msgstr ""
+
+#: dialog.py:162
+msgid "Clear"
+msgstr ""
+
+#: dialog.py:164
+msgid "Clear all settings for this plugin"
+msgstr ""
+
+#: dialog.py:201
+msgid "The changes cannot be applied."
+msgstr ""
+
+#: dialog.py:205
+msgid "Are you sure you want to change your settings in this library for this plugin?"
+msgstr ""
+
+#: dialog.py:206 dialog.py:218
+msgid "Any settings in other libraries or stored in a JSON file in your calibre plugins folder will not be touched."
+msgstr ""
+
+#: dialog.py:217
+msgid "Are you sure you want to clear your settings in this library for this plugin?"
+msgstr ""
+
+#: dialog.py:299
+msgid "Copy to clipboard"
+msgstr ""
+
+#: dialog.py:336
 msgid "Unhandled exception"
 msgstr ""
 
-#: common_utils.py:1312
+#: dialog.py:339
 msgid "The {:s} plugin has encounter a unhandled exception."
+msgstr ""
+
+#: library.py:61
+msgid "Could not to launch {:s}"
+msgstr ""
+
+#: library.py:76
+msgid "No book selected"
+msgstr ""
+
+#: library.py:81
+msgid "No book in the library"
+msgstr ""
+
+#: library.py:86 library.py:92
+msgid "No book in the virtual library"
+msgstr ""
+
+#: library.py:97
+msgid "No book in the current search"
+msgstr ""
+
+#: widgets.py:70
+msgid "Restart required"
+msgstr ""
+
+#: widgets.py:71
+msgid "Title image not found - you must restart Calibre before using this plugin!"
+msgstr ""
+
+#: widgets.py:120
+msgid "Undefined"
 msgstr ""

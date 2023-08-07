@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2022-10-19 12:09+0200\n"
-"PO-Revision-Date: 2022-10-19 12:09+0200\n"
+"POT-Creation-Date: 2023-08-07 09:37+0200\n"
+"PO-Revision-Date: 2023-08-07 09:37+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es\n"
@@ -10,86 +10,86 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 3.1.1\n"
+"X-Generator: Poedit 3.3.2\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: common_utils.py:220
-msgid "Could not to launch {:s}"
-msgstr "No se pudo iniciar {:s}"
-
-#: common_utils.py:235
-msgid "No book selected"
-msgstr "Ningún libro seleccionado"
-
-#: common_utils.py:240
-msgid "No book in the library"
-msgstr "No hay libro en la biblioteca"
-
-#: common_utils.py:245 common_utils.py:251
-msgid "No book in the virtual library"
-msgstr "No hay libro en la biblioteca virtual"
-
-#: common_utils.py:256
-msgid "No book in the current search"
-msgstr "Ningún libro en la búsqueda actual"
-
-#: common_utils.py:529
-msgid "Restart required"
-msgstr "Reinicio requerido"
-
-#: common_utils.py:530
-msgid "Title image not found - you must restart Calibre before using this plugin!"
-msgstr "No se encontró la imagen del título. ¡Debe reiniciar Calibre antes de usar este complemento!"
-
-#: common_utils.py:579
-msgid "Undefined"
-msgstr "Indefinido"
-
-#: common_utils.py:976
-msgid "Keyboard shortcuts"
-msgstr "Atajos de teclado"
-
-#: common_utils.py:1010
-msgid "Preferences for:"
-msgstr "Preferencias para:"
-
-#: common_utils.py:1044
-msgid "Clear"
-msgstr "Borrar"
-
-#: common_utils.py:1046
-msgid "Clear all settings for this plugin"
-msgstr "Borrar todas las configuraciones para este complemento"
-
-#: common_utils.py:1083
-msgid "The changes cannot be applied."
-msgstr "Los cambios no se pueden aplicar."
-
-#: common_utils.py:1087
-msgid "Are you sure you want to change your settings in this library for this plugin?"
-msgstr "¿Está seguro de que desea cambiar su configuración en esta biblioteca para este complemento?"
-
-#: common_utils.py:1088 common_utils.py:1100
-msgid "Any settings in other libraries or stored in a JSON file in your calibre plugins folder will not be touched."
-msgstr "Cualquier configuración en otras bibliotecas o almacenada en un archivo JSON en su carpeta de complementos de calibre no se modificará."
-
-#: common_utils.py:1099
-msgid "Are you sure you want to clear your settings in this library for this plugin?"
-msgstr "¿Está seguro de que desea borrar su configuración en esta biblioteca para este complemento?"
-
-#: common_utils.py:1181
-msgid "Copy to clipboard"
-msgstr "Copiar al portapapeles"
-
-#: common_utils.py:1213
+#: __init__.py:224
 msgid "You cannot configure this plugin before calibre is restarted."
 msgstr "No puede configurar este complemento antes de reiniciar calibre."
 
-#: common_utils.py:1309
+#: dialog.py:94
+msgid "Keyboard shortcuts"
+msgstr "Atajos de teclado"
+
+#: dialog.py:128
+msgid "Preferences for:"
+msgstr "Preferencias para:"
+
+#: dialog.py:162
+msgid "Clear"
+msgstr "Borrar"
+
+#: dialog.py:164
+msgid "Clear all settings for this plugin"
+msgstr "Borrar todas las configuraciones para este complemento"
+
+#: dialog.py:201
+msgid "The changes cannot be applied."
+msgstr "Los cambios no se pueden aplicar."
+
+#: dialog.py:205
+msgid "Are you sure you want to change your settings in this library for this plugin?"
+msgstr "¿Está seguro de que desea cambiar su configuración en esta biblioteca para este complemento?"
+
+#: dialog.py:206 dialog.py:218
+msgid "Any settings in other libraries or stored in a JSON file in your calibre plugins folder will not be touched."
+msgstr "Cualquier configuración en otras bibliotecas o almacenada en un archivo JSON en su carpeta de complementos de calibre no se modificará."
+
+#: dialog.py:217
+msgid "Are you sure you want to clear your settings in this library for this plugin?"
+msgstr "¿Está seguro de que desea borrar su configuración en esta biblioteca para este complemento?"
+
+#: dialog.py:299
+msgid "Copy to clipboard"
+msgstr "Copiar al portapapeles"
+
+#: dialog.py:336
 msgid "Unhandled exception"
 msgstr "Excepción no controlada"
 
-#: common_utils.py:1312
+#: dialog.py:339
 msgid "The {:s} plugin has encounter a unhandled exception."
 msgstr "El complemento {:s} ha encontrado una excepción no controlada."
+
+#: library.py:61
+msgid "Could not to launch {:s}"
+msgstr "No se pudo iniciar {:s}"
+
+#: library.py:76
+msgid "No book selected"
+msgstr "Ningún libro seleccionado"
+
+#: library.py:81
+msgid "No book in the library"
+msgstr "No hay libro en la biblioteca"
+
+#: library.py:86 library.py:92
+msgid "No book in the virtual library"
+msgstr "No hay libro en la biblioteca virtual"
+
+#: library.py:97
+msgid "No book in the current search"
+msgstr "Ningún libro en la búsqueda actual"
+
+#: widgets.py:70
+msgid "Restart required"
+msgstr "Reinicio requerido"
+
+#: widgets.py:71
+msgid "Title image not found - you must restart Calibre before using this plugin!"
+msgstr "No se encontró la imagen del título. ¡Debe reiniciar Calibre antes de usar este complemento!"
+
+#: widgets.py:120
+msgid "Undefined"
+msgstr "Indefinido"
