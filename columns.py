@@ -794,7 +794,7 @@ if __name__ == '__main__':
     
     path = os.path.abspath(sys.argv[1])
     if not os.path.exists(path):
-        prints(f'The path "{path}" don\'t exists')
+        prints('The path "'+path+'" don\'t exists')
         exit()
     
     from calibre.library import db

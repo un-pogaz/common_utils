@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2023-08-07 09:37+0200\n"
-"PO-Revision-Date: \n"
+"POT-Creation-Date: 2023-08-08 19:22+0200\n"
+"PO-Revision-Date: 2023-08-08 19:22+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -14,7 +14,7 @@ msgstr ""
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: __init__.py:224
+#: __init__.py:226
 msgid "You cannot configure this plugin before calibre is restarted."
 msgstr "Vous ne pouvez pas configurer ce plugin avant le redémarrage de Calibre."
 
@@ -50,15 +50,27 @@ msgstr "Les paramètres présents dans d'autres bibliothèques ou stockés dans 
 msgid "Are you sure you want to clear your settings in this library for this plugin?"
 msgstr "Êtes-vous sûr de vouloir effacer vos paramètres dans cette bibliothèque pour ce plugin ?"
 
-#: dialog.py:299
+#: dialog.py:301
+msgid "Cancel"
+msgstr "Annuler"
+
+#: dialog.py:310
+msgid "{} progress"
+msgstr "Progression de {}"
+
+#: dialog.py:337
+msgid "Book {:d} of {:d}"
+msgstr "Livre {:d} sur {:d}"
+
+#: dialog.py:388
 msgid "Copy to clipboard"
 msgstr "Copier dans le presse-papiers"
 
-#: dialog.py:336
+#: dialog.py:425
 msgid "Unhandled exception"
 msgstr "Exception non gérée"
 
-#: dialog.py:339
+#: dialog.py:428
 msgid "The {:s} plugin has encounter a unhandled exception."
 msgstr "Le plugin {:s} a rencontré une exception non gérée."
 

@@ -30,18 +30,18 @@ except ImportError:
 
 try:
     from qt.core import (Qt, QDialog, QDialogButtonBox, QVBoxLayout, QHBoxLayout,
-                        QListWidget, QProgressBar, QAbstractItemView, QTextEdit,
-                        QApplication, QTextBrowser, QSize, QLabel)
+                        QListWidget, QProgressBar, QProgressDialog, QAbstractItemView,
+                        QTextEdit, QApplication, QTextBrowser, QSize, QLabel, QTimer)
 except ImportError:
     from PyQt5.Qt import (Qt, QDialog, QDialogButtonBox, QVBoxLayout, QHBoxLayout,
-                        QListWidget, QProgressBar, QAbstractItemView, QTextEdit,
-                        QApplication, QTextBrowser, QSize, QLabel)
+                        QListWidget, QProgressBar, QProgressDialog, QAbstractItemView,
+                        QTextEdit, QApplication, QTextBrowser, QSize, QLabel, QTimer)
 
 from calibre import prints
 from calibre.gui2 import error_dialog, gprefs, Application
 from calibre.gui2.keyboard import ShortcutConfig
 
-from . import GUI, PLUGIN_NAME, PREFS_NAMESPACE, get_icon
+from . import GUI, PLUGIN_NAME, PREFS_NAMESPACE, debug_print, get_icon
 
 
 class SizePersistedDialog(QDialog):
@@ -276,6 +276,103 @@ class ProgressBarDialog(QDialog):
     
     def set_progress_format(self, progress_format=None):
         pass
+
+class ProgressDialog(QProgressDialog):
+    
+    icon=None
+    title=None
+    cancel_text=None
+    
+    def __init__(self, book_ids=[], **kvargs):
+        
+        # DB
+        self.db = GUI.current_db
+        # DB API
+        self.dbAPI = self.db.new_api
+        
+        # list of book id
+        self.book_ids = book_ids
+        # Count book
+        self.book_count = len(self.book_ids)
+        
+        value_max = self.setup_progress(**kvargs) or self.book_count
+        
+        cancel_text = kvargs.get('cancel_text', None) or self.cancel_text or _('Cancel')
+        QProgressDialog.__init__(self, '', cancel_text, 0, value_max, GUI)
+        
+        self.setMinimumWidth(500)
+        self.setMinimumHeight(100)
+        self.setMinimumDuration(100)
+        
+        self.setAutoClose(True)
+        self.setAutoReset(False)
+        
+        title = kvargs.get('title', None) or self.title or _('{} progress').format(PLUGIN_NAME)
+        self.setWindowTitle(title)
+        
+        for icon in [kvargs.get('icon', None), self.icon, 'images/plugin.png', 'lt.png']:
+            icon = get_icon(icon)
+            if not icon.isNull():
+                break
+        self.setWindowIcon(icon)
+        
+        self.start = time.time()
+        self.time_execut = 0
+        
+        if not book_ids:
+            debug_print('No book_ids passed to '+ str(self.__class__.__name__) +'. Skiped.')
+        else:
+            QTimer.singleShot(0, self._job_progress)
+            self.exec_()
+            
+            self.db.clean()
+            
+            self.time_execut = round(time.time() - self.start, 3)
+            
+            self.end_progress()
+        
+        self.close()
+    
+    def set_value(self, value, text=None):
+        if value < 0:
+            value = self.maximum()
+        self.setValue(value)
+        
+        if not text:
+            if callable(self.progress_text):
+                text = self.progress_text()
+            else:
+                text = self.progress_text
+        
+        self.setLabelText(text)
+        if self.maximum() < 100:
+            self.hide()
+        else:
+            self.show()
+    
+    def increment(self, value=1, text=None):
+        rslt = self.value() + value
+        if rslt > self.maximum():
+            rslt = self.maximum()
+        self.set_value(rslt, text=text)
+        return rslt
+    
+    def _job_progress(self):
+        self.set_value(0)
+        self.job_progress()
+        self.hide()
+    
+    def progress_text(self):
+        return _('Book {:d} of {:d}').format(self.value(), self.book_count)
+    
+    def setup_progress(self, **kvargs):
+        raise NotImplementedError()
+    
+    def end_progress(self):
+        raise NotImplementedError()
+    
+    def job_progress(self):
+        raise NotImplementedError()
 
 class ViewLogDialog(QDialog):
     def __init__(self, title, html, parent=None):

@@ -1,5 +1,8 @@
 # Changelog - common_utils
 
+## 2023/08/08
+- Add ProgressDialog
+
 ## 2023/08/07
 - Add build_MobileRead_post() to release.py
 - Add truncate_title()
