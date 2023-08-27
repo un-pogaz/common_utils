@@ -1,5 +1,8 @@
 # Changelog - common_utils
 
+## 2023/08/27
+- Add sub LICENSE and CREDITS to PluginZip
+
 ## 2023/08/08
 - Add ProgressDialog
 
@@ -27,14 +30,14 @@
 ## 2022/10/29
 - fix `error_dialog`
 
-### 2022/10/20
+## 2022/10/20
 - add release scripts
 - improve dialog.py
 
-### 2022/10/20
+## 2022/10/20
 - It's Work!
 
-### 2022/10/19
+## 2022/10/19
 - init()
 - Start build this thing and migrate the elements in the convenient place.
 - Don't use it. Won't work for a while.

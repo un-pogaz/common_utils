@@ -95,8 +95,8 @@ def build_plugin():
     files.extend(glob('**/*.md', recursive=True))
     files.extend(glob('**/*.html', recursive=True))
     files.extend(glob('**/*.cmd', recursive=True))
-    files.extend(glob('LICENSE'))
-    files.extend(glob('CREDITS'))
+    files.extend(glob('**/LICENSE', recursive=True))
+    files.extend(glob('**/CREDITS', recursive=True))
     
     create_zip_file(PLUGIN, 'w', files)
     
