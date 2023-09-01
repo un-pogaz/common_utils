@@ -67,11 +67,10 @@ def _BookIds_error(book_ids, show_error, title, name=None):
 
 def get_BookIds_selected(show_error=False):
     """return the books id selected in the gui"""
-    rows = GUI.library_view.selectionModel().selectedRows()
-    if not rows or len(rows) == 0:
-        ids = []
-    else:
+    try:
         ids = GUI.library_view.get_selected_ids()
+    except:
+        ids = []
    
     return _BookIds_error(ids, show_error, _('No book selected'))
 
