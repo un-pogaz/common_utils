@@ -238,7 +238,7 @@ def build_MobileRead_post():
 
 
 if __name__=="__main__":
-    api_token = sys.argv[1]
+    api_token = os.environ.get('CALIBRE_GITHUB_TOKEN')
     if not api_token:
         raise RuntimeError('No GitHub API token found. Please set it in CALIBRE_GITHUB_TOKEN variable.')
     

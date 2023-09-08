@@ -11,7 +11,7 @@ This module repository was created for my personal comfort and rearranged in a f
 ```
 git submodule add --name common_utils https://github.com/un-pogaz/common_utils.git
 git submodule init
-git submodule update --remote --merge --single-branch
+git submodule update --remote --merge
 ```
 
 1) Install this repository as a submodule
