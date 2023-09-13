@@ -302,11 +302,14 @@ class PREFS_json(JSONConfig):
     to store the preferences for plugin
     """
     def __init__(self):
+        self._is_init = True
         JSONConfig.__init__(self, 'plugins/'+PLUGIN_NAME)
+        self._is_init = False
     
     def update(self, other, **kvargs):
         JSONConfig.update(self, other, **kvargs)
-        self.commit()
+        if not self._is_init:
+            self.commit()
     
     def __call__(self):
         self.refresh()
