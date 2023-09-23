@@ -2,6 +2,7 @@
 
 ## 2023/09/23
 - Add PLUGIN_INSTANCE
+- Add KeyboardConfigDialogButton
 
 ## 2023/09/13
 - Don't update PREFS_json at the initialization

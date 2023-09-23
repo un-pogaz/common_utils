@@ -29,11 +29,11 @@ except ImportError:
         return d.itervalues()
 
 try:
-    from qt.core import (Qt, QDialog, QDialogButtonBox, QVBoxLayout, QHBoxLayout,
+    from qt.core import (Qt, QDialog, QDialogButtonBox, QVBoxLayout, QHBoxLayout, QPushButton,
                         QListWidget, QProgressBar, QProgressDialog, QAbstractItemView,
                         QTextEdit, QApplication, QTextBrowser, QSize, QLabel, QTimer)
 except ImportError:
-    from PyQt5.Qt import (Qt, QDialog, QDialogButtonBox, QVBoxLayout, QHBoxLayout,
+    from PyQt5.Qt import (Qt, QDialog, QDialogButtonBox, QVBoxLayout, QHBoxLayout, QPushButton,
                         QListWidget, QProgressBar, QProgressDialog, QAbstractItemView,
                         QTextEdit, QApplication, QTextBrowser, QSize, QLabel, QTimer)
 
@@ -121,6 +121,18 @@ def edit_keyboard_shortcuts(plugin_action):
     d = KeyboardConfigDialog(GUI, plugin_action.action_spec[0])
     if d.exec_() == d.Accepted:
         GUI.keyboard.finalize()
+
+class KeyboardConfigDialogButton(QPushButton):
+    
+    def __init__(self, parent=None):
+        QPushButton.__init__(self, _('Keyboard shortcuts')+'...', parent)
+        self.setToolTip(_('Edit the keyboard shortcuts associated with this plugin'))
+        self.clicked.connect(self.edit_shortcuts)
+
+    def edit_shortcuts(self):
+        from . import PLUGIN_INSTANCE
+        plugin_action = PLUGIN_INSTANCE.load_actual_plugin(GUI)
+        edit_keyboard_shortcuts(plugin_action)
 
 class PrefsViewerDialog(SizePersistedDialog):
     def __init__(self, gui, namespace):

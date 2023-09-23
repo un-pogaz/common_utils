@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2023-08-08 19:22+0200\n"
-"PO-Revision-Date: 2023-08-08 19:22+0200\n"
+"POT-Creation-Date: 2023-09-23 09:57+0200\n"
+"PO-Revision-Date: 2023-09-23 09:59+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -14,83 +14,87 @@ msgstr ""
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: __init__.py:226
+#: __init__.py:230
 msgid "You cannot configure this plugin before calibre is restarted."
 msgstr "Vous ne pouvez pas configurer ce plugin avant le redémarrage de Calibre."
 
-#: dialog.py:94
+#: dialogs.py:94 dialogs.py:128
 msgid "Keyboard shortcuts"
 msgstr "Raccourcis clavier"
 
-#: dialog.py:128
+#: dialogs.py:129
+msgid "Edit the keyboard shortcuts associated with this plugin"
+msgstr "Modifier les raccourcis clavier associés à cette extension"
+
+#: dialogs.py:140
 msgid "Preferences for:"
 msgstr "Préférences pour :"
 
-#: dialog.py:162
+#: dialogs.py:174
 msgid "Clear"
 msgstr "Effacer"
 
-#: dialog.py:164
+#: dialogs.py:176
 msgid "Clear all settings for this plugin"
 msgstr "Effacer tous les paramètres de ce plugin"
 
-#: dialog.py:201
+#: dialogs.py:213
 msgid "The changes cannot be applied."
 msgstr "Les modifications ne peuvent pas être appliquées."
 
-#: dialog.py:205
+#: dialogs.py:217
 msgid "Are you sure you want to change your settings in this library for this plugin?"
 msgstr "Êtes-vous sûr de vouloir modifier vos paramètres dans cette bibliothèque pour ce plugin ?"
 
-#: dialog.py:206 dialog.py:218
+#: dialogs.py:218 dialogs.py:230
 msgid "Any settings in other libraries or stored in a JSON file in your calibre plugins folder will not be touched."
 msgstr "Les paramètres présents dans d'autres bibliothèques ou stockés dans un fichier JSON dans le dossier des plugins de Calibre ne seront pas modifiés."
 
-#: dialog.py:217
+#: dialogs.py:229
 msgid "Are you sure you want to clear your settings in this library for this plugin?"
 msgstr "Êtes-vous sûr de vouloir effacer vos paramètres dans cette bibliothèque pour ce plugin ?"
 
-#: dialog.py:301
+#: dialogs.py:312
 msgid "Cancel"
 msgstr "Annuler"
 
-#: dialog.py:310
+#: dialogs.py:322
 msgid "{} progress"
 msgstr "Progression de {}"
 
-#: dialog.py:337
+#: dialogs.py:378
 msgid "Book {:d} of {:d}"
 msgstr "Livre {:d} sur {:d}"
 
-#: dialog.py:388
+#: dialogs.py:408
 msgid "Copy to clipboard"
 msgstr "Copier dans le presse-papiers"
 
-#: dialog.py:425
+#: dialogs.py:445
 msgid "Unhandled exception"
 msgstr "Exception non gérée"
 
-#: dialog.py:428
+#: dialogs.py:448
 msgid "The {:s} plugin has encounter a unhandled exception."
 msgstr "Le plugin {:s} a rencontré une exception non gérée."
 
-#: library.py:61
+#: librarys.py:61
 msgid "Could not to launch {:s}"
 msgstr "Impossible de lancer {:s}"
 
-#: library.py:76
+#: librarys.py:75
 msgid "No book selected"
 msgstr "Aucun livre sélectionné"
 
-#: library.py:81
+#: librarys.py:80
 msgid "No book in the library"
 msgstr "Pas de livres dans bibliothèque"
 
-#: library.py:86 library.py:92
+#: librarys.py:85 librarys.py:91
 msgid "No book in the virtual library"
 msgstr "Pas de livres dans la bibliothèque virtuel"
 
-#: library.py:97
+#: librarys.py:96
 msgid "No book in the current search"
 msgstr "Pas de livres dans la recherche actuelle"
 
