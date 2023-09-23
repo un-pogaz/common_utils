@@ -30,6 +30,7 @@ except ImportError:
 
 from calibre import prints
 from calibre.constants import DEBUG, iswindows, numeric_version as calibre_version
+from calibre.customize.ui import find_plugin
 from calibre.gui2 import show_restart_warning
 from calibre.gui2.ui import get_gui
 from calibre.utils.config import config_dir, JSONConfig, DynamicConfig
@@ -58,6 +59,9 @@ ROOT = __name__.split('.')[-2]
 PLUGIN_NAME = get_plugin_attribut('name', ROOT)
 PREFS_NAMESPACE = get_plugin_attribut('PREFS_NAMESPACE', ROOT)
 DEBUG_PRE = get_plugin_attribut('DEBUG_PRE', PLUGIN_NAME)
+
+# Plugin instance.
+PLUGIN_INSTANCE = find_plugin(PLUGIN_NAME)
 
 BASE_TIME = time.time()
 def debug_print(*args):
