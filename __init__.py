@@ -265,10 +265,7 @@ class regex():
     
     def searchall(self, pattern, string, flag=None):
         flag = flag or self.flag
-        if self.search(pattern, string, flag):
-            return regex._re.finditer(pattern, string, flag)
-        else:
-            return None
+        return regex._re.finditer(pattern, string, flag)
     
     def split(self, pattern, string, maxsplit=0, flag=None):
         flag = flag or self.flag
