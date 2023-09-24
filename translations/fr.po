@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2023-09-23 09:57+0200\n"
-"PO-Revision-Date: 2023-09-23 09:59+0200\n"
+"POT-Creation-Date: 2023-09-24 19:03+0200\n"
+"PO-Revision-Date: 2023-09-24 19:03+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -14,7 +14,7 @@ msgstr ""
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: __init__.py:230
+#: __init__.py:249
 msgid "You cannot configure this plugin before calibre is restarted."
 msgstr "Vous ne pouvez pas configurer ce plugin avant le redémarrage de Calibre."
 
@@ -26,55 +26,63 @@ msgstr "Raccourcis clavier"
 msgid "Edit the keyboard shortcuts associated with this plugin"
 msgstr "Modifier les raccourcis clavier associés à cette extension"
 
-#: dialogs.py:140
+#: dialogs.py:141
 msgid "Preferences for:"
 msgstr "Préférences pour :"
 
-#: dialogs.py:174
+#: dialogs.py:175
 msgid "Clear"
 msgstr "Effacer"
 
-#: dialogs.py:176
+#: dialogs.py:177
 msgid "Clear all settings for this plugin"
 msgstr "Effacer tous les paramètres de ce plugin"
 
-#: dialogs.py:213
+#: dialogs.py:214
 msgid "The changes cannot be applied."
 msgstr "Les modifications ne peuvent pas être appliquées."
 
-#: dialogs.py:217
+#: dialogs.py:218
 msgid "Are you sure you want to change your settings in this library for this plugin?"
 msgstr "Êtes-vous sûr de vouloir modifier vos paramètres dans cette bibliothèque pour ce plugin ?"
 
-#: dialogs.py:218 dialogs.py:230
+#: dialogs.py:219 dialogs.py:231
 msgid "Any settings in other libraries or stored in a JSON file in your calibre plugins folder will not be touched."
 msgstr "Les paramètres présents dans d'autres bibliothèques ou stockés dans un fichier JSON dans le dossier des plugins de Calibre ne seront pas modifiés."
 
-#: dialogs.py:229
+#: dialogs.py:230
 msgid "Are you sure you want to clear your settings in this library for this plugin?"
 msgstr "Êtes-vous sûr de vouloir effacer vos paramètres dans cette bibliothèque pour ce plugin ?"
 
-#: dialogs.py:312
+#: dialogs.py:251
+msgid "View library preferences"
+msgstr "Afficher les préférences de la bibliothèque"
+
+#: dialogs.py:252
+msgid "View data stored in the library database for this plugin"
+msgstr "Afficher les données stockées dans la base de données de la bibliothèque pour ce plugin"
+
+#: dialogs.py:327
 msgid "Cancel"
 msgstr "Annuler"
 
-#: dialogs.py:322
+#: dialogs.py:337
 msgid "{} progress"
 msgstr "Progression de {}"
 
-#: dialogs.py:378
+#: dialogs.py:393
 msgid "Book {:d} of {:d}"
 msgstr "Livre {:d} sur {:d}"
 
-#: dialogs.py:408
+#: dialogs.py:423
 msgid "Copy to clipboard"
 msgstr "Copier dans le presse-papiers"
 
-#: dialogs.py:445
+#: dialogs.py:460
 msgid "Unhandled exception"
 msgstr "Exception non gérée"
 
-#: dialogs.py:448
+#: dialogs.py:463
 msgid "The {:s} plugin has encounter a unhandled exception."
 msgstr "Le plugin {:s} a rencontré une exception non gérée."
 

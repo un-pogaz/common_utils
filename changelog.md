@@ -2,6 +2,7 @@
 
 ## 2023/09/24
 - little improvement of debug_print
+- Add LibraryPrefsViewerDialogButton, improve LibraryPrefsViewerDialog (with result code)
 
 ## 2023/09/23
 - Add PLUGIN_INSTANCE

@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2023-09-23 09:58+0200\n"
+"POT-Creation-Date: 2023-09-24 19:03+0200\n"
 "PO-Revision-Date: 2023-08-08 19:22+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -15,7 +15,7 @@ msgstr ""
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: __init__.py:230
+#: __init__.py:249
 msgid "You cannot configure this plugin before calibre is restarted."
 msgstr ""
 
@@ -27,55 +27,63 @@ msgstr ""
 msgid "Edit the keyboard shortcuts associated with this plugin"
 msgstr ""
 
-#: dialogs.py:140
+#: dialogs.py:141
 msgid "Preferences for:"
 msgstr ""
 
-#: dialogs.py:174
+#: dialogs.py:175
 msgid "Clear"
 msgstr ""
 
-#: dialogs.py:176
+#: dialogs.py:177
 msgid "Clear all settings for this plugin"
 msgstr ""
 
-#: dialogs.py:213
+#: dialogs.py:214
 msgid "The changes cannot be applied."
 msgstr ""
 
-#: dialogs.py:217
+#: dialogs.py:218
 msgid "Are you sure you want to change your settings in this library for this plugin?"
 msgstr ""
 
-#: dialogs.py:218 dialogs.py:230
+#: dialogs.py:219 dialogs.py:231
 msgid "Any settings in other libraries or stored in a JSON file in your calibre plugins folder will not be touched."
 msgstr ""
 
-#: dialogs.py:229
+#: dialogs.py:230
 msgid "Are you sure you want to clear your settings in this library for this plugin?"
 msgstr ""
 
-#: dialogs.py:312
+#: dialogs.py:251
+msgid "View library preferences"
+msgstr ""
+
+#: dialogs.py:252
+msgid "View data stored in the library database for this plugin"
+msgstr ""
+
+#: dialogs.py:327
 msgid "Cancel"
 msgstr ""
 
-#: dialogs.py:322
+#: dialogs.py:337
 msgid "{} progress"
 msgstr ""
 
-#: dialogs.py:378
+#: dialogs.py:393
 msgid "Book {:d} of {:d}"
 msgstr ""
 
-#: dialogs.py:408
+#: dialogs.py:423
 msgid "Copy to clipboard"
 msgstr ""
 
-#: dialogs.py:445
+#: dialogs.py:460
 msgid "Unhandled exception"
 msgstr ""
 
-#: dialogs.py:448
+#: dialogs.py:463
 msgid "The {:s} plugin has encounter a unhandled exception."
 msgstr ""
 

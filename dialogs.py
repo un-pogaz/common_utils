@@ -31,11 +31,11 @@ except ImportError:
 try:
     from qt.core import (Qt, QDialog, QDialogButtonBox, QVBoxLayout, QHBoxLayout, QPushButton,
                         QListWidget, QProgressBar, QProgressDialog, QAbstractItemView,
-                        QTextEdit, QApplication, QTextBrowser, QSize, QLabel, QTimer)
+                        QTextEdit, QApplication, QTextBrowser, QSize, QLabel, QTimer, pyqtSignal)
 except ImportError:
     from PyQt5.Qt import (Qt, QDialog, QDialogButtonBox, QVBoxLayout, QHBoxLayout, QPushButton,
                         QListWidget, QProgressBar, QProgressDialog, QAbstractItemView,
-                        QTextEdit, QApplication, QTextBrowser, QSize, QLabel, QTimer)
+                        QTextEdit, QApplication, QTextBrowser, QSize, QLabel, QTimer, pyqtSignal)
 
 from calibre import prints
 from calibre.gui2 import error_dialog, gprefs, Application
@@ -134,7 +134,8 @@ class KeyboardConfigDialogButton(QPushButton):
         plugin_action = PLUGIN_INSTANCE.load_actual_plugin(GUI)
         edit_keyboard_shortcuts(plugin_action)
 
-class PrefsViewerDialog(SizePersistedDialog):
+
+class LibraryPrefsViewerDialog(SizePersistedDialog):
     def __init__(self, gui, namespace):
         SizePersistedDialog.__init__(self, gui, 'Prefs Viewer dialog')
         self.setWindowTitle(_('Preferences for:')+' '+namespace)
@@ -222,7 +223,7 @@ class PrefsViewerDialog(SizePersistedDialog):
         
         for k,v in iteritems(self.prefs):
             self.db.prefs.set_namespaced(self.namespace, k, self.db.prefs.raw_to_object(v))
-        self.close()
+        self.accept()
     
     def _clear_settings(self):
         from calibre.gui2.dialogs.confirm_delete import confirm
@@ -236,12 +237,26 @@ class PrefsViewerDialog(SizePersistedDialog):
             self.prefs[k] = '{}'
             self.db.prefs.set_namespaced(self.namespace, k, self.db.prefs.raw_to_object('{}'))
         self._populate_settings()
-        self.close()
+        self.accept()
 
-def view_library_prefs():
-    GUI.current_db
-    d = PrefsViewerDialog(GUI, PREFS_NAMESPACE)
-    d.exec_()
+def view_library_prefs(prefs_namespace=PREFS_NAMESPACE):
+    d = LibraryPrefsViewerDialog(GUI, prefs_namespace)
+    return d.exec_()
+
+class LibraryPrefsViewerDialogButton(QPushButton):
+    
+    library_prefs_changed = pyqtSignal()
+    
+    def __init__(self, parent=None, prefs_namespace=PREFS_NAMESPACE):
+        QPushButton.__init__(self, _('View library preferences')+'...', parent)
+        self.setToolTip(_('View data stored in the library database for this plugin'))
+        self.clicked.connect(self.view_library_prefs)
+        self.prefs_namespace = prefs_namespace
+
+    def view_library_prefs(self):
+        if view_library_prefs(self.prefs_namespace) == QDialog.Accepted:
+            self.library_prefs_changed.emit()
+
 
 class ProgressBarDialog(QDialog):
     def __init__(self, parent=None, max_items=100, window_title='Progress Bar',
