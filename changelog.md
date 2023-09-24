@@ -1,5 +1,8 @@
 # Changelog - common_utils
 
+## 2023/09/24
+- little improvement of debug_print
+
 ## 2023/09/23
 - Add PLUGIN_INSTANCE
 - Add KeyboardConfigDialogButton

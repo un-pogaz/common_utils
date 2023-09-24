@@ -64,9 +64,28 @@ DEBUG_PRE = get_plugin_attribut('DEBUG_PRE', PLUGIN_NAME)
 PLUGIN_INSTANCE = find_plugin(PLUGIN_NAME)
 
 BASE_TIME = time.time()
-def debug_print(*args):
+def debug_print(*args, **kw):
+    '''
+    Print a output assigned to the plugin
+    
+    **kw
+    sep: separator between each *args
+    end: end of line character
+    
+    pre: prefix to the printed line
+         else use DEBUG_PRE or the plugin name
+    
+    file: output file, else stdout
+    flush: flush buffer
+    '''
     if DEBUG:
-        prints('DEBUG', DEBUG_PRE+':', *args)
+        pre = kw.get('pre', DEBUG_PRE)
+        if not pre:
+            prints(*args, **kw)
+        else:
+            if not pre.endswith(':'):
+                pre = pre+':'
+            prints(pre, *args, **kw)
         #prints('DEBUG', DEBUG_PRE,'({:.3f})'.format(time.time()-BASE_TIME),':', *args)
 
 
