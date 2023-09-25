@@ -7,7 +7,7 @@ __license__   = 'GPL v3'
 __copyright__ = '2011, Grant Drake <grant.drake@gmail.com> ; 2020, un_pogaz <un.pogaz@gmail.com>'
 __docformat__ = 'restructuredtext en'
 
-import os, sys, copy, time
+
 # python3 compatibility
 from six.moves import range
 from six import text_type as unicode
@@ -35,12 +35,11 @@ except ImportError:
     from PyQt5.Qt import (Qt, QTableWidgetItem, QHBoxLayout, QLabel, QFont,
                         QDateTime, QStyledItemDelegate, QComboBox, QFont, QLineEdit)
 
-from calibre import prints
 from calibre.gui2 import error_dialog, UNDEFINED_QDATETIME
 from calibre.utils.date import now, format_date, UNDEFINED_DATE
 from calibre.gui2.library.delegates import DateDelegate as _DateDelegate
 
-from . import get_pixmap, get_date_format
+from . import debug_print, get_pixmap, get_date_format
 
 
 # ----------------------------------------------
@@ -111,7 +110,7 @@ class DateDelegate(_DateDelegate):
         DateDelegate.__init__(self, parent)
         self.format = get_date_format(default_fmt=fmt)
         self.default_to_today = default_to_today
-        print('DateDelegate fmt:',fmt)
+        debug_print('DateDelegate fmt:',fmt)
 
     def createEditor(self, parent, option, index):
         qde = QStyledItemDelegate.createEditor(self, parent, option, index)
@@ -123,7 +122,7 @@ class DateDelegate(_DateDelegate):
 
     def setEditorData(self, editor, index):
         val = index.model().data(index, Qt.DisplayRole)
-        print('setEditorData val:',val)
+        debug_print('setEditorData val:',val)
         if val is None or val == UNDEFINED_QDATETIME:
             if self.default_to_today:
                 val = self.default_date
@@ -133,7 +132,7 @@ class DateDelegate(_DateDelegate):
 
     def setModelData(self, editor, model, index):
         val = editor.dateTime()
-        print('setModelData: ',val)
+        debug_print('setModelData: ',val)
         if val <= UNDEFINED_QDATETIME:
             model.setData(index, UNDEFINED_QDATETIME, Qt.EditRole)
         else:

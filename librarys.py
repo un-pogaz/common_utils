@@ -7,7 +7,7 @@ __license__   = 'GPL v3'
 __copyright__ = '2011, Grant Drake <grant.drake@gmail.com> ; 2020, un_pogaz <un.pogaz@gmail.com>'
 __docformat__ = 'restructuredtext en'
 
-import os, sys, copy, time
+
 # python3 compatibility
 from six.moves import range
 from six import text_type as unicode
@@ -28,15 +28,17 @@ except ImportError:
     def itervalues(d):
         return d.itervalues()
 
-from calibre import prints
 from calibre.gui2 import error_dialog
 
 from . import GUI, PLUGIN_NAME
 
 
 try:
+    import re
+    from calibre.utils.config import tweaks
     authors_split_regex = tweaks['authors_split_regex']
     re.compile(authors_split_regex)
+    del re, tweaks
 except Exception:
     authors_split_regex = r'(?i),?\s+(and|with)\s+'
     """tweaks split regex for authors"""
@@ -197,4 +199,3 @@ def set_marked(label, book_ids, append=False, reset=False):
     
     marked.update( {idx:label for idx in book_ids} )
     GUI.current_db.data.set_marked_ids(marked)
-

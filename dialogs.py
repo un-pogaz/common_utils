@@ -7,7 +7,7 @@ __license__   = 'GPL v3'
 __copyright__ = '2011, Grant Drake <grant.drake@gmail.com> ; 2020, un_pogaz <un.pogaz@gmail.com>'
 __docformat__ = 'restructuredtext en'
 
-import os, sys, copy, time
+
 # python3 compatibility
 from six.moves import range
 from six import text_type as unicode
@@ -28,6 +28,8 @@ except ImportError:
     def itervalues(d):
         return d.itervalues()
 
+import sys, time
+
 try:
     from qt.core import (Qt, QDialog, QDialogButtonBox, QVBoxLayout, QHBoxLayout, QPushButton,
                         QListWidget, QProgressBar, QProgressDialog, QAbstractItemView,
@@ -37,7 +39,6 @@ except ImportError:
                         QListWidget, QProgressBar, QProgressDialog, QAbstractItemView,
                         QTextEdit, QApplication, QTextBrowser, QSize, QLabel, QTimer, pyqtSignal)
 
-from calibre import prints
 from calibre.gui2 import error_dialog, gprefs, Application
 from calibre.gui2.keyboard import ShortcutConfig
 
@@ -123,7 +124,6 @@ def edit_keyboard_shortcuts(plugin_action):
         GUI.keyboard.finalize()
 
 class KeyboardConfigDialogButton(QPushButton):
-    
     def __init__(self, parent=None):
         QPushButton.__init__(self, _('Keyboard shortcuts')+'...', parent)
         self.setToolTip(_('Edit the keyboard shortcuts associated with this plugin'))

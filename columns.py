@@ -7,7 +7,7 @@ __license__   = 'GPL v3'
 __copyright__ = '2021, un_pogaz <un.pogaz@gmail.com>'
 __docformat__ = 'restructuredtext en'
 
-import os, sys, copy, time, re
+
 # python3 compatibility
 from six.moves import range
 from six import text_type as unicode
@@ -27,6 +27,8 @@ except ImportError:
         return d.iteritems()
     def itervalues(d):
         return d.itervalues()
+
+import os, sys, copy, re
 
 from calibre import prints
 from calibre.constants import numeric_version as calibre_version

@@ -7,7 +7,7 @@ __license__   = 'GPL v3'
 __copyright__ = '2011, Grant Drake <grant.drake@gmail.com> ; 2020, un_pogaz <un.pogaz@gmail.com>'
 __docformat__ = 'restructuredtext en'
 
-import os, sys, copy, time
+
 # python3 compatibility
 from six.moves import range
 from six import text_type as unicode
@@ -28,7 +28,6 @@ except ImportError:
     def itervalues(d):
         return d.itervalues()
 
-from calibre import prints
 from calibre.gui2.actions import menu_action_unique_name
 
 from . import calibre_version, GUI, get_icon
