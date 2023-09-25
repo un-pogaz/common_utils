@@ -29,11 +29,15 @@ except ImportError:
         return d.itervalues()
 
 try:
-    from qt.core import (Qt, QTableWidgetItem, QHBoxLayout, QLabel, QFont,
-                        QDateTime, QStyledItemDelegate, QComboBox, QFont, QLineEdit)
+    from qt.core import (
+        Qt, QComboBox, QDateTime, QFont, QFont, QHBoxLayout, QLabel, QLineEdit,
+        QStyledItemDelegate, QTableWidgetItem,
+    )
 except ImportError:
-    from PyQt5.Qt import (Qt, QTableWidgetItem, QHBoxLayout, QLabel, QFont,
-                        QDateTime, QStyledItemDelegate, QComboBox, QFont, QLineEdit)
+    from PyQt5.Qt import (
+        Qt, QComboBox, QDateTime, QFont, QFont, QHBoxLayout, QLabel, QLineEdit,
+        QStyledItemDelegate, QTableWidgetItem,
+    )
 
 from calibre.gui2 import error_dialog, UNDEFINED_QDATETIME
 from calibre.utils.date import now, format_date, UNDEFINED_DATE

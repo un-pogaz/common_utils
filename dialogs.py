@@ -31,13 +31,17 @@ except ImportError:
 import sys, time
 
 try:
-    from qt.core import (Qt, QDialog, QDialogButtonBox, QVBoxLayout, QHBoxLayout, QPushButton,
-                        QListWidget, QProgressBar, QProgressDialog, QAbstractItemView,
-                        QTextEdit, QApplication, QTextBrowser, QSize, QLabel, QTimer, pyqtSignal)
+    from qt.core import (
+        Qt, QAbstractItemView, QApplication, QDialog, QDialogButtonBox, QHBoxLayout,
+        QLabel, QListWidget, QProgressBar, QProgressDialog, QPushButton, QSize,
+        QTextBrowser, QTextEdit, QTimer, QVBoxLayout, pyqtSignal,
+    )
 except ImportError:
-    from PyQt5.Qt import (Qt, QDialog, QDialogButtonBox, QVBoxLayout, QHBoxLayout, QPushButton,
-                        QListWidget, QProgressBar, QProgressDialog, QAbstractItemView,
-                        QTextEdit, QApplication, QTextBrowser, QSize, QLabel, QTimer, pyqtSignal)
+    from PyQt5.Qt import (
+        Qt, QAbstractItemView, QApplication, QDialog, QDialogButtonBox, QHBoxLayout,
+        QLabel, QListWidget, QProgressBar, QProgressDialog, QPushButton, QSize,
+        QTextBrowser, QTextEdit, QTimer, QVBoxLayout, pyqtSignal,
+    )
 
 from calibre.gui2 import error_dialog, gprefs, Application
 from calibre.gui2.keyboard import ShortcutConfig

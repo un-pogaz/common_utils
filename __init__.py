@@ -96,9 +96,13 @@ def debug_print(*args, **kw):
 # ----------------------------------------------
 
 try:
-    from qt.core import QIcon, QPixmap, QApplication
+    from qt.core import (
+        QApplication, QIcon, QPixmap,
+    )
 except ImportError:
-    from PyQt5.Qt import QIcon, QPixmap, QApplication
+    from PyQt5.Qt import (
+        QApplication, QIcon, QPixmap,
+    )
 
 # Global definition of our plugin resources. Used to share between the xxxAction and xxxBase
 # classes if you need any zip images to be displayed on the configuration dialog.
@@ -248,7 +252,7 @@ def current_db():
 def has_restart_pending(show_warning=True, msg_warning=None):
     restart_pending = GUI.must_restart_before_config
     if restart_pending and show_warning:
-        msg = msg_warning if msg_warning else _('You cannot configure this plugin before calibre is restarted.')
+        msg = msg_warning or _('You cannot configure this plugin before calibre is restarted.')
         if show_restart_warning(msg):
             GUI.quit(restart=True)
     return restart_pending
