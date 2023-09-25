@@ -113,11 +113,11 @@ def create_GitHub_release(api_repo_url ,api_token, plugin_name, tag_name, change
     data = {
         'tag_name': tag_name,
         'target_commitish': 'main',
-        'name': '{} {}'.format(plugin_name, tag_name),
+        'name': '{:s} {:s}'.format(plugin_name, tag_name),
         'body': changeBody,
         'draft': False,
         'prerelease': False,
-        'generate_release_notes': False
+        'generate_release_notes': False,
     }
     data = json.dumps(data)
     data = data.encode()
@@ -259,6 +259,6 @@ if __name__=="__main__":
 
     html_url, upload_url = create_GitHub_release(api_repo_url, api_token, plugin_name, tag_name, changeBody)
     upload_zip_to_release(api_token, upload_url, zip_file, tag_name)
-    print('Github release completed: {}'.format(html_url))
+    print('Github release completed:', html_url)
     
     build_MobileRead_post()

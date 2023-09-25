@@ -57,14 +57,14 @@ def read_plugin_name():
     zip_file_name = None
     with open(init_file, 'r') as file:
         content = file.read()
-        nameMatches = re.findall("\s+name\s*=\s*\'([^\']*)\'", content)
-        if nameMatches: 
-            zip_file_name = nameMatches[0]+'.zip'
+        name_matches = re.findall(r"\s+name\s*=\s*\'([^\']*)\'", content)
+        if name_matches: 
+            zip_file_name = name_matches[0]+'.zip'
         else:
             raise RuntimeError('Could not find plugin name in __init__.py')
-        version_matches = re.findall("\s+version\s*=\s*\(([^\)]*)\)", content)
+        version_matches = re.findall(r'\s+version\s*=\s*\(([^\)]*)\)', content)
         if version_matches: 
-            version = version_matches[0].replace(',','.').replace(' ','')
+            version = '.'.join(re.findall(r'\d+', version_matches[0]))
     
     print("Plugin v{} will be zipped to: '{}'".format(version, zip_file_name))
     return zip_file_name, version
