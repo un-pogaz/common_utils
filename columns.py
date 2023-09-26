@@ -17,7 +17,7 @@ try:
 except NameError:
     pass # load_translations() added in calibre 1.9
 
-from collections import OrderedDict
+from collections import defaultdict, OrderedDict
 from functools import partial
 
 try: #polyglot added in calibre 4.0

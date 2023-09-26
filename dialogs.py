@@ -12,7 +12,7 @@ __docformat__ = 'restructuredtext en'
 from six.moves import range
 from six import text_type as unicode
 
-from collections import OrderedDict
+from collections import defaultdict, OrderedDict
 from functools import partial
 
 try:
