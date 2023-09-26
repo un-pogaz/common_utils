@@ -1,5 +1,8 @@
 # Changelog - common_utils
 
+## 2023/09/26
+- rework custom_exception_dialog
+
 ## 2023/09/24
 - little improvement of debug_print
 - Add LibraryPrefsViewerDialogButton, improve LibraryPrefsViewerDialog (with result code)

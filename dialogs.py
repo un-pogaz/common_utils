@@ -215,7 +215,7 @@ class LibraryPrefsViewerDialog(SizePersistedDialog):
             try:
                 self.db.prefs.raw_to_object(v)
             except Exception as ex:
-                CustomExceptionErrorDialog(ex, custome_msg=_('The changes cannot be applied.'))
+                custom_exception_dialog(ex, additional_msg=_('The changes cannot be applied.'), show_detail=False)
                 return
         
         from calibre.gui2.dialogs.confirm_delete import confirm
@@ -439,11 +439,11 @@ class ViewLogDialog(QDialog):
         txt = self.tb.toPlainText()
         QApplication.clipboard().setText(txt)
 
-def CustomExceptionErrorDialog(exception, custome_title=None, custome_msg=None, show=True):
+def custom_exception_dialog(exception, additional_msg=None, title=None, show_detail=True):
     
     from polyglot.io import PolyglotStringIO
     import traceback
-    from calibre import as_unicode, prepare_string_for_xml
+    from calibre import prints, force_unicode, as_unicode, prepare_string_for_xml
     
     sio = PolyglotStringIO(errors='replace')
     try:
@@ -451,21 +451,26 @@ def CustomExceptionErrorDialog(exception, custome_title=None, custome_msg=None, 
         print_basic_debug_info(out=sio)
     except:
         pass
-    
-    try:
-        traceback.print_exception(type(exception), exception, exception.__traceback__, file=sio)
-    except:
-        traceback.print_exception(type(exception), exception, sys.exc_traceback, file=sio)
-        pass
-    
+    traceback.print_exception(exception.__class__, exception, exception.__traceback__, file=sio)
+    if getattr(exception, 'locking_debug_msg', None):
+        prints(exception.locking_debug_msg, file=sio)
     fe = sio.getvalue()
-    
-    if not custome_title:
-        custome_title = _('Unhandled exception')
+    prints(fe, file=sys.stderr)
+    fe = force_unicode(fe)
+    try:
+        if getattr(GUI, 'show_possible_sharing_violation', lambda *a: None)(exception, det_msg=fe):
+            return
+    except Exception:
+        traceback.print_exc()
     
     msg = []
     msg.append('<span>' + prepare_string_for_xml(as_unicode(_('The {:s} plugin has encounter a unhandled exception.').format(PLUGIN_NAME))))
-    if custome_msg: msg.append(custome_msg)
+    if additional_msg: msg.append(additional_msg)
     msg.append('<b>{:s}</b>: '.format(exception.__class__.__name__) + prepare_string_for_xml(as_unicode(str(exception))))
     
-    return error_dialog(GUI, custome_title, '\n'.join(msg).replace('\n', '<br>'), det_msg=fe, show=show, show_copy_button=True)
+    if show_detail:
+        det_msg=fe
+    else:
+        det_msg=None
+    
+    error_dialog(GUI, title or _('Unhandled exception'), '\n'.join(msg).replace('\n', '<br>'), det_msg=det_msg, show=True, show_copy_button=bool(det_msg))
