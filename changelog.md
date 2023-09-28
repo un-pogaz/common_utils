@@ -3,7 +3,9 @@
 ## 2023/09/28
 - Add PLUGIN_CLASSE
 - remove load_plugin_resources(), Add ZipResources and PluginResources
-  - PLUGIN_RESOURCES will now auto load any requested items
+    - PLUGIN_RESOURCES will now auto load any requested items
+- Drop Calibre 2 and 3 comatibility, only 4 and above
+    - !! Remove SizePersistedDialog !!
 
 ## 2023/09/26
 - rework custom_exception_dialog()

@@ -11,6 +11,7 @@ __docformat__ = 'restructuredtext en'
 # python3 compatibility
 from six.moves import range
 from six import text_type as unicode
+from polyglot.builtins import iteritems, itervalues
 
 try:
     load_translations()
@@ -20,14 +21,6 @@ except NameError:
 from collections import defaultdict, OrderedDict
 from functools import partial
 
-try: #polyglot added in calibre 4.0
-    from polyglot.builtins import iteritems, itervalues
-except ImportError:
-    def iteritems(d):
-        return d.iteritems()
-    def itervalues(d):
-        return d.itervalues()
-
 import os, sys, copy, time
 
 from calibre import prints
@@ -35,6 +28,7 @@ from calibre.constants import DEBUG, iswindows, numeric_version as calibre_versi
 from calibre.customize.ui import find_plugin
 from calibre.gui2 import show_restart_warning
 from calibre.gui2.ui import get_gui
+from calibre.gui2.widgets2 import Dialog
 from calibre.utils.config import config_dir, JSONConfig, DynamicConfig
 
 GUI = get_gui()

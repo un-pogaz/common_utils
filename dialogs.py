@@ -11,22 +11,15 @@ __docformat__ = 'restructuredtext en'
 # python3 compatibility
 from six.moves import range
 from six import text_type as unicode
-
-from collections import defaultdict, OrderedDict
-from functools import partial
+from polyglot.builtins import iteritems, itervalues
 
 try:
     load_translations()
 except NameError:
     pass # load_translations() added in calibre 1.9
 
-try: #polyglot added in calibre 4.0
-    from polyglot.builtins import iteritems, itervalues
-except ImportError:
-    def iteritems(d):
-        return d.iteritems()
-    def itervalues(d):
-        return d.itervalues()
+from collections import defaultdict, OrderedDict
+from functools import partial
 
 import sys, time
 
@@ -43,87 +36,40 @@ except ImportError:
         QTextBrowser, QTextEdit, QTimer, QVBoxLayout, pyqtSignal,
     )
 
-from calibre.gui2 import error_dialog, gprefs, Application
+from calibre.gui2 import error_dialog, Application
 from calibre.gui2.keyboard import ShortcutConfig
+from calibre.gui2.widgets2 import Dialog
 
 from . import GUI, PLUGIN_NAME, PREFS_NAMESPACE, debug_print, get_icon
 
 
-class SizePersistedDialog(QDialog):
-    """
-    This dialog is a base class for any dialogs that want their size/position
-    restored when they are next opened.
-    """
-    def __init__(self, parent, unique_pref_name):
-        QDialog.__init__(self, parent)
-        self.unique_pref_name = PLUGIN_NAME+':'+ unique_pref_name
-        self.geom = gprefs.get(unique_pref_name, None)
-        self.finished.connect(self.dialog_closing)
-    
-    def resize_dialog(self):
-        if self.geom is None:
-            self.resize(self.sizeHint())
-        else:
-            self.restoreGeometry(self.geom)
-    
-    def dialog_closing(self, result):
-        geom = bytearray(self.saveGeometry())
-        gprefs[self.unique_pref_name] = geom
-        self.persist_custom_prefs()
-    
-    def persist_custom_prefs(self):
-        """
-        Invoked when the dialog is closing. Override this function to call
-        save_custom_pref() if you have a setting you want persisted that you can
-        retrieve in your __init__() using load_custom_pref() when next opened
-        """
-        pass
-    
-    def load_custom_pref(self, name, default=None):
-        return gprefs.get(self.unique_pref_name+':'+name, default)
-    
-    def save_custom_pref(self, name, value):
-        gprefs[self.unique_pref_name+':'+name] = value
-    
-    def help_link_activated(self, url):
-        if self.plugin_action is not None:
-            self.plugin_action.show_help(anchor=self.help_anchor)
-
-class KeyboardConfigDialog(SizePersistedDialog):
+class KeyboardConfigDialog(Dialog):
     """
     This dialog is used to allow editing of keyboard shortcuts.
     """
-    def __init__(self, gui, group_name):
-        SizePersistedDialog.__init__(self, gui, 'Keyboard shortcut dialog')
-        self.gui = gui
-        self.setWindowTitle(_('Keyboard shortcuts'))
+    def __init__(self, group_name, parent=None):
+        self.group_name = group_name
+        Dialog.__init__(self, _('Keyboard shortcuts'), 'plugin_keyboard_shortcut_dialog', parent=parent or GUI)
+    
+    def setup_ui(self):
         layout = QVBoxLayout(self)
         self.setLayout(layout)
         
         self.keyboard_widget = ShortcutConfig(self)
         layout.addWidget(self.keyboard_widget)
-        self.group_name = group_name
         
-        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        button_box.accepted.connect(self.commit)
-        button_box.rejected.connect(self.reject)
-        layout.addWidget(button_box)
-        
-        # Cause our dialog size to be restored from prefs or created on first usage
-        self.resize_dialog()
-        self.initialize()
-    
-    def initialize(self):
-        self.keyboard_widget.initialize(self.gui.keyboard)
+        self.keyboard_widget.initialize(GUI.keyboard)
         self.keyboard_widget.highlight_group(self.group_name)
+        
+        layout.addWidget(self.bb)
     
-    def commit(self):
+    def accept(self):
         self.keyboard_widget.commit()
-        self.accept()
+        Dialog.accept(self)
 
 def edit_keyboard_shortcuts(plugin_action):
     getattr(plugin_action, 'rebuild_menus', ())()
-    d = KeyboardConfigDialog(GUI, plugin_action.action_spec[0])
+    d = KeyboardConfigDialog(plugin_action.action_spec[0])
     if d.exec_() == d.Accepted:
         GUI.keyboard.finalize()
 
@@ -139,25 +85,15 @@ class KeyboardConfigDialogButton(QPushButton):
         edit_keyboard_shortcuts(plugin_action)
 
 
-class LibraryPrefsViewerDialog(SizePersistedDialog):
-    def __init__(self, gui, namespace):
-        SizePersistedDialog.__init__(self, gui, 'Prefs Viewer dialog')
-        self.setWindowTitle(_('Preferences for:')+' '+namespace)
-        
-        self.gui = gui
+class LibraryPrefsViewerDialog(Dialog):
+    def __init__(self, namespace, parent=None):
         self.db = GUI.current_db
         self.namespace = namespace
         self.prefs = {}
         self.current_key = None
-        self._init_controls()
-        self.resize_dialog()
-        
-        self._populate_settings()
-        
-        if self.keys_list.count():
-            self.keys_list.setCurrentRow(0)
+        Dialog.__init__(self, _('Preferences for:')+' '+namespace, 'library_prefs_viewer_dialog', parent=parent or GUI)
     
-    def _init_controls(self):
+    def setup_ui(self):
         layout = QVBoxLayout(self)
         self.setLayout(layout)
         
@@ -173,14 +109,16 @@ class LibraryPrefsViewerDialog(SizePersistedDialog):
         self.value_text.setReadOnly(False)
         ml.addWidget(self.value_text, 1)
         
-        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        button_box.accepted.connect(self._apply_changes)
-        button_box.rejected.connect(self.reject)
-        self.clear_button = button_box.addButton(_('Clear'), QDialogButtonBox.ResetRole)
+        self.clear_button = self.bb.addButton(_('Clear'), QDialogButtonBox.ResetRole)
         self.clear_button.setIcon(get_icon('trash.png'))
         self.clear_button.setToolTip(_('Clear all settings for this plugin'))
         self.clear_button.clicked.connect(self._clear_settings)
-        layout.addWidget(button_box)
+        layout.addWidget(self.bb)
+        
+        self._populate_settings()
+        
+        if self.keys_list.count():
+            self.keys_list.setCurrentRow(0)
     
     def _populate_settings(self):
         self.prefs.clear()
@@ -209,7 +147,7 @@ class LibraryPrefsViewerDialog(SizePersistedDialog):
         self.current_key = unicode(self.keys_list.currentItem().text())
         self.value_text.setPlainText(self.prefs[self.current_key])
     
-    def _apply_changes(self):
+    def accept(self):
         self._save_current_row()
         for k,v in iteritems(self.prefs):
             try:
@@ -227,7 +165,7 @@ class LibraryPrefsViewerDialog(SizePersistedDialog):
         
         for k,v in iteritems(self.prefs):
             self.db.prefs.set_namespaced(self.namespace, k, self.db.prefs.raw_to_object(v))
-        self.accept()
+        Dialog.accept(self)
     
     def _clear_settings(self):
         from calibre.gui2.dialogs.confirm_delete import confirm
@@ -241,7 +179,7 @@ class LibraryPrefsViewerDialog(SizePersistedDialog):
             self.prefs[k] = '{}'
             self.db.prefs.set_namespaced(self.namespace, k, self.db.prefs.raw_to_object('{}'))
         self._populate_settings()
-        self.accept()
+        Dialog.accept(self)
 
 def view_library_prefs(prefs_namespace=PREFS_NAMESPACE):
     d = LibraryPrefsViewerDialog(GUI, prefs_namespace)
@@ -405,9 +343,13 @@ class ProgressDialog(QProgressDialog):
     def job_progress(self):
         raise NotImplementedError()
 
-class ViewLogDialog(QDialog):
+class ViewLogDialog(Dialog):
     def __init__(self, title, html, parent=None):
-        QDialog.__init__(self, parent)
+        self.src_html = html or ''
+        Dialog.__init__(self, title, 'log_viewer_dialog', parent=parent or GUI)
+    
+    def setup_ui(self):
+        self.setWindowIcon(get_icon('debug.png'))
         self.l = l = QVBoxLayout()
         self.setLayout(l)
         
@@ -415,24 +357,19 @@ class ViewLogDialog(QDialog):
         QApplication.setOverrideCursor(Qt.WaitCursor)
         # Rather than formatting the text in <pre> blocks like the calibre
         # ViewLog does, instead just format it inside divs to keep style formatting
-        html = html.replace('\t','&nbsp;&nbsp;&nbsp;&nbsp;').replace('\n', '<br/>')
+        html = self.src_html.replace('\t','&nbsp;&nbsp;&nbsp;&nbsp;').replace('\n', '<br/>')
         html = html.replace('> ','>&nbsp;')
         self.tb.setHtml('<div>{:s}</div>'.format(html))
         QApplication.restoreOverrideCursor()
         l.addWidget(self.tb)
         
-        self.bb = QDialogButtonBox(QDialogButtonBox.Ok)
-        self.bb.accepted.connect(self.accept)
-        self.bb.rejected.connect(self.reject)
-        self.copy_button = self.bb.addButton(_('Copy to clipboard'),
-                self.bb.ActionRole)
+        self.copy_button = self.bb.addButton(_('Copy to clipboard'), self.bb.ActionRole)
         self.copy_button.setIcon(get_icon('edit-copy.png'))
         self.copy_button.clicked.connect(self.copy_to_clipboard)
         l.addWidget(self.bb)
+        
         self.setModal(False)
         self.resize(QSize(700, 500))
-        self.setWindowTitle(title)
-        self.setWindowIcon(get_icon('debug.png'))
         self.show()
     
     def copy_to_clipboard(self):
@@ -474,3 +411,4 @@ def custom_exception_dialog(exception, additional_msg=None, title=None, parent=N
         det_msg=None
     
     error_dialog(parent or GUI, title or _('Unhandled exception'), '\n'.join(msg).replace('\n', '<br>'), det_msg=det_msg, show=True, show_copy_button=bool(det_msg))
+

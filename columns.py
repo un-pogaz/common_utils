@@ -11,6 +11,7 @@ __docformat__ = 'restructuredtext en'
 # python3 compatibility
 from six.moves import range
 from six import text_type as unicode
+from polyglot.builtins import iteritems, itervalues
 
 try:
     load_translations()
@@ -19,14 +20,6 @@ except NameError:
 
 from collections import defaultdict, OrderedDict
 from functools import partial
-
-try: #polyglot added in calibre 4.0
-    from polyglot.builtins import iteritems, itervalues
-except ImportError:
-    def iteritems(d):
-        return d.iteritems()
-    def itervalues(d):
-        return d.itervalues()
 
 import os, sys, copy, re
 

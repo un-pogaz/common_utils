@@ -11,22 +11,15 @@ __docformat__ = 'restructuredtext en'
 # python3 compatibility
 from six.moves import range
 from six import text_type as unicode
-
-from collections import defaultdict, OrderedDict
-from functools import partial
+from polyglot.builtins import iteritems, itervalues
 
 try:
     load_translations()
 except NameError:
     pass # load_translations() added in calibre 1.9
 
-try: #polyglot added in calibre 4.0
-    from polyglot.builtins import iteritems, itervalues
-except ImportError:
-    def iteritems(d):
-        return d.iteritems()
-    def itervalues(d):
-        return d.itervalues()
+from collections import defaultdict, OrderedDict
+from functools import partial
 
 from calibre.gui2.actions import menu_action_unique_name
 
