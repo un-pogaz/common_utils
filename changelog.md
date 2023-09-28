@@ -6,6 +6,7 @@
     - PLUGIN_RESOURCES will now auto load any requested items
 - Drop Calibre 2 and 3 comatibility, only 4 and above
     - !! Remove SizePersistedDialog !!
+- Add ImageDialog, rework ImageComboBox
 
 ## 2023/09/26
 - rework custom_exception_dialog()

@@ -23,20 +23,20 @@ from functools import partial
 
 try:
     from qt.core import (
-        Qt, QComboBox, QDateTime, QFont, QFont, QHBoxLayout, QLabel, QLineEdit,
-        QStyledItemDelegate, QTableWidgetItem,
+        Qt, QComboBox, QDateTime, QDialog, QFont, QFont, QHBoxLayout, QLabel, QLineEdit,
+        QStyledItemDelegate, QTableWidgetItem, pyqtSignal,
     )
 except ImportError:
     from PyQt5.Qt import (
-        Qt, QComboBox, QDateTime, QFont, QFont, QHBoxLayout, QLabel, QLineEdit,
-        QStyledItemDelegate, QTableWidgetItem,
+        Qt, QComboBox, QDateTime, QDialog, QFont, QFont, QHBoxLayout, QLabel, QLineEdit,
+        QStyledItemDelegate, QTableWidgetItem, pyqtSignal,
     )
 
 from calibre.gui2 import error_dialog, UNDEFINED_QDATETIME
 from calibre.utils.date import now, format_date, UNDEFINED_DATE
 from calibre.gui2.library.delegates import DateDelegate as _DateDelegate
 
-from . import debug_print, get_pixmap, get_date_format
+from . import debug_print, get_icon, get_pixmap, get_date_format
 
 
 # ----------------------------------------------
@@ -229,17 +229,58 @@ class NoWheelComboBox(QComboBox):
         event.ignore()
 
 class ImageComboBox(NoWheelComboBox):
-    def __init__(self, parent, image_map, selected_text):
-        NoWheelComboBox.__init__(self, parent)
-        self.populate_combo(image_map, selected_text)
     
-    def populate_combo(self, image_map, selected_text):
+    COMBO_IMAGE_ADD = _('Add New Image...')
+    
+    new_image_added = pyqtSignal(str)
+    
+    def __init__(self, image_map, selected_image_name=None):
+        NoWheelComboBox.__init__(self)
+        self.populate_combo(image_map, selected_image_name=selected_image_name)
+        self.currentIndexChanged.connect(self.index_changed)
+    
+    def populate_combo(self, image_map, selected_image_name=None):
         self.clear()
-        for i, image in enumerate(get_image_names(image_map), 0):
+        self.image_map = image_map or {}
+        
+        image_names = sorted(image_map.keys())
+        # Add a blank item at the beginning of the list, and a blank then special 'Add" item at end
+        image_names.insert(0, '')
+        image_names.append('')
+        image_names.append(ImageComboBox.COMBO_IMAGE_ADD)
+        
+        for i, image in enumerate(image_names, 0):
             self.insertItem(i, image_map.get(image, image), image)
-        idx = self.findText(selected_text)
+        idx = self.findText(selected_image_name or '')
         self.setCurrentIndex(idx)
         self.setItemData(0, idx)
+    
+    def index_changed(self, idx):
+        if self.currentText() == ImageComboBox.COMBO_IMAGE_ADD:
+            self.blockSignals(True)
+            # Special item in the combo for choosing a new image to add to Calibre
+            from .dialogs import ImageDialog
+            add_image_dialog = ImageDialog(image_names=self.image_map.keys())
+            add_image_dialog.exec_()
+            
+            if add_image_dialog.result() == QDialog.Rejected:
+                # User cancelled the add operation or an error - set to previous idx value
+                idx = self.itemData(0)
+            else:
+                self.image_map[add_image_dialog.image_name] = get_icon(add_image_dialog.image_name)
+                self.populate_combo(self.image_map, self.currentText())
+                # Select the newly added item
+                idx = self.findText(add_image_dialog.image_name)
+            self.setCurrentIndex(idx)
+            self.blockSignals(False)
+            
+            if add_image_dialog.result() == QDialog.Accepted:
+                # Now, emit the event than user has added a new image so we need to repopulate every combo with new sorted list
+                self.new_image_added.emit(add_image_dialog.image_name)
+            
+        # Store the current index as item data in index 0 in case user cancels dialog in future
+        self.setItemData(0, self.currentIndex())
+
 
 class ListComboBox(QComboBox):
     def __init__(self, parent, values, selected_value=None):

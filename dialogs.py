@@ -21,26 +21,26 @@ except NameError:
 from collections import defaultdict, OrderedDict
 from functools import partial
 
-import sys, time
+import sys, time, os, shutil
 
 try:
     from qt.core import (
-        Qt, QAbstractItemView, QApplication, QDialog, QDialogButtonBox, QHBoxLayout,
-        QLabel, QListWidget, QProgressBar, QProgressDialog, QPushButton, QSize,
+        Qt, QAbstractItemView, QApplication, QDialog, QDialogButtonBox, QGridLayout, QGroupBox, QHBoxLayout,
+        QLabel, QLineEdit, QListWidget, QProgressBar, QProgressDialog, QPushButton, QRadioButton, QSize,
         QTextBrowser, QTextEdit, QTimer, QVBoxLayout, pyqtSignal,
     )
 except ImportError:
     from PyQt5.Qt import (
-        Qt, QAbstractItemView, QApplication, QDialog, QDialogButtonBox, QHBoxLayout,
-        QLabel, QListWidget, QProgressBar, QProgressDialog, QPushButton, QSize,
+        Qt, QAbstractItemView, QApplication, QDialog, QDialogButtonBox, QGridLayout, QGroupBox, QHBoxLayout,
+        QLabel, QLineEdit, QListWidget, QProgressBar, QProgressDialog, QPushButton, QRadioButton, QSize,
         QTextBrowser, QTextEdit, QTimer, QVBoxLayout, pyqtSignal,
     )
 
-from calibre.gui2 import error_dialog, Application
+from calibre.gui2 import error_dialog, question_dialog, choose_files
 from calibre.gui2.keyboard import ShortcutConfig
 from calibre.gui2.widgets2 import Dialog
 
-from . import GUI, PLUGIN_NAME, PREFS_NAMESPACE, debug_print, get_icon
+from . import GUI, PLUGIN_NAME, PREFS_NAMESPACE, debug_print, get_icon, get_local_resource
 
 
 class KeyboardConfigDialog(Dialog):
@@ -203,6 +203,8 @@ class LibraryPrefsViewerDialogButton(QPushButton):
 class ProgressBarDialog(QDialog):
     def __init__(self, parent=None, max_items=100, window_title='Progress Bar',
                  label='Label goes here', on_top=False):
+        from calibre.gui2 import Application
+        
         if on_top:
             ProgressBarDialog.__init__(self, parent=parent, flags=Qt.WindowStaysOnTopHint)
         else:
@@ -376,6 +378,112 @@ class ViewLogDialog(Dialog):
         txt = self.tb.toPlainText()
         QApplication.clipboard().setText(txt)
 
+
+class ImageDialog(QDialog):
+    def __init__(self, existing_images=[], resources_dir=None, parent=None):
+        QDialog.__init__(self, parent or GUI)
+        
+        self.resources_dir = resources_dir or get_local_resource.IMAGES
+        self.existing_images = existing_images or []
+        self.setWindowTitle(_('Add New Image'))
+        v = QVBoxLayout(self)
+        
+        group_box = QGroupBox(_('&Select image source'), self)
+        v.addWidget(group_box)
+        grid = QGridLayout()
+        self._radio_web = QRadioButton(_('From &web domain favicon'), self)
+        self._radio_web.setChecked(True)
+        self._web_domain_edit = QLineEdit(self)
+        self._radio_web.setFocusProxy(self._web_domain_edit)
+        grid.addWidget(self._radio_web, 0, 0)
+        grid.addWidget(self._web_domain_edit, 0, 1)
+        grid.addWidget(QLabel('e.g. www.amazon.com'), 0, 2)
+        self._radio_file = QRadioButton(_('From .png &file'), self)
+        self._input_file_edit = QLineEdit(self)
+        self._input_file_edit.setMinimumSize(200, 0)
+        self._radio_file.setFocusProxy(self._input_file_edit)
+        pick_button = QPushButton('...', self)
+        pick_button.setMaximumSize(24, 20)
+        pick_button.clicked.connect(self.pick_file_to_import)
+        grid.addWidget(self._radio_file, 1, 0)
+        grid.addWidget(self._input_file_edit, 1, 1)
+        grid.addWidget(pick_button, 1, 2)
+        group_box.setLayout(grid)
+        
+        save_layout = QHBoxLayout()
+        lbl_filename = QLabel(_('&Save as filename:'), self)
+        lbl_filename.setMinimumSize(155, 0)
+        self._save_as_edit = QLineEdit('', self)
+        self._save_as_edit.setMinimumSize(200, 0)
+        lbl_filename.setBuddy(self._save_as_edit)
+        lbl_ext = QLabel('.png', self)
+        save_layout.addWidget(lbl_filename, 0, Qt.AlignLeft)
+        save_layout.addWidget(self._save_as_edit, 0, Qt.AlignLeft)
+        save_layout.addWidget(lbl_ext, 1, Qt.AlignLeft)
+        v.addLayout(save_layout)
+        
+        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        button_box.accepted.connect(self.ok_clicked)
+        button_box.rejected.connect(self.reject)
+        v.addWidget(button_box)
+        self.resize(self.sizeHint())
+        self._web_domain_edit.setFocus()
+        self.new_image_name = None
+    
+    @property
+    def image_name(self):
+        return self.new_image_name
+    
+    def pick_file_to_import(self):
+        images = choose_files(None, _('menu icon dialog'), _('Select a .png file for the menu icon'),
+                             filters=[('PNG Image Files', ['png'])], all_files=False, select_only_single_file=True)
+        if not images:
+            return
+        f = images[0]
+        if not f.lower().endswith('.png'):
+            return error_dialog(self, _('Cannot import image'), _('Source image must be a .png file.'), show=True)
+        self._input_file_edit.setText(f)
+        self._save_as_edit.setText(os.path.splitext(os.path.basename(f))[0])
+        self._radio_file.click()
+    
+    def ok_clicked(self):
+        # Validate all the inputs
+        save_name = unicode(self._save_as_edit.text()).strip()
+        if not save_name:
+            return error_dialog(self, _('Cannot import image'), _('You must specify a filename to save as.'), show=True)
+        self.new_image_name = os.path.splitext(save_name)[0] + '.png'
+        if save_name.find('\\') > -1 or save_name.find('/') > -1:
+            return error_dialog(self, _('Cannot import image'), _('The save as filename should consist of a filename only.'), show=True)
+        if not os.path.exists(self.resources_dir):
+            os.makedirs(self.resources_dir)
+        dest_path = os.path.join(self.resources_dir, self.new_image_name)
+        if save_name in self.existing_images or os.path.exists(dest_path):
+            if not question_dialog(self, _('Are you sure?'), _('An image with this name already exists - overwrite it?'), show_copy_button=False):
+                return
+        
+        if self._radio_web.isChecked():
+            try:
+                from urllib.request import urlretrieve
+            except ImportError:
+                from urllib import urlretrieve
+            domain = unicode(self._web_domain_edit.text()).strip()
+            if not domain:
+                return error_dialog(self, _('Cannot import image'), _('You must specify a web domain url'), show=True)
+            url = 'http://www.google.com/s2/favicons?domain=' + domain
+            urlretrieve(url, dest_path)
+            return self.accept()
+        else:
+            source_file_path = unicode(self._input_file_edit.text()).strip()
+            if not source_file_path:
+                return error_dialog(self, _('Cannot import image'), _('You must specify a source file.'), show=True)
+            if not source_file_path.lower().endswith('.png'):
+                return error_dialog(self, _('Cannot import image'), _('Source image must be a .png file.'), show=True)
+            if not os.path.exists(source_file_path):
+                return error_dialog(self, _('Cannot import image'), _('Source image does not exist!'), show=True)
+            shutil.copyfile(source_file_path, dest_path)
+            return self.accept()
+
+
 def custom_exception_dialog(exception, additional_msg=None, title=None, parent=None, show_detail=True):
     
     from polyglot.io import PolyglotStringIO
@@ -411,4 +519,3 @@ def custom_exception_dialog(exception, additional_msg=None, title=None, parent=N
         det_msg=None
     
     error_dialog(parent or GUI, title or _('Unhandled exception'), '\n'.join(msg).replace('\n', '<br>'), det_msg=det_msg, show=True, show_copy_button=bool(det_msg))
-

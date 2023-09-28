@@ -28,7 +28,6 @@ from calibre.constants import DEBUG, iswindows, numeric_version as calibre_versi
 from calibre.customize.ui import find_plugin
 from calibre.gui2 import show_restart_warning
 from calibre.gui2.ui import get_gui
-from calibre.gui2.widgets2 import Dialog
 from calibre.utils.config import config_dir, JSONConfig, DynamicConfig
 
 GUI = get_gui()
@@ -246,7 +245,8 @@ def get_local_resource(*subfolder):
     
     if iswindows:
         rslt = os.path.normpath(rslt)
-    return rslt
+    return rslt.replace('\\', '/')
+get_local_resource.IMAGES = get_local_resource('images')+'/'
 
 # ----------------------------------------------
 #               Functions
@@ -261,6 +261,20 @@ def get_date_format(tweak_name='gui_timestamp_display_format', default_fmt='dd M
 
 def truncate_title(title, length=75):
     return (title[:length] + '…') if len(title) > length else title
+
+def get_image_map(resources_dir='images'):
+    rslt = {}
+    resources_dir = get_local_resource(resources_dir)
+    
+    if os.path.exists(resources_dir):
+        # Get the names of any .png images in this directory
+        for f in sorted(os.listdir(resources_dir)):
+            if f.lower().endswith('.png'):
+                name = os.path.basename(f)
+                rslt[name] = get_icon(name)
+    
+    return rslt
+
 
 # ----------------------------------------------
 #               Ohters
