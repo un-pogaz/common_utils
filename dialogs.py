@@ -439,7 +439,7 @@ class ViewLogDialog(QDialog):
         txt = self.tb.toPlainText()
         QApplication.clipboard().setText(txt)
 
-def custom_exception_dialog(exception, additional_msg=None, title=None, show_detail=True):
+def custom_exception_dialog(exception, additional_msg=None, title=None, parent=None, show_detail=True):
     
     from polyglot.io import PolyglotStringIO
     import traceback
@@ -466,11 +466,11 @@ def custom_exception_dialog(exception, additional_msg=None, title=None, show_det
     msg = []
     msg.append('<span>' + prepare_string_for_xml(as_unicode(_('The {:s} plugin has encounter a unhandled exception.').format(PLUGIN_NAME))))
     if additional_msg: msg.append(additional_msg)
-    msg.append('<b>{:s}</b>: '.format(exception.__class__.__name__) + prepare_string_for_xml(as_unicode(str(exception))))
+    if exception: msg.append('<b>{:s}</b>: '.format(exception.__class__.__name__) + prepare_string_for_xml(as_unicode(str(exception))))
     
     if show_detail:
         det_msg=fe
     else:
         det_msg=None
     
-    error_dialog(GUI, title or _('Unhandled exception'), '\n'.join(msg).replace('\n', '<br>'), det_msg=det_msg, show=True, show_copy_button=bool(det_msg))
+    error_dialog(parent or GUI, title or _('Unhandled exception'), '\n'.join(msg).replace('\n', '<br>'), det_msg=det_msg, show=True, show_copy_button=bool(det_msg))
