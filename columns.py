@@ -494,7 +494,7 @@ class ColumnMetadata():
     def __repr__(self):
         #<calibre_plugins. __module__ .common_utils.ColumnMetadata instance at 0x1148C4B8>
         #''.join(['<', str(self.__class__), ' instance at ', hex(id(self)),'>'])
-        return ''.join(['<',self.name.__repr__(),' {type=', self.type,'}>'])
+        return ''.join(['<',repr(self.name),' {type=', self.type,'}>'])
     
     """
         name: the key to the dictionary is:

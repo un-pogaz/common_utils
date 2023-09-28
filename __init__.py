@@ -40,20 +40,20 @@ from calibre.utils.config import config_dir, JSONConfig, DynamicConfig
 GUI = get_gui()
 
 
-_PLUGIN = None
+PLUGIN_CLASSE = None
 def get_plugin_attribut(name, default=None):
     """Retrieve a attribut on the main plugin class"""
-    global _PLUGIN
-    if not _PLUGIN:
+    global PLUGIN_CLASSE
+    if not PLUGIN_CLASSE:
         import importlib
         from calibre.customize import Plugin
         #Yes, it's very long for a one line. It's seems crazy, but it's fun and it works
         plugin_classes = [ obj for obj in itervalues(importlib.import_module('.'.join(__name__.split('.')[:-1])).__dict__) if isinstance(obj, type) and issubclass(obj, Plugin) and obj.name != 'Trivial Plugin' ]
         
         plugin_classes.sort(key=lambda c:(getattr(c, '__module__', None) or '').count('.'))
-        _PLUGIN = plugin_classes[0]
+        PLUGIN_CLASSE = plugin_classes[0]
     
-    return getattr(_PLUGIN, name, default)
+    return getattr(PLUGIN_CLASSE, name, default)
 
 ROOT = __name__.split('.')[-2]
 
@@ -104,9 +104,59 @@ except ImportError:
         QApplication, QIcon, QPixmap,
     )
 
+class ZipResources(dict):
+    def __init__(self, zip_path, preload_keys=[]):
+        dict.__init__(self)
+        self.zip_path = zip_path
+        self.load_many(preload_keys)
+    
+    def __getitem__(self, __key):
+        if __key in self:
+            return dict.__getitem__(self, __key)
+        else:
+            return self.load_many([__key])[__key]
+    
+    def __str__(self):
+        return self.__class__.__name__+'('+ repr(self.zip_path)+', '+str(list(self.keys()))+')'
+    
+    def __repr__(self):
+        return self.__class__.__name__+'(zip_path='+ repr(self.zip_path)+', '+repr(list(self.keys()))+')'
+    
+    def load(self, name):
+        return self.load_many([name]).get(name, None)
+    def load_many(self, names):
+        names = names or []
+        rslt = {}
+        from calibre.utils.zipfile import ZipFile
+        with ZipFile(self.zip_path, 'r') as zf:
+            for entry in zf.namelist():
+                if entry in names:
+                    data = zf.read(entry)
+                    self.__setitem__(entry, data)
+                    rslt[entry] = data
+        return rslt
+
+class PluginResources(ZipResources):
+    def __init__(self, preload_keys=[]):
+        from calibre.utils.zipfile import ZipFile
+        ZipResources.__init__(self, PLUGIN_INSTANCE.plugin_path)
+        
+        with ZipFile(self.zip_path, 'r') as zf:
+            for entry in zf.namelist():
+                if entry.startswith('images/') and os.path.splitext(entry)[1].lower() == '.png' or entry in preload_keys:
+                    data = zf.read(entry)
+                    self.__setitem__(entry, data)
+    
+    def __str__(self):
+        return self.__class__.__name__+'('+str(list(self.keys()))+')'
+    
+    def __repr__(self):
+        return self.__class__.__name__+'('+repr(list(self.keys()))+')'
+
 # Global definition of our plugin resources. Used to share between the xxxAction and xxxBase
 # classes if you need any zip images to be displayed on the configuration dialog.
-PLUGIN_RESOURCES = {}
+PLUGIN_RESOURCES = PluginResources()
+
 
 THEME_COLOR = ['', 'dark', 'light']
 
@@ -122,28 +172,6 @@ def get_icon_themed(icon_name, theme_color=None):
     path, ext = os.path.splitext(icon_name)
     return (path+('' if not theme_color else '-'+ theme_color)+ext).replace('//', '/')
 
-def load_plugin_resources(plugin_path, names=[]):
-    """
-    Load all images in the plugin and the additional specified name.
-    Set our global store of plugin name and icon resources for sharing between
-    the InterfaceAction class which reads them and the ConfigWidget
-    if needed for use on the customization dialog for this plugin.
-    """
-    from calibre.utils.zipfile import ZipFile
-    
-    global PLUGIN_RESOURCES
-    
-    if plugin_path is None:
-        raise ValueError('This plugin was not loaded from a ZIP file')
-    
-    names = names or []
-    ans = {}
-    with ZipFile(plugin_path, 'r') as zf:
-        for entry in zf.namelist():
-            if entry in names or (entry.startswith('images/') and os.path.splitext(entry)[1].lower() == '.png' and entry not in PLUGIN_RESOURCES):
-                ans[entry] = zf.read(entry)
-    
-    PLUGIN_RESOURCES.update(ans)
 
 def get_icon(icon_name):
     """

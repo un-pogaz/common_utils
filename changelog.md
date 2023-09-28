@@ -1,5 +1,10 @@
 # Changelog - common_utils
 
+## 2023/09/28
+- Add PLUGIN_CLASSE
+- remove load_plugin_resources(), Add ZipResources and PluginResources
+  - PLUGIN_RESOURCES will now auto load any requested items
+
 ## 2023/09/26
 - rework custom_exception_dialog
 
