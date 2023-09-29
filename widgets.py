@@ -23,20 +23,22 @@ from functools import partial
 
 try:
     from qt.core import (
-        Qt, QComboBox, QDateTime, QDialog, QFont, QFont, QHBoxLayout, QLabel, QLineEdit,
-        QStyledItemDelegate, QTableWidgetItem, pyqtSignal,
+        Qt, QAbstractItemView, QComboBox, QDateTime, QFont, QFont, QHBoxLayout, QLabel, QLineEdit,
+        QStyledItemDelegate, QSize, QTableWidgetItem, QTreeWidget, QTreeWidgetItem, pyqtSignal,
     )
 except ImportError:
     from PyQt5.Qt import (
-        Qt, QComboBox, QDateTime, QDialog, QFont, QFont, QHBoxLayout, QLabel, QLineEdit,
-        QStyledItemDelegate, QTableWidgetItem, pyqtSignal,
+        Qt, QAbstractItemView, QComboBox, QDateTime, QFont, QFont, QHBoxLayout, QLabel, QLineEdit,
+        QStyledItemDelegate, QSize, QTableWidgetItem, QTreeWidget, QTreeWidgetItem, pyqtSignal,
     )
 
 from calibre.gui2 import error_dialog, UNDEFINED_QDATETIME
 from calibre.utils.date import now, format_date, UNDEFINED_DATE
 from calibre.gui2.library.delegates import DateDelegate as _DateDelegate
+from calibre.ebooks.metadata import rating_to_stars
 
-from . import debug_print, get_icon, get_pixmap, get_date_format
+from . import debug_print, get_icon, get_pixmap, get_date_format, GUI
+from .librarys import get_category_icons_map, get_tags_browsable_fields
 
 
 # ----------------------------------------------
@@ -207,6 +209,241 @@ class ReadOnlyTextIconWidgetItem(ReadOnlyTableWidgetItem):
     def __init__(self, text, icon):
         ReadOnlyTableWidgetItem.__init__(self, text)
         if icon: self.setIcon(icon)
+
+
+class FieldsValueTreeWidget(QTreeWidget):
+    def __init__(self, book_ids=[], parent=None):
+        'If book_ids is not None, display a entry that contain a subset of Notes for listed books'
+        QTreeWidget.__init__(self, parent)
+        
+        self.setIconSize(QSize(20, 20))
+        self.header().hide()
+        self.setSelectionMode(QAbstractItemView.MultiSelection)
+        self.itemChanged.connect(self.item_changed)
+        
+        self._dbAPI = GUI.current_db.new_api
+        self._book_item = None
+        self._separator_item = None
+        
+        self.populate_tree(book_ids=book_ids)
+    
+    def _build_content_map(self, book_ids):
+        raise NotImplementedError()
+    
+    def populate_tree(self, book_ids=[]):
+        
+        self.content_map = content_map = self._build_content_map(None)
+        self.book_ids = book_ids
+        
+        self._book_item = book_item = None
+        self._separator_item = separator = None
+        self.takeTopLevelItem(-1)
+        
+        fields_order = get_tags_browsable_fields()
+        
+        category_icons = get_category_icons_map()
+        
+        def create_tree_item(parent, text, data, icon):
+            rslt = QTreeWidgetItem(parent)
+            rslt.setText(0, text)
+            rslt.setData(0, Qt.UserRole, data)
+            rslt.setFlags(Qt.ItemIsEnabled|Qt.ItemIsUserCheckable)
+            rslt.setCheckState(0, Qt.Unchecked)
+            rslt.setIcon(0, icon)
+            return rslt
+        
+        def create_root_item(parent, field, items):
+            icon = category_icons[field]
+            name = self._dbAPI.field_metadata[field]['name']
+            root = create_tree_item(parent, '{name} ({field})'.format(name=name, field=field), field, icon)
+            
+            debug_print(f'{name} ({field})', items)
+            
+            for data in items:
+                debug_print(data)
+                if self._dbAPI.field_metadata[field]['datatype'] == 'rating':
+                    text = rating_to_stars(data[0], allow_half_stars=True)
+                else:
+                    text = data[0]
+                
+                ch = create_tree_item(root, text, data, icon)
+                root.addChild(ch)
+            
+            debug_print('')
+            root.sortChildren(0, Qt.AscendingOrder)
+            return root
+        
+        if not content_map:
+            self._separator_item = separator = QTreeWidgetItem(self)
+            separator.setFlags(Qt.NoItemFlags)
+            self.addTopLevelItem(separator)
+        
+        elif book_ids is not None:
+            self._book_item = book_item = QTreeWidgetItem(self)
+            book_item.setFlags(Qt.ItemIsEnabled)
+            book_item.setIcon(0, get_icon('book.png'))
+            self.addTopLevelItem(book_item)
+            
+            book_fields_ids = self._build_content_map(book_ids)
+            
+            for field in fields_order:
+                items = book_fields_ids.get(field, None)
+                if items:
+                    book_item.addChild(create_root_item(book_item, field, items))
+            
+            self._separator_item = separator = QTreeWidgetItem(self)
+            separator.setFlags(Qt.NoItemFlags)
+            self.addTopLevelItem(separator)
+        
+        for field in fields_order:
+            items = content_map.get(field, None)
+            if items:
+                self.addTopLevelItem(create_root_item(self, field, items))
+        
+        debug_print('==========')
+        
+        self.update_texts(
+            empty='',
+            separator='--------------',
+            tooltip=_('Subset of values associate to the books'),
+            zero_book=_('No books'),
+            zero_values=_('{:d} books (no values)'),
+            has_book_values=_('{:d} books'),
+        )
+    
+    def update_texts(self, empty=None, separator=None, tooltip=None, zero_book=None, zero_values=None, has_book_values=None):
+        if not self.content_map:
+            if empty is not None:
+                self._separator_item.setText(0, empty)
+        
+        elif self.book_ids is not None:
+            if tooltip is not None:
+                self._book_item.setToolTip(0, tooltip)
+            
+            if not self.book_ids:
+                msg = zero_book
+            elif not self._book_item.childCount():
+                msg = zero_values
+            else:
+                msg = has_book_values
+            
+            if msg is not None:
+                self._book_item.setText(0, msg.format(len(self.book_ids)))
+            
+            if separator is not None:
+                self._separator_item.setText(0, separator)
+    
+    def item_changed(self, item, column):
+        self.blockSignals(True)
+        
+        parent = item.parent()
+        if isinstance(parent, QTreeWidgetItem) and parent.data(column, Qt.UserRole):
+            state = False
+            for idx in range(parent.childCount()):
+                if parent.child(idx).checkState(column) == Qt.CheckState.Checked:
+                    state = True
+                    break
+            parent.setCheckState(column, Qt.CheckState.PartiallyChecked if state else Qt.CheckState.Unchecked)
+        else:
+            if item.checkState(column) == Qt.CheckState.Checked:
+                state = Qt.ItemIsUserCheckable
+            else:
+                state = Qt.ItemIsEnabled|Qt.ItemIsUserCheckable
+            for idx in range(item.childCount()):
+                item.child(idx).setFlags(state)
+        
+        self.blockSignals(False)
+    
+    def get_selected(self):
+        rslt = defaultdict(list)
+        
+        def parse_tree_item(item):
+            field = item.data(0, Qt.UserRole)
+            all_field = False
+            if item.checkState(0) == Qt.CheckState.Checked:
+                all_field = True
+            
+            for idx in range(item.childCount()):
+                child = item.child(idx)
+                if all_field or child.checkState(0) == Qt.CheckState.Checked:
+                    rslt[field].append(child.data(0, Qt.UserRole))
+        
+        for idx in range(self.topLevelItemCount()):
+            item = self.topLevelItem(idx)
+            
+            if item.data(0, Qt.UserRole):
+                parse_tree_item(item)
+            else:
+                for idx in range(item.childCount()):
+                    ch = item.child(idx)
+                    parse_tree_item(ch)
+        
+        return rslt
+
+class SelectFieldValuesWidget(FieldsValueTreeWidget):
+    def __init__(self, book_ids=[], parent=None):
+        'If book_ids is not None, display a entry that contain a subset of Notes for listed books'
+        FieldsValueTreeWidget.__init__(self, book_ids=book_ids, parent=parent)
+    
+    def _build_content_map(self, book_ids):
+        
+        list_field = get_tags_browsable_fields(include_composite=False)
+        for f in ['news', 'formats']:
+            if f in list_field:
+                list_field.remove(f)
+        
+        rslt = defaultdict(list)
+        if book_ids is None:
+            for field in list_field:
+                for (id, value) in iteritems(self._dbAPI.get_id_map(field)):
+                    rslt[field].append((value, id))
+            
+            for id in self._dbAPI.fields['identifiers'].table.all_identifier_types():
+                rslt['identifiers'].append((id, id))
+        else:
+            for field in list_field:
+                for book_id in book_ids:
+                    rslt[field].extend(self._dbAPI.field_ids_for(field, book_id))
+                
+                rslt[field] = list(set(rslt[field]))
+                for idx,id_field in enumerate(rslt[field]):
+                    if field == 'identifiers':
+                        value = id_field
+                    else:
+                        value = self._dbAPI.get_item_name(field, id_field)
+                    rslt[field][idx] = (value, id_field)
+                
+                if not len(rslt[field]):
+                    del rslt[field]
+        
+        return rslt
+
+class SelectNotesWidget(FieldsValueTreeWidget):
+    def __init__(self, book_ids=[], parent=None):
+        'If book_ids is not None, display a entry that contain a subset of Notes for listed books'
+        FieldsValueTreeWidget.__init__(self, book_ids=book_ids, parent=parent)
+        self.update_texts(empty=_('No notes'))
+    
+    def _build_content_map(self, book_ids=None):
+        '''
+        Return item_ids for items that have notes in the specified field or all fields if field_name is None.
+        If book_ids if passed, return for entry only relative to this book list.
+        '''
+        items_map = self._dbAPI.get_all_items_that_have_notes()
+        
+        rslt = defaultdict(list)
+        if book_ids is None:
+            for field in items_map.keys():
+                for (id, value) in iteritems(self._dbAPI.get_id_map(field)):
+                    rslt[field].append((value, id))
+        else:
+            for book_id in book_ids:
+                for field,items in iteritems(items_map):
+                    for id_field in self._dbAPI.field_ids_for(field, book_id):
+                        if id_field in items:
+                            rslt[field].append((self._dbAPI.get_item_name(field, id_field), id_field))
+        
+        return rslt
 
 
 # ----------------------------------------------

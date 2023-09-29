@@ -1,5 +1,8 @@
 # Changelog - common_utils
 
+## 2023/09/29
+- Add SelectFieldValuesWidget and SelectNotesWidget
+
 ## 2023/09/28
 - Add PLUGIN_CLASSE
 - remove load_plugin_resources(), Add ZipResources and PluginResources

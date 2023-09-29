@@ -27,8 +27,13 @@ from calibre import prints
 from calibre.constants import DEBUG, iswindows, numeric_version as calibre_version
 from calibre.customize.ui import find_plugin
 from calibre.gui2 import show_restart_warning
-from calibre.gui2.ui import get_gui
+from calibre.gui2.ui import Main
+
 from calibre.utils.config import config_dir, JSONConfig, DynamicConfig
+
+def get_gui():
+    from calibre.gui2.ui import get_gui
+    return get_gui()
 
 GUI = get_gui()
 

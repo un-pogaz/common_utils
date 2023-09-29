@@ -22,8 +22,10 @@ from collections import defaultdict, OrderedDict
 from functools import partial
 
 from calibre.gui2 import error_dialog
+from calibre.db.categories import category_display_order
 
-from . import GUI, PLUGIN_NAME
+from . import debug_print, GUI, PLUGIN_NAME
+from .columns import get_categories
 
 
 try:
@@ -192,3 +194,16 @@ def set_marked(label, book_ids, append=False, reset=False):
     
     marked.update( {idx:label for idx in book_ids} )
     GUI.current_db.data.set_marked_ids(marked)
+
+def get_category_icons_map():
+    return GUI.tags_view.model().category_custom_icons
+
+def get_tags_browsable_fields(use_defaults=False, order_override=[], include_composite=True):
+    if use_defaults:
+        tbo = []
+    elif order_override:
+        tbo = order_override
+    else:
+        tbo = GUI.current_db.new_api.pref('tag_browser_category_order', [])
+    
+    return category_display_order(tbo, get_categories(include_composite=include_composite).keys())
