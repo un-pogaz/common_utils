@@ -20,7 +20,7 @@
 - Add KeyboardConfigDialogButton
 
 ## 2023/09/13
-- Don't update PREFS_json at the initialization
+- Don't update the file of PREFS_json at the initialization
 
 ## 2023/09/08
 - Don't update common_utils when release

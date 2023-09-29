@@ -70,7 +70,7 @@ class KeyboardConfigDialog(Dialog):
 def edit_keyboard_shortcuts(plugin_action):
     getattr(plugin_action, 'rebuild_menus', ())()
     d = KeyboardConfigDialog(plugin_action.action_spec[0])
-    if d.exec_() == d.Accepted:
+    if d.exec():
         GUI.keyboard.finalize()
 
 class KeyboardConfigDialogButton(QPushButton):
@@ -182,8 +182,8 @@ class LibraryPrefsViewerDialog(Dialog):
         Dialog.accept(self)
 
 def view_library_prefs(prefs_namespace=PREFS_NAMESPACE):
-    d = LibraryPrefsViewerDialog(GUI, prefs_namespace)
-    return d.exec_()
+    d = LibraryPrefsViewerDialog(prefs_namespace)
+    return d.exec()
 
 class LibraryPrefsViewerDialogButton(QPushButton):
     
@@ -196,7 +196,7 @@ class LibraryPrefsViewerDialogButton(QPushButton):
         self.prefs_namespace = prefs_namespace
 
     def view_library_prefs(self):
-        if view_library_prefs(self.prefs_namespace) == QDialog.Accepted:
+        if view_library_prefs(self.prefs_namespace):
             self.library_prefs_changed.emit()
 
 
@@ -294,7 +294,7 @@ class ProgressDialog(QProgressDialog):
             debug_print('No book_ids passed to '+ str(self.__class__.__name__) +'. Skiped.')
         else:
             QTimer.singleShot(0, self._job_progress)
-            self.exec_()
+            self.exec()
             
             self.db.clean()
             
@@ -402,7 +402,7 @@ class ImageDialog(QDialog):
         self._input_file_edit = QLineEdit(self)
         self._input_file_edit.setMinimumSize(200, 0)
         self._radio_file.setFocusProxy(self._input_file_edit)
-        pick_button = QPushButton('...', self)
+        pick_button = QPushButton(get_icon('document_open.png'),'', self)
         pick_button.setMaximumSize(24, 20)
         pick_button.clicked.connect(self.pick_file_to_import)
         grid.addWidget(self._radio_file, 1, 0)

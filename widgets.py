@@ -260,23 +260,22 @@ class ImageComboBox(NoWheelComboBox):
             self.blockSignals(True)
             # Special item in the combo for choosing a new image to add to Calibre
             from .dialogs import ImageDialog
-            add_image_dialog = ImageDialog(image_names=self.image_map.keys())
-            add_image_dialog.exec_()
+            d = ImageDialog(existing_images=self.image_map.keys())
             
-            if add_image_dialog.result() == QDialog.Rejected:
-                # User cancelled the add operation or an error - set to previous idx value
-                idx = self.itemData(0)
-            else:
-                self.image_map[add_image_dialog.image_name] = get_icon(add_image_dialog.image_name)
+            if d.exec():
+                self.image_map[d.image_name] = get_icon(d.image_name)
                 self.populate_combo(self.image_map, self.currentText())
                 # Select the newly added item
-                idx = self.findText(add_image_dialog.image_name)
+                idx = self.findText(d.image_name)
+            else:
+                # User cancelled the add operation or an error - set to previous idx value
+                idx = self.itemData(0)
             self.setCurrentIndex(idx)
             self.blockSignals(False)
             
-            if add_image_dialog.result() == QDialog.Accepted:
+            if d.result():
                 # Now, emit the event than user has added a new image so we need to repopulate every combo with new sorted list
-                self.new_image_added.emit(add_image_dialog.image_name)
+                self.new_image_added.emit(d.image_name)
             
         # Store the current index as item data in index 0 in case user cancels dialog in future
         self.setItemData(0, self.currentIndex())
