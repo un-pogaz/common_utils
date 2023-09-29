@@ -86,6 +86,15 @@ def _test_is_custom(column, only_custom):
     else:
         return True
 
+def _test_include_composite(column, only_custom=None, include_composite=False):
+    if not include_composite and column.is_composite:
+        return False
+    elif include_composite and only_custom == None:
+        return True
+    else:
+        return _test_is_custom(column, only_custom)
+
+
 def get_all_columns(only_custom=None, include_composite=False):
     """
     only_custom:
@@ -96,13 +105,7 @@ def get_all_columns(only_custom=None, include_composite=False):
     return: dict(ColumnMetadata)
     """
     def predicate(column):
-        if not include_composite and column.is_composite:
-            return False
-        elif include_composite and only_custom == None:
-            return True
-        else:
-            return _test_is_custom(column, only_custom)
-    
+        return _test_include_composite(column, only_custom=only_custom, include_composite=include_composite)
     return get_columns_where(predicate)
 
 def get_column_from_name(name):
@@ -124,6 +127,12 @@ def _get_columns_type(type, only_custom):
         else:
             return False
     
+    return get_columns_where(predicate)
+
+def get_categories(only_custom=None, include_composite=False):
+    def predicate(column: ColumnMetadata):
+        if column.is_category:
+            return _test_include_composite(column, only_custom=only_custom, include_composite=include_composite)
     return get_columns_where(predicate)
 
 # get type
@@ -783,9 +792,13 @@ class MutipleValue():
         return self._data.get('cache_to_list', None)
 
 if __name__ == '__main__':
+    def wait_exit():
+        input('Press any key to exit...')
+        exit()
+    
     if len(sys.argv) <= 1:
         prints('Need to parse a library path as arguments')
-        exit()
+        wait_exit()
     
     path = os.path.abspath(sys.argv[1])
     if not os.path.exists(path):
@@ -810,7 +823,7 @@ if __name__ == '__main__':
     for f in [get_all_columns,
               get_names, get_tags, get_enumeration, get_float, get_datetime, get_rating, get_title,
               get_series, get_series_index, get_text, get_bool, get_html, get_markdown, get_long_text,
-              get_composite_text, get_composite_tag]:
+              get_composite_text, get_composite_tag, get_categories]:
         prints(f.__name__, list(f().keys()))
         prints()
     
@@ -819,3 +832,4 @@ if __name__ == '__main__':
         prints()
     
     current_db.db.close()
+    wait_exit()
