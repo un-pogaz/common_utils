@@ -1,17 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import (unicode_literals, division, absolute_import,
-                        print_function)
 
 __license__   = 'GPL v3'
 __copyright__ = '2011, Grant Drake <grant.drake@gmail.com> ; 2020, un_pogaz <un.pogaz@gmail.com>'
 __docformat__ = 'restructuredtext en'
 
-
-# python3 compatibility
-from six.moves import range
-from six import text_type as unicode
-from polyglot.builtins import iteritems, itervalues
 
 try:
     load_translations()
@@ -75,7 +68,7 @@ def edit_keyboard_shortcuts(plugin_action):
 
 class KeyboardConfigDialogButton(QPushButton):
     def __init__(self, parent=None):
-        QPushButton.__init__(self, _('Keyboard shortcuts')+'...', parent)
+        QPushButton.__init__(self, _('Keyboard shortcuts')+'…', parent)
         self.setToolTip(_('Edit the keyboard shortcuts associated with this plugin'))
         self.clicked.connect(self.edit_shortcuts)
 
@@ -123,7 +116,7 @@ class LibraryPrefsViewerDialog(Dialog):
     def _populate_settings(self):
         self.prefs.clear()
         self.keys_list.clear()
-        ns_prefix = 'namespaced:{:s}:'.format(self.namespace)
+        ns_prefix = ':'.join(['namespaced',self.namespace,''])
         ns_len = len(ns_prefix)
         for key in sorted([k[ns_len:] for k in self.db.prefs.keys() if k.startswith(ns_prefix)]):
             self.keys_list.addItem(key)
@@ -134,7 +127,7 @@ class LibraryPrefsViewerDialog(Dialog):
     
     def _save_current_row(self):
         if self.current_key != None:
-            self.prefs[self.current_key] = unicode(self.value_text.toPlainText())
+            self.prefs[self.current_key] = self.value_text.toPlainText()
     
     def _current_row_changed(self, new_row):
         self._save_current_row()
@@ -144,12 +137,12 @@ class LibraryPrefsViewerDialog(Dialog):
             self.current_key = None
             return
         
-        self.current_key = unicode(self.keys_list.currentItem().text())
+        self.current_key = self.keys_list.currentItem().text()
         self.value_text.setPlainText(self.prefs[self.current_key])
     
     def accept(self):
         self._save_current_row()
-        for k,v in iteritems(self.prefs):
+        for k,v in self.prefs.items():
             try:
                 self.db.prefs.raw_to_object(v)
             except Exception as ex:
@@ -163,7 +156,7 @@ class LibraryPrefsViewerDialog(Dialog):
         if not confirm(message, self.namespace+'_apply_settings', self):
             return
         
-        for k,v in iteritems(self.prefs):
+        for k,v in self.prefs.items():
             self.db.prefs.set_namespaced(self.namespace, k, self.db.prefs.raw_to_object(v))
         Dialog.accept(self)
     
@@ -190,7 +183,7 @@ class LibraryPrefsViewerDialogButton(QPushButton):
     library_prefs_changed = pyqtSignal()
     
     def __init__(self, parent=None, prefs_namespace=PREFS_NAMESPACE):
-        QPushButton.__init__(self, _('View library preferences')+'...', parent)
+        QPushButton.__init__(self, _('View library preferences')+'…', parent)
         self.setToolTip(_('View data stored in the library database for this plugin'))
         self.clicked.connect(self.view_library_prefs)
         self.prefs_namespace = prefs_namespace
@@ -278,7 +271,7 @@ class ProgressDialog(QProgressDialog):
         self.setAutoClose(True)
         self.setAutoReset(False)
         
-        title = kvargs.get('title', None) or self.title or _('{} progress').format(PLUGIN_NAME)
+        title = kvargs.get('title', None) or self.title or _(f'{PLUGIN_NAME} progress')
         self.setWindowTitle(title)
         
         for icon in [kvargs.get('icon', None), self.icon, 'images/plugin.png', 'lt.png']:
@@ -361,7 +354,7 @@ class ViewLogDialog(Dialog):
         # ViewLog does, instead just format it inside divs to keep style formatting
         html = self.src_html.replace('\t','&nbsp;&nbsp;&nbsp;&nbsp;').replace('\n', '<br/>')
         html = html.replace('> ','>&nbsp;')
-        self.tb.setHtml('<div>{:s}</div>'.format(html))
+        self.tb.setHtml(f'<div>{html}</div>')
         QApplication.restoreOverrideCursor()
         l.addWidget(self.tb)
         
@@ -435,7 +428,7 @@ class ImageDialog(QDialog):
         return self.new_image_name
     
     def pick_file_to_import(self):
-        images = choose_files(None, _('menu icon dialog'), _('Select a .png file for the menu icon'),
+        images = choose_files(None, 'menu_icon_dialog', _('Select a .png file for the menu icon'),
                              filters=[('PNG Image Files', ['png'])], all_files=False, select_only_single_file=True)
         if not images:
             return
@@ -448,7 +441,7 @@ class ImageDialog(QDialog):
     
     def ok_clicked(self):
         # Validate all the inputs
-        save_name = unicode(self._save_as_edit.text()).strip()
+        save_name = self._save_as_edit.text().strip()
         if not save_name:
             return error_dialog(self, _('Cannot import image'), _('You must specify a filename to save as.'), show=True)
         self.new_image_name = os.path.splitext(save_name)[0] + '.png'
@@ -466,14 +459,14 @@ class ImageDialog(QDialog):
                 from urllib.request import urlretrieve
             except ImportError:
                 from urllib import urlretrieve
-            domain = unicode(self._web_domain_edit.text()).strip()
+            domain = self._web_domain_edit.text().strip()
             if not domain:
                 return error_dialog(self, _('Cannot import image'), _('You must specify a web domain url'), show=True)
             url = 'http://www.google.com/s2/favicons?domain=' + domain
             urlretrieve(url, dest_path)
             return self.accept()
         else:
-            source_file_path = unicode(self._input_file_edit.text()).strip()
+            source_file_path = self._input_file_edit.text().strip()
             if not source_file_path:
                 return error_dialog(self, _('Cannot import image'), _('You must specify a source file.'), show=True)
             if not source_file_path.lower().endswith('.png'):
@@ -509,7 +502,7 @@ def custom_exception_dialog(exception, additional_msg=None, title=None, parent=N
         traceback.print_exc()
     
     msg = []
-    msg.append('<span>' + prepare_string_for_xml(as_unicode(_('The {:s} plugin has encounter a unhandled exception.').format(PLUGIN_NAME))))
+    msg.append('<span>' + prepare_string_for_xml(as_unicode(_(f'The {PLUGIN_NAME} plugin has encounter a unhandled exception.'))))
     if additional_msg: msg.append(additional_msg)
     if exception: msg.append('<b>{:s}</b>: '.format(exception.__class__.__name__) + prepare_string_for_xml(as_unicode(str(exception))))
     

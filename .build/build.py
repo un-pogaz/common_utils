@@ -59,14 +59,15 @@ def read_plugin_name():
         content = file.read()
         name_matches = re.findall(r"\s+name\s*=\s*\'([^\']*)\'", content)
         if name_matches: 
-            zip_file_name = name_matches[0]+'.zip'
+            name = name_matches[0]
+            zip_file_name = name+'.zip'
         else:
             raise RuntimeError('Could not find plugin name in __init__.py')
         version_matches = re.findall(r'\s+version\s*=\s*\(([^\)]*)\)', content)
         if version_matches: 
             version = '.'.join(re.findall(r'\d+', version_matches[0]))
     
-    print("Plugin v{} will be zipped to: '{}'".format(version, zip_file_name))
+    print(f'Plugin \'{name}\' v{version} will be zipped to: "{zip_file_name}"')
     return zip_file_name, version
 
 def update_translations():
@@ -108,7 +109,7 @@ def build_plugin():
     if os.path.exists(out): os.remove(out)
     os.rename(PLUGIN, out)
     
-    print("Plugin '{}' build with succes.".format(PLUGIN))
+    print(f"Plugin '{PLUGIN}' build with succes.")
 
 if __name__=="__main__":
     build_plugin()

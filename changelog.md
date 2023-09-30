@@ -1,5 +1,8 @@
 # Changelog - common_utils
 
+## 2023/09/30
+- Drop Python 2 / Calibre 4 comatibility, only 5 and above
+
 ## 2023/09/29
 - Add SelectFieldValuesWidget and SelectNotesWidget
 

@@ -1,17 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import (unicode_literals, division, absolute_import,
-                        print_function)
 
 __license__   = 'GPL v3'
 __copyright__ = '2021, un_pogaz <un.pogaz@gmail.com>'
 __docformat__ = 'restructuredtext en'
 
-
-# python3 compatibility
-from six.moves import range
-from six import text_type as unicode
-from polyglot.builtins import iteritems, itervalues
 
 try:
     load_translations()
@@ -53,7 +46,7 @@ def get_columns_from_dict(src_dict, predicate=None):
     def _predicate(column):
         return True
     predicate = predicate or _predicate
-    return {cm.name:cm for cm in [ColumnMetadata(fm, k.startswith('#')) for k,fm in iteritems(src_dict) if fm.get('label', None)] if predicate(cm)}
+    return {cm.name:cm for cm in [ColumnMetadata(fm, k.startswith('#')) for k,fm in src_dict.items() if fm.get('label', None)] if predicate(cm)}
 
 def get_columns_where(predicate=None):
     """
@@ -115,7 +108,7 @@ def get_column_from_name(name):
     """
     def predicate(column):
         return column.name == name
-    for v in itervalues(get_columns_where(predicate)):
+    for v in get_columns_where(predicate).values():
         return v
     return None
 
@@ -312,10 +305,10 @@ def get_possible_fields():
     
     columns = get_columns_where(predicate)
     
-    all_fields = [cc.name for cc in itervalues(columns)]
+    all_fields = [cc.name for cc in columns.values()]
     all_fields.sort()
     all_fields.insert(0, '{template}')
-    writable_fields = [cc.name for cc in itervalues(columns) if not cc.is_composite]
+    writable_fields = [cc.name for cc in columns.values() if not cc.is_composite]
     writable_fields.sort()
     return all_fields, writable_fields
 
@@ -326,7 +319,7 @@ def get_possible_columns():
     return: list(str)
     """
     standard = ['title', 'authors', 'tags', 'series', 'publisher', 'pubdate', 'rating', 'languages', 'last_modified', 'timestamp', 'comments', 'author_sort', 'title_sort', 'marked']
-    if calibre_version >= (6, 17, 0):
+    if calibre_version >= (6,17,0):
         standard += ['id', 'path']
     
     def predicate(column):
@@ -361,10 +354,10 @@ def is_enum_value(name, value):
     value
     col_metadata = get_column_from_name(name)
     if not col_metadata._is_enumeration:
-        raise ValueError('The column "{:s}" is not a enumeration'.format(name))
+        raise ValueError(f'The column "{name}" is not a enumeration')
     col_vals = col_metadata.enum_values
     if not value in col_vals:
-        raise ValueError('\'{:s}\' is not a valide value on the enumeration "{:s}".'.format(value, name))
+        raise ValueError(f'\'{value}\' is not a valide value on the enumeration "{name}".')
     else:
         return True
 
@@ -377,12 +370,12 @@ def is_bool_value(value):
     
     return: True / False / raise Error
     """
-    if unicode(value).lower() in ['yes','y','true','1']:
+    if str(value).lower() in ['yes','y','true','1']:
         return True
-    elif unicode(value).lower() in ['no','n','false','0']:
+    elif str(value).lower() in ['no','n','false','0']:
         return False
     else:
-        raise ValueError('\'{:s}\' is not considered as a boulean by Calibre'.format(value))
+        raise ValueError(f'\'{value}\' is not considered as a boulean by Calibre')
 
 class ColumnTypes:
     bool           = 'bool'
@@ -793,7 +786,7 @@ class MutipleValue():
 
 if __name__ == '__main__':
     def wait_exit():
-        input('Press any key to exit...')
+        input('Press any key to exit…')
         exit()
     
     if len(sys.argv) <= 1:

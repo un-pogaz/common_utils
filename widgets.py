@@ -1,17 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import (unicode_literals, division, absolute_import,
-                        print_function)
 
 __license__   = 'GPL v3'
 __copyright__ = '2011, Grant Drake <grant.drake@gmail.com> ; 2020, un_pogaz <un.pogaz@gmail.com>'
 __docformat__ = 'restructuredtext en'
 
-
-# python3 compatibility
-from six.moves import range
-from six import text_type as unicode
-from polyglot.builtins import iteritems, itervalues
 
 try:
     load_translations()
@@ -33,6 +26,7 @@ except ImportError:
     )
 
 from calibre.gui2 import error_dialog, UNDEFINED_QDATETIME
+from calibre.gui2.dnd import dnd_get_files
 from calibre.utils.date import now, format_date, UNDEFINED_DATE
 from calibre.gui2.library.delegates import DateDelegate as _DateDelegate
 from calibre.ebooks.metadata import rating_to_stars
@@ -255,9 +249,7 @@ class FieldsValueTreeWidget(QTreeWidget):
         def create_root_item(parent, field, items):
             icon = category_icons[field]
             name = self._dbAPI.field_metadata[field]['name']
-            root = create_tree_item(parent, '{name} ({field})'.format(name=name, field=field), field, icon)
-            
-            debug_print(f'{name} ({field})', items)
+            root = create_tree_item(parent, f'{name} ({field})', field, icon)
             
             for data in items:
                 debug_print(data)
@@ -395,7 +387,7 @@ class SelectFieldValuesWidget(FieldsValueTreeWidget):
         rslt = defaultdict(list)
         if book_ids is None:
             for field in list_field:
-                for (id, value) in iteritems(self._dbAPI.get_id_map(field)):
+                for (id, value) in self._dbAPI.get_id_map(field).items():
                     rslt[field].append((value, id))
             
             for id in self._dbAPI.fields['identifiers'].table.all_identifier_types():
@@ -434,11 +426,11 @@ class SelectNotesWidget(FieldsValueTreeWidget):
         rslt = defaultdict(list)
         if book_ids is None:
             for field in items_map.keys():
-                for (id, value) in iteritems(self._dbAPI.get_id_map(field)):
+                for (id, value) in self._dbAPI.get_id_map(field).items():
                     rslt[field].append((value, id))
         else:
             for book_id in book_ids:
-                for field,items in iteritems(items_map):
+                for field,items in items_map.items():
                     for id_field in self._dbAPI.field_ids_for(field, book_id):
                         if id_field in items:
                             rslt[field].append((self._dbAPI.get_item_name(field, id_field), id_field))
@@ -467,7 +459,7 @@ class NoWheelComboBox(QComboBox):
 
 class ImageComboBox(NoWheelComboBox):
     
-    COMBO_IMAGE_ADD = _('Add New Image...')
+    COMBO_IMAGE_ADD = _('Add New Image…')
     
     new_image_added = pyqtSignal(str)
     
@@ -536,7 +528,7 @@ class ListComboBox(QComboBox):
         self.setCurrentIndex(selected_idx)
     
     def selected_value(self):
-        return unicode(self.currentText())
+        return self.currentText()
 
 class KeyValueComboBox(QComboBox):
     def __init__(self, parent, values, selected_key=None, values_ToolTip={}):
@@ -551,7 +543,7 @@ class KeyValueComboBox(QComboBox):
         self.values = values
         
         selected_idx = start = 0
-        for idx, (key, value) in enumerate(iteritems(self.values), start):
+        for idx, (key, value) in enumerate(self.values.items(), start):
             self.addItem(value)
             if key == selected_key:
                 selected_idx = idx
@@ -559,8 +551,8 @@ class KeyValueComboBox(QComboBox):
         self.setCurrentIndex(selected_idx)
     
     def selected_key(self):
-        currentText = unicode(self.currentText()).strip()
-        for key, value in iteritems(self.values):
+        currentText = self.currentText().strip()
+        for key, value in self.values.items():
             if value == currentText:
                 return key
     
@@ -589,9 +581,9 @@ class CustomColumnComboBox(QComboBox):
             self.column_names.append(init)
             self.addItem(init)
         
-        for idx, (key, value) in enumerate(iteritems(self.custom_columns), start):
+        for idx, (key, value) in enumerate(self.custom_columns.items(), start):
             self.column_names.append(key)
-            self.addItem('{:s} ({:s})'.format(key, value.display_name))
+            self.addItem(f'{key} ({value.display_name})')
             if key == selected_column:
                 selected_idx = idx
         
@@ -635,7 +627,7 @@ class ReorderedComboBox(QComboBox):
     
     def reorder_items(self):
         self.blockSignals(True)
-        text = unicode(self.currentText())
+        text = self.currentText()
         if self.strip_items:
             text = text.strip()
         if not text.strip():
@@ -649,9 +641,9 @@ class ReorderedComboBox(QComboBox):
     
     def get_items_list(self):
         if self.strip_items:
-            return [unicode(self.itemText(i)).strip() for i in range(0, self.count())]
+            return [self.itemText(i).strip() for i in range(0, self.count())]
         else:
-            return [unicode(self.itemText(i)) for i in range(0, self.count())]
+            return [self.itemText(i) for i in range(0, self.count())]
 
 class DragDropLineEdit(QLineEdit):
     """
@@ -695,7 +687,7 @@ class DragDropLineEdit(QLineEdit):
                 # Remote files
                 return filenames
         if event.mimeData().hasFormat('text/uri-list'):
-            urls = [unicode(u.toString()).strip() for u in md.urls()]
+            urls = [u.toString().strip() for u in md.urls()]
             return urls
 
 class DragDropComboBox(ReorderedComboBox):

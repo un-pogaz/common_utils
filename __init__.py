@@ -1,17 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import (unicode_literals, division, absolute_import,
-                        print_function)
 
 __license__   = 'GPL v3'
 __copyright__ = '2011, Grant Drake <grant.drake@gmail.com> ; 2022, un_pogaz <un.pogaz@gmail.com>'
 __docformat__ = 'restructuredtext en'
 
-
-# python3 compatibility
-from six.moves import range
-from six import text_type as unicode
-from polyglot.builtins import iteritems, itervalues
 
 try:
     load_translations()
@@ -46,7 +39,7 @@ def get_plugin_attribut(name, default=None):
         import importlib
         from calibre.customize import Plugin
         #Yes, it's very long for a one line. It's seems crazy, but it's fun and it works
-        plugin_classes = [ obj for obj in itervalues(importlib.import_module('.'.join(__name__.split('.')[:-1])).__dict__) if isinstance(obj, type) and issubclass(obj, Plugin) and obj.name != 'Trivial Plugin' ]
+        plugin_classes = [ obj for obj in importlib.import_module('.'.join(__name__.split('.')[:-1])).__dict__.values() if isinstance(obj, type) and issubclass(obj, Plugin) and obj.name != 'Trivial Plugin' ]
         
         plugin_classes.sort(key=lambda c:(getattr(c, '__module__', None) or '').count('.'))
         PLUGIN_CLASSE = plugin_classes[0]
@@ -160,7 +153,7 @@ THEME_COLOR = ['', 'dark', 'light']
 
 def get_theme_color():
     """Get the theme color of Calibre"""
-    if calibre_version > (5, 90):
+    if calibre_version >= (6,0,0):
         return THEME_COLOR[1] if QApplication.instance().is_dark_theme else THEME_COLOR[2]
     return THEME_COLOR[0]
 
@@ -177,10 +170,10 @@ def get_icon(icon_name):
     or if not then from Calibre's image cache.
     """
     def themed_icon(icon_name):
-        if calibre_version < (6,0,0):
-            return QIcon(I(icon_name))
-        else:
+        if calibre_version >= (6,0,0):
             return QIcon.ic(icon_name)
+        else:
+            return QIcon(I(icon_name))
     
     if icon_name:
         pixmap = get_pixmap(icon_name)
@@ -209,7 +202,7 @@ def get_pixmap(icon_name):
     if PLUGIN_NAME:
         # Check to see whether the icon exists as a Calibre resource
         # This will enable skinning if the user stores icons within a folder like:
-        # ...\AppData\Roaming\calibre\resources\images\Plugin_Name\
+        # %CALIBRE_CONFIG_DIRECTORY%\resources\images\Plugin_Name\
         def get_from_local(name):
             local_images_dir = get_local_resource('images', PLUGIN_NAME)
             local_image_path = os.path.join(local_images_dir, name.replace('images/', ''))
@@ -387,10 +380,10 @@ class PREFS_json(JSONConfig):
         get a deepcopy dict of this instance
         """
         rslt = {}
-        for k,v in iteritems(self):
+        for k,v in self.items():
             rslt[copy.deepcopy(k)] = copy.deepcopy(v)
         
-        for k, v in iteritems(self.defaults):
+        for k, v in self.defaults.items():
             if k not in rslt:
                 rslt[k] = copy.deepcopy(v)
         return rslt
@@ -429,10 +422,10 @@ class PREFS_dynamic(DynamicConfig):
         get a deepcopy dict of this instance
         """
         rslt = {}
-        for k,v in iteritems(self):
+        for k,v in self.items():
             rslt[copy.deepcopy(k)] = copy.deepcopy(v)
         
-        for k, v in iteritems(self.defaults):
+        for k, v in self.defaults.items():
             if k not in rslt:
                 rslt[k] = copy.deepcopy(v)
         return rslt
@@ -449,7 +442,7 @@ class PREFS_library(dict):
         self.key = key if key else ''
         self.defaults = defaults if defaults else {}
         
-        if not isinstance(key, unicode) and not isinstance(key, str):
+        if not isinstance(key, str):
             raise TypeError("The 'key' for the namespaced preference is not a string")
             
         if not isinstance(defaults, dict):
@@ -541,10 +534,10 @@ class PREFS_library(dict):
         get a deepcopy dict of this instance
         """
         rslt = {}
-        for k,v in iteritems(self):
+        for k,v in self.items():
             rslt[copy.deepcopy(k)] = copy.deepcopy(v)
         
-        for k, v in iteritems(self.defaults):
+        for k, v in self.defaults.items():
             if k not in rslt:
                 rslt[k] = copy.deepcopy(v)
         return rslt

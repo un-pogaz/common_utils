@@ -47,20 +47,20 @@ def read_plugin_details():
         if versionMatches: 
             version = versionMatches[0].replace(',','.').replace(' ','')
 
-    print("Plugin to be released for: '{}' v{}".format(plugin_name, version))
+    print(f"Plugin to be released for: '{plugin_name}' v{version}")
     return short_name, plugin_name, version
 
 def get_plugin_zip_path(plugin_name):
     zip_file = os.path.join(os.getcwd(), '-- versioning', plugin_name+'.zip')
     if not os.path.exists(zip_file):
-        print('ERROR: No zip file found for this plugin at: {}'.format(zip_file))
+        print(f'ERROR: No zip file found for this plugin at: {zip_file}')
         raise FileNotFoundError(zip_file)
     return zip_file
 
 def read_change_log_for_version(version):
     changeLogFile = os.path.join(os.getcwd(), 'changelog.md')
     if not os.path.exists(changeLogFile):
-        print('ERROR: No change log found for this plugin at: {}'.format(changeLogFile))
+        print(f'ERROR: No change log found for this plugin at: {changeLogFile}')
         raise FileNotFoundError(changeLogFile)
     
     with open(changeLogFile, 'r') as file:
@@ -79,7 +79,7 @@ def read_change_log_for_version(version):
         changeLines.append(line.rstrip())
 
     if len(changeLines) == 0:
-        print('ERROR: No change log details found for this version: {}'.format(version))
+        print(f'ERROR: No change log details found for this version: {version}')
         raise RuntimeError('Missing details in changelog')
 
     # Trim trailing blank lines (start/end)
@@ -87,7 +87,7 @@ def read_change_log_for_version(version):
         while changeLines and len(changeLines[idx].strip()) == 0:
             changeLines.pop(idx)
 
-    print('ChangeLog details found: {0} lines'.format(len(changeLines)))
+    print('ChangeLog details found: {:d} lines'.format(len(changeLines)))
     return '\n'.join(changeLines)
 
 def check_if_release_exists(api_repo_url, api_token, tag_name):
@@ -96,9 +96,9 @@ def check_if_release_exists(api_repo_url, api_token, tag_name):
     endpoint = api_repo_url + '/releases/tags/' + tag_name
     req = request.Request(url=endpoint, method='GET')
     req.add_header('accept', 'application/vnd.github+json')
-    req.add_header('Authorization', 'BEARER {}'.format(api_token))
+    req.add_header('Authorization', f'BEARER {api_token}')
     try:
-        print('Checking if GitHub tag exists: {}'.format(endpoint))
+        print(f'Checking if GitHub tag exists: {endpoint}')
         with request.urlopen(req) as response:
             response = response.read().decode('utf-8')
             raise RuntimeError('Release for this version already exists. Do you need to bump version?')
@@ -113,7 +113,7 @@ def create_GitHub_release(api_repo_url ,api_token, plugin_name, tag_name, change
     data = {
         'tag_name': tag_name,
         'target_commitish': 'main',
-        'name': '{:s} {:s}'.format(plugin_name, tag_name),
+        'name': f'{plugin_name} {tag_name}',
         'body': changeBody,
         'draft': False,
         'prerelease': False,
@@ -123,10 +123,10 @@ def create_GitHub_release(api_repo_url ,api_token, plugin_name, tag_name, change
     data = data.encode()
     req = request.Request(url=endpoint, data=data, method='POST')
     req.add_header('accept', 'application/vnd.github+json')
-    req.add_header('Authorization', 'BEARER {}'.format(api_token))
+    req.add_header(f'Authorization', 'BEARER {api_token}')
     req.add_header('Content-Type', 'application/json')
     try:
-        print('Creating release: {}'.format(endpoint))
+        print(f'Creating release: {endpoint}')
         with request.urlopen(req) as response:
             response = response.read().decode('utf-8')
             content = json.loads(response)
@@ -142,21 +142,21 @@ def upload_zip_to_release(api_token, upload_url, zip_file, tag_name):
     zip_file = dst
     zip_file_up = parse.quote(os.path.basename(zip_file))
     
-    endpoint = upload_url.replace('{?name,label}','?name={}&label={}'.format(zip_file_up, zip_file_up))
+    endpoint = upload_url.replace(f'{?name,label}','?name={zip_file_up}&label={zip_file_up}')
     with open(zip_file, 'rb') as file:
         content = file.read()
     
     req = request.Request(url=endpoint, data=content, method='POST')
     req.add_header('accept', 'application/vnd.github+json')
-    req.add_header('Authorization', 'BEARER {}'.format(api_token))
+    req.add_header(f'Authorization', 'BEARER {api_token}')
     req.add_header('Content-Type', 'application/octet-stream')
     try:
-        print('Uploading zip for release: {}'.format(endpoint))
+        print(f'Uploading zip for release: {endpoint}')
         with request.urlopen(req) as response:
             response = response.read().decode('utf-8')
             content = json.loads(response)
             downloadUrl = content['browser_download_url']
-            print('Zip uploaded successfully: {}'.format(downloadUrl))
+            print(f'Zip uploaded successfully: {downloadUrl}')
     except error.HTTPError as e:
         raise RuntimeError('Failed to upload zip due to:',e)
 

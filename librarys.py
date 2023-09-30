@@ -1,17 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import (unicode_literals, division, absolute_import,
-                        print_function)
 
 __license__   = 'GPL v3'
 __copyright__ = '2011, Grant Drake <grant.drake@gmail.com> ; 2020, un_pogaz <un.pogaz@gmail.com>'
 __docformat__ = 'restructuredtext en'
 
-
-# python3 compatibility
-from six.moves import range
-from six import text_type as unicode
-from polyglot.builtins import iteritems, itervalues
 
 try:
     load_translations()
@@ -151,7 +144,7 @@ def get_marked(label=None):
     """
     
     rslt = {}
-    for k,v in iteritems(GUI.current_db.data.marked_ids):
+    for k,v in GUI.current_db.data.marked_ids.items():
         v = str(v).lower()
         if v not in rslt:
             rslt[v] = [k]
@@ -186,7 +179,7 @@ def set_marked(label, book_ids, append=False, reset=False):
     
     if not append:
         del_id = []
-        for k,v in iteritems(marked):
+        for k,v in marked.items():
             if v == label: del_id.append(k)
         
         for k in del_id:
