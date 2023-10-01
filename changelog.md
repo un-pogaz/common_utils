@@ -1,7 +1,7 @@
 # Changelog - common_utils
 
 ## 2023/09/30
-- Drop Python 2 / Calibre 4 comatibility, only 5 and above
+- Drop Python 2 / Calibre 4 compatibility, only 5 and above
 
 ## 2023/09/29
 - Add SelectFieldValuesWidget and SelectNotesWidget
@@ -10,7 +10,7 @@
 - Add PLUGIN_CLASSE
 - remove load_plugin_resources(), Add ZipResources and PluginResources
     - PLUGIN_RESOURCES will now auto load any requested items
-- Drop Calibre 2 and 3 comatibility, only 4 and above
+- Drop Calibre 2 and 3 compatibility, only 4 and above
     - !! Remove SizePersistedDialog !!
 - Add ImageDialog, rework ImageComboBox
 

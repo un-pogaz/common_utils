@@ -13,12 +13,13 @@ except NameError:
 
 from collections import defaultdict, OrderedDict
 from functools import partial
+from typing import List
 
 from calibre.gui2 import error_dialog
-from calibre.db.categories import category_display_order
 
-from . import debug_print, GUI, PLUGIN_NAME
+from . import debug_print, GUI, current_db, PLUGIN_NAME
 from .columns import get_categories
+from .compatibility import category_display_order
 
 
 try:
@@ -31,17 +32,13 @@ except Exception:
     authors_split_regex = r'(?i),?\s+(and|with)\s+'
     """tweaks split regex for authors"""
 
-def string_to_authors(raw_string):
-    """
-    Split a string into a list of authors
-    
-    return: list(str)
-    """
+def string_to_authors(raw_string: str) -> List[str]:
+    'Split a string into a list of authors'
     from calibre.ebooks.metadata import string_to_authors
     return string_to_authors(raw_string)
 
-def no_launch_error(title, name=None, msg=None):
-    """Show a error dialog  for an operation that cannot be launched"""
+def no_launch_error(title, name: str=None, msg: str=None):
+    'Show a error dialog  for an operation that cannot be launched'
     
     if msg and len(msg) > 0:
         msg = '\n'+msg
@@ -50,7 +47,7 @@ def no_launch_error(title, name=None, msg=None):
     
     error_dialog(GUI, title, (title +'.\n'+ _('Could not to launch {:s}').format(PLUGIN_NAME or name) + msg), show=True, show_copy_button=False)
 
-def _BookIds_error(book_ids, show_error, title, name=None):
+def _BookIds_error(book_ids: List[int], show_error: bool, title: str, name: str=None):
     if not book_ids and show_error:
         no_launch_error(title, name=name)
     return book_ids
@@ -66,7 +63,7 @@ def get_BookIds_selected(show_error=False):
 
 def get_BookIds_all(show_error=False):
     """return all books id in the library"""
-    ids = GUI.current_db.all_ids()
+    ids = current_db().all_ids()
     return _BookIds_error(ids, show_error, _('No book in the library'))
 
 def get_BookIds_virtual(show_error=False):
@@ -98,7 +95,7 @@ def get_BookIds(query, use_search_restriction=True, use_virtual_library=True):
     use_virtual_library:
         Limit the search to the actual virtual library
     """
-    data = GUI.current_db.data
+    data = current_db().data
     query = query or ''
     search_restriction = data.search_restriction if use_search_restriction else ''
     return data.search_getting_ids(query, search_restriction,
@@ -115,25 +112,25 @@ def get_last_search():
 
 def get_curent_virtual():
     """The virtual library, can't be a temporary VL"""
-    data = GUI.current_db.data
+    data = current_db().data
     return data.get_base_restriction_name(), data.get_base_restriction()
 
 def get_curent_restriction_search():
     """The search restriction is a top level filtre, based on the saved searches"""
-    data = GUI.current_db.data
+    data = current_db().data
     name = data.get_search_restriction_name()
     return name, get_saved_searches().get(name, data.search_restriction)
 
 def get_virtual_libraries():
     """Get all virtual library set in the database"""
-    return GUI.current_db.prefs.get('virtual_libraries', {})
+    return current_db().prefs.get('virtual_libraries', {})
 
 def get_saved_searches():
     """Get all saved searches set in the database"""
-    return GUI.current_db.prefs.get('saved_searches', {})
+    return current_db().prefs.get('saved_searches', {})
 
 
-def get_marked(label=None):
+def get_marked(label: str=None):
     """
     Get the marked books
     
@@ -144,7 +141,7 @@ def get_marked(label=None):
     """
     
     rslt = {}
-    for k,v in GUI.current_db.data.marked_ids.items():
+    for k,v in current_db().data.marked_ids.items():
         v = str(v).lower()
         if v not in rslt:
             rslt[v] = [k]
@@ -157,7 +154,7 @@ def get_marked(label=None):
         label = str(label).lower()
         return { label:rslt[label] }
 
-def set_marked(label, book_ids, append=False, reset=False):
+def set_marked(label: str, book_ids: List[int], append=False, reset=False):
     """
     Set the marked books
     
@@ -175,7 +172,7 @@ def set_marked(label, book_ids, append=False, reset=False):
         Book id to affect the label
     """
     label = str(label).lower()
-    marked = {} if reset else GUI.current_db.data.marked_ids.copy()
+    marked = {} if reset else current_db().data.marked_ids.copy()
     
     if not append:
         del_id = []
@@ -186,17 +183,17 @@ def set_marked(label, book_ids, append=False, reset=False):
             del marked[k]
     
     marked.update( {idx:label for idx in book_ids} )
-    GUI.current_db.data.set_marked_ids(marked)
+    current_db().data.set_marked_ids(marked)
 
 def get_category_icons_map():
     return GUI.tags_view.model().category_custom_icons
 
-def get_tags_browsable_fields(use_defaults=False, order_override=[], include_composite=True):
+def get_tags_browsable_fields(use_defaults=False, order_override: List[str]=None, include_composite=True):
     if use_defaults:
         tbo = []
     elif order_override:
         tbo = order_override
     else:
-        tbo = GUI.current_db.new_api.pref('tag_browser_category_order', [])
+        tbo = current_db().new_api.pref('tag_browser_category_order', [])
     
     return category_display_order(tbo, get_categories(include_composite=include_composite).keys())

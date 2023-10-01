@@ -12,11 +12,14 @@ Invocation should be via each plugin release.cmd, which will ensure that:
 - Pass through the CALIBRE_GITHUB_TOKEN environment variable value
 '''
 
-import sys, os, re, json, configparser
+import os
+import re
+import json
+import configparser
 from urllib import request, parse, error
-from glob import glob
+from typing import Tuple
 
-def read_repos_detail():
+def read_repos_detail() -> str:
     config = configparser.ConfigParser()
     config.read(os.path.join(os.getcwd(), '.git','config'))
     origin = None
@@ -28,7 +31,7 @@ def read_repos_detail():
     
     return origin[len('https://github.com/'):-len('.git')]
 
-def read_plugin_details():
+def read_plugin_details() -> Tuple[str, str, str]:
     short_name = os.path.split(os.getcwd())[1]
     initFile = os.path.join(os.getcwd(), '__init__.py')
     if not os.path.exists(initFile):
@@ -50,14 +53,14 @@ def read_plugin_details():
     print(f"Plugin to be released for: '{plugin_name}' v{version}")
     return short_name, plugin_name, version
 
-def get_plugin_zip_path(plugin_name):
+def get_plugin_zip_path(plugin_name: str) -> str:
     zip_file = os.path.join(os.getcwd(), '-- versioning', plugin_name+'.zip')
     if not os.path.exists(zip_file):
         print(f'ERROR: No zip file found for this plugin at: {zip_file}')
         raise FileNotFoundError(zip_file)
     return zip_file
 
-def read_change_log_for_version(version):
+def read_change_log_for_version(version: str) -> str:
     changeLogFile = os.path.join(os.getcwd(), 'changelog.md')
     if not os.path.exists(changeLogFile):
         print(f'ERROR: No change log found for this plugin at: {changeLogFile}')
@@ -90,7 +93,7 @@ def read_change_log_for_version(version):
     print('ChangeLog details found: {:d} lines'.format(len(changeLines)))
     return '\n'.join(changeLines)
 
-def check_if_release_exists(api_repo_url, api_token, tag_name):
+def check_if_release_exists(api_repo_url: str, api_token: str, tag_name: str):
     # If we have already released this plugin version then we have a problem
     # Most likely have forgotten to bump the version number?
     endpoint = api_repo_url + '/releases/tags/' + tag_name
@@ -108,7 +111,7 @@ def check_if_release_exists(api_repo_url, api_token, tag_name):
         else:
             raise RuntimeError('Failed to check release existing API due to:',e)
 
-def create_GitHub_release(api_repo_url ,api_token, plugin_name, tag_name, changeBody):
+def create_GitHub_release(api_repo_url: str, api_token: str, plugin_name: str, tag_name: str, changeBody: str):
     endpoint = api_repo_url + '/releases'
     data = {
         'tag_name': tag_name,
@@ -136,13 +139,13 @@ def create_GitHub_release(api_repo_url ,api_token, plugin_name, tag_name, change
     except error.HTTPError as e:
         raise RuntimeError('Failed to create release due to:',e)
 
-def upload_zip_to_release(api_token, upload_url, zip_file, tag_name):
+def upload_zip_to_release(api_token: str, upload_url: str, zip_file: str, tag_name: str):
     dst = os.path.splitext(zip_file)[0] +'-'+tag_name+'.zip'
     os.rename(zip_file, dst)
     zip_file = dst
     zip_file_up = parse.quote(os.path.basename(zip_file))
     
-    endpoint = upload_url.replace(f'{?name,label}','?name={zip_file_up}&label={zip_file_up}')
+    endpoint = upload_url.replace('{?name,label}', f'?name={zip_file_up}&label={zip_file_up}')
     with open(zip_file, 'rb') as file:
         content = file.read()
     

@@ -13,10 +13,20 @@ except NameError:
 
 from collections import defaultdict, OrderedDict
 from functools import partial
+from typing import Any, Optional, Callable
 
-from calibre.gui2.actions import menu_action_unique_name
+try:
+    from qt.core import (
+        QAction, QMenu,
+    )
+except ImportError:
+    from PyQt5.Qt import (
+        QAction, QMenu,
+    )
 
-from . import calibre_version, GUI, get_icon
+from calibre.gui2.actions import menu_action_unique_name, InterfaceAction
+
+from . import CALIBRE_VERSION, GUI, debug_print, get_icon
 
 
 # Global definition of our menu actions. Used to ensure we can cleanly unregister
@@ -35,13 +45,26 @@ def unregister_menu_actions():
             GUI.keyboard.unregister_shortcut(action.calibre_shortcut_unique_name)
         # starting in calibre 2.10.0, actions are registers at
         # the top gui level for OSX' benefit.
-        if calibre_version >= (2,10,0):
-            GUI.removeAction(action)
+        if CALIBRE_VERSION >= (2,10,0):
+            try:
+                GUI.removeAction(action)
+            except:
+                pass
     plugin_menu_actions = []
 
-def create_menu_action_unique(ia, parent_menu, menu_text, image=None, tooltip=None,
-                       shortcut=None, triggered=None, is_checked=None, shortcut_name=None,
-                       unique_name=None, favourites_menu_unique_name=None):
+def create_menu_action_unique(
+                            ia: InterfaceAction,
+                            parent_menu: QMenu,
+                            menu_text: str,
+                            image: str=None,
+                            tooltip: str=None,
+                            shortcut: Any=None,
+                            shortcut_name=None,
+                            triggered: Callable=None,
+                            is_checked: Optional[bool]=None,
+                            unique_name: str=None,
+                            favourites_menu_unique_name: str=None,
+                            ) -> QAction:
     """
     Create a menu action with the specified criteria and action, using the new
     InterfaceAction.create_menu_action() function which ensures that regardless of
@@ -63,9 +86,9 @@ def create_menu_action_unique(ia, parent_menu, menu_text, image=None, tooltip=No
                     shortcut = None
     
     if shortcut_name is None:
-        shortcut_name = menu_text.replace('&','')
+        shortcut_name = unique_name.replace('&','')
     
-    if calibre_version >= (5,4,0):
+    if CALIBRE_VERSION >= (5,4,0):
         # The persist_shortcut parameter only added from 5.4.0 onwards.
         # Used so that shortcuts specific to other libraries aren't discarded.
         ac = ia.create_menu_action(parent_menu, unique_name, menu_text, icon=None,
@@ -98,8 +121,16 @@ def create_menu_action_unique(ia, parent_menu, menu_text, image=None, tooltip=No
     
     return ac
 
-def create_menu_item(ia, parent_menu, menu_text, image=None, tooltip=None,
-                     shortcut=(), triggered=None, is_checked=None):
+def create_menu_item(
+                    ia: InterfaceAction,
+                    parent_menu: QMenu,
+                    menu_text: str,
+                    image: str=None,
+                    tooltip: str=None,
+                    shortcut: Any=(),
+                    triggered: Callable=None,
+                    is_checked: Optional[bool]=None,
+                    ) -> QAction:
     """
     Create a menu action with the specified criteria and action
     Note that if no shortcut is specified, will not appear in Preferences->Keyboard

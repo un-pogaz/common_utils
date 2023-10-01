@@ -13,36 +13,46 @@ except NameError:
 
 from collections import defaultdict, OrderedDict
 from functools import partial
+from locale import Error
+from typing import Any, List
 
-import sys, time, os, shutil
+import sys
+import time
+import os
+import shutil
 
 try:
     from qt.core import (
-        Qt, QAbstractItemView, QApplication, QDialog, QDialogButtonBox, QGridLayout, QGroupBox, QHBoxLayout,
-        QLabel, QLineEdit, QListWidget, QProgressBar, QProgressDialog, QPushButton, QRadioButton, QSize,
+        Qt, QAbstractItemView, QApplication, QDialogButtonBox, QGridLayout, QGroupBox, QHBoxLayout,
+        QLabel, QLineEdit, QListWidget, QProgressDialog, QPushButton, QRadioButton, QSize,
         QTextBrowser, QTextEdit, QTimer, QVBoxLayout, pyqtSignal,
     )
 except ImportError:
     from PyQt5.Qt import (
-        Qt, QAbstractItemView, QApplication, QDialog, QDialogButtonBox, QGridLayout, QGroupBox, QHBoxLayout,
-        QLabel, QLineEdit, QListWidget, QProgressBar, QProgressDialog, QPushButton, QRadioButton, QSize,
+        Qt, QAbstractItemView, QApplication, QDialogButtonBox, QGridLayout, QGroupBox, QHBoxLayout,
+        QLabel, QLineEdit, QListWidget, QProgressDialog, QPushButton, QRadioButton, QSize,
         QTextBrowser, QTextEdit, QTimer, QVBoxLayout, pyqtSignal,
     )
 
 from calibre.gui2 import error_dialog, question_dialog, choose_files
+from calibre.gui2.actions import InterfaceAction
 from calibre.gui2.keyboard import ShortcutConfig
 from calibre.gui2.widgets2 import Dialog
 
-from . import GUI, PLUGIN_NAME, PREFS_NAMESPACE, debug_print, get_icon, get_local_resource
+from . import GUI, current_db, PLUGIN_NAME, PREFS_NAMESPACE, debug_print, get_icon, get_local_resource
 
 
 class KeyboardConfigDialog(Dialog):
     """
     This dialog is used to allow editing of keyboard shortcuts.
     """
-    def __init__(self, group_name, parent=None):
+    def __init__(self, group_name: str, parent=None):
         self.group_name = group_name
-        Dialog.__init__(self, _('Keyboard shortcuts'), 'plugin_keyboard_shortcut_dialog', parent=parent or GUI)
+        Dialog.__init__(self,
+            title=_('Keyboard shortcuts'),
+            name='plugin.common_utils:keyboard_shortcut_dialog',
+            parent=parent or GUI,
+        )
     
     def setup_ui(self):
         layout = QVBoxLayout(self)
@@ -60,31 +70,36 @@ class KeyboardConfigDialog(Dialog):
         self.keyboard_widget.commit()
         Dialog.accept(self)
 
-def edit_keyboard_shortcuts(plugin_action):
+def edit_keyboard_shortcuts_dialog(plugin_action: InterfaceAction, parent=None):
     getattr(plugin_action, 'rebuild_menus', ())()
-    d = KeyboardConfigDialog(plugin_action.action_spec[0])
+    d = KeyboardConfigDialog(plugin_action.action_spec[0], parent=None)
     if d.exec():
         GUI.keyboard.finalize()
 
 class KeyboardConfigDialogButton(QPushButton):
     def __init__(self, parent=None):
-        QPushButton.__init__(self, _('Keyboard shortcuts')+'…', parent)
+        QPushButton.__init__(self, get_icon('keyboard-prefs.png'), _('Keyboard shortcuts')+'…', parent)
         self.setToolTip(_('Edit the keyboard shortcuts associated with this plugin'))
         self.clicked.connect(self.edit_shortcuts)
 
     def edit_shortcuts(self):
         from . import PLUGIN_INSTANCE
         plugin_action = PLUGIN_INSTANCE.load_actual_plugin(GUI)
-        edit_keyboard_shortcuts(plugin_action)
+        edit_keyboard_shortcuts_dialog(plugin_action)
 
 
 class LibraryPrefsViewerDialog(Dialog):
-    def __init__(self, namespace, parent=None):
-        self.db = GUI.current_db
+    def __init__(self, namespace: str, parent=None):
+        self.db = current_db()
         self.namespace = namespace
         self.prefs = {}
         self.current_key = None
-        Dialog.__init__(self, _('Preferences for:')+' '+namespace, 'library_prefs_viewer_dialog', parent=parent or GUI)
+        Dialog.__init__(self,
+            title=_('Preferences for:')+' '+namespace,
+            name='plugin.common_utils:library_prefs_viewer_dialog',
+            parent=parent or GUI,
+            default_buttons=QDialogButtonBox.Ok | QDialogButtonBox.Cancel | QDialogButtonBox.Reset,
+        )
     
     def setup_ui(self):
         layout = QVBoxLayout(self)
@@ -102,10 +117,9 @@ class LibraryPrefsViewerDialog(Dialog):
         self.value_text.setReadOnly(False)
         ml.addWidget(self.value_text, 1)
         
-        self.clear_button = self.bb.addButton(_('Clear'), QDialogButtonBox.ResetRole)
-        self.clear_button.setIcon(get_icon('trash.png'))
-        self.clear_button.setToolTip(_('Clear all settings for this plugin'))
-        self.clear_button.clicked.connect(self._clear_settings)
+        reset_button = self.bb.button(QDialogButtonBox.Reset)
+        reset_button.setToolTip(_('Clear all settings for this plugin'))
+        reset_button.clicked.connect(self._reset_settings)
         layout.addWidget(self.bb)
         
         self._populate_settings()
@@ -116,7 +130,7 @@ class LibraryPrefsViewerDialog(Dialog):
     def _populate_settings(self):
         self.prefs.clear()
         self.keys_list.clear()
-        ns_prefix = ':'.join(['namespaced',self.namespace,''])
+        ns_prefix = 'namespaced:'+self.namespace+':'
         ns_len = len(ns_prefix)
         for key in sorted([k[ns_len:] for k in self.db.prefs.keys() if k.startswith(ns_prefix)]):
             self.keys_list.addItem(key)
@@ -153,19 +167,19 @@ class LibraryPrefsViewerDialog(Dialog):
         message = '<p>'+_('Are you sure you want to change your settings in this library for this plugin?')+'</p>' \
                   '<p>'+_('Any settings in other libraries or stored in a JSON file in your calibre plugins ' \
                   'folder will not be touched.')+'</p>'
-        if not confirm(message, self.namespace+'_apply_settings', self):
+        if not confirm(message, 'library_prefs_viewer_dialog_apply_settings:'+self.namespace, self):
             return
         
         for k,v in self.prefs.items():
             self.db.prefs.set_namespaced(self.namespace, k, self.db.prefs.raw_to_object(v))
         Dialog.accept(self)
     
-    def _clear_settings(self):
+    def _reset_settings(self):
         from calibre.gui2.dialogs.confirm_delete import confirm
         message = '<p>'+_('Are you sure you want to clear your settings in this library for this plugin?')+'</p>' \
                   '<p>'+_('Any settings in other libraries or stored in a JSON file in your calibre plugins ' \
                   'folder will not be touched.')+'</p>'
-        if not confirm(message, self.namespace+'_clear_settings', self):
+        if not confirm(message, 'library_prefs_viewer_dialog_reset_settings:'+self.namespace, self):
             return
         
         for k in self.prefs.keys():
@@ -174,72 +188,25 @@ class LibraryPrefsViewerDialog(Dialog):
         self._populate_settings()
         Dialog.accept(self)
 
-def view_library_prefs(prefs_namespace=PREFS_NAMESPACE):
-    d = LibraryPrefsViewerDialog(prefs_namespace)
+def library_prefs_dialog(prefs_namespace: str=PREFS_NAMESPACE, parent=None) -> Dialog.DialogCode:
+    d = LibraryPrefsViewerDialog(prefs_namespace, parent)
     return d.exec()
 
 class LibraryPrefsViewerDialogButton(QPushButton):
     
     library_prefs_changed = pyqtSignal()
     
-    def __init__(self, parent=None, prefs_namespace=PREFS_NAMESPACE):
-        QPushButton.__init__(self, _('View library preferences')+'…', parent)
+    def __init__(self, prefs_namespace: str=PREFS_NAMESPACE, parent=None):
+        QPushButton.__init__(self, get_icon('lt.png'), _('View library preferences')+'…', parent)
         self.setToolTip(_('View data stored in the library database for this plugin'))
-        self.clicked.connect(self.view_library_prefs)
+        self.clicked.connect(self.library_prefs_dialog)
         self.prefs_namespace = prefs_namespace
+        self.parent = parent
 
-    def view_library_prefs(self):
-        if view_library_prefs(self.prefs_namespace):
+    def library_prefs_dialog(self):
+        if library_prefs_dialog(self.prefs_namespace, self.parent):
             self.library_prefs_changed.emit()
 
-
-class ProgressBarDialog(QDialog):
-    def __init__(self, parent=None, max_items=100, window_title='Progress Bar',
-                 label='Label goes here', on_top=False):
-        from calibre.gui2 import Application
-        
-        if on_top:
-            ProgressBarDialog.__init__(self, parent=parent, flags=Qt.WindowStaysOnTopHint)
-        else:
-            ProgressBarDialog.__init__(self, parent=parent)
-        self.application = Application
-        self.setWindowTitle(window_title)
-        self.l = QVBoxLayout(self)
-        self.setLayout(self.l)
-        
-        self.label = QLabel(label)
-        #self.label.setAlignment(Qt.AlignHCenter)
-        self.l.addWidget(self.label)
-        
-        self.progressBar = QProgressBar(self)
-        self.progressBar.setRange(0, max_items)
-        self.progressBar.setValue(0)
-        self.l.addWidget(self.progressBar)
-    
-    def increment(self):
-        self.progressBar.setValue(self.progressBar.value() + 1)
-        self.refresh()
-    
-    def refresh(self):
-        self.application.processEvents()
-    
-    def set_label(self, value):
-        self.label.setText(value)
-        self.refresh()
-    
-    def left_align_label(self):
-        self.label.setAlignment(Qt.AlignLeft )
-    
-    def set_maximum(self, value):
-        self.progressBar.setMaximum(value)
-        self.refresh()
-    
-    def set_value(self, value):
-        self.progressBar.setValue(value)
-        self.refresh()
-    
-    def set_progress_format(self, progress_format=None):
-        pass
 
 class ProgressDialog(QProgressDialog):
     
@@ -247,10 +214,10 @@ class ProgressDialog(QProgressDialog):
     title=None
     cancel_text=None
     
-    def __init__(self, book_ids=[], **kvargs):
+    def __init__(self, book_ids: Any, parent=None, **kvargs):
         
         # DB
-        self.db = GUI.current_db
+        self.db = current_db()
         # DB API
         self.dbAPI = self.db.new_api
         
@@ -262,7 +229,7 @@ class ProgressDialog(QProgressDialog):
         value_max = self.setup_progress(**kvargs) or self.book_count
         
         cancel_text = kvargs.get('cancel_text', None) or self.cancel_text or _('Cancel')
-        QProgressDialog.__init__(self, '', cancel_text, 0, value_max, GUI)
+        QProgressDialog.__init__(self, '', cancel_text, 0, value_max, parent or GUI)
         
         self.setMinimumWidth(500)
         self.setMinimumHeight(100)
@@ -297,7 +264,7 @@ class ProgressDialog(QProgressDialog):
         
         self.close()
     
-    def set_value(self, value, text=None):
+    def set_value(self, value: int, text: str=None):
         if value < 0:
             value = self.maximum()
         self.setValue(value)
@@ -314,7 +281,7 @@ class ProgressDialog(QProgressDialog):
         else:
             self.show()
     
-    def increment(self, value=1, text=None):
+    def increment(self, value: int=1, text: str=None) -> int:
         rslt = self.value() + value
         if rslt > self.maximum():
             rslt = self.maximum()
@@ -326,7 +293,7 @@ class ProgressDialog(QProgressDialog):
         self.job_progress()
         self.hide()
     
-    def progress_text(self):
+    def progress_text(self) -> str:
         return _('Book {:d} of {:d}').format(self.value(), self.book_count)
     
     def setup_progress(self, **kvargs):
@@ -339,9 +306,13 @@ class ProgressDialog(QProgressDialog):
         raise NotImplementedError()
 
 class ViewLogDialog(Dialog):
-    def __init__(self, title, html, parent=None):
+    def __init__(self, title: str, html: str, parent=None):
         self.src_html = html or ''
-        Dialog.__init__(self, title, 'log_viewer_dialog', parent=parent or GUI)
+        Dialog.__init__(self,
+            title=title,
+            name='plugin.common_utils:log_viewer_dialog',
+            parent=parent or GUI,
+        )
     
     def setup_ui(self):
         self.setWindowIcon(get_icon('debug.png'))
@@ -354,7 +325,7 @@ class ViewLogDialog(Dialog):
         # ViewLog does, instead just format it inside divs to keep style formatting
         html = self.src_html.replace('\t','&nbsp;&nbsp;&nbsp;&nbsp;').replace('\n', '<br/>')
         html = html.replace('> ','>&nbsp;')
-        self.tb.setHtml(f'<div>{html}</div>')
+        self.tb.setHtml('<div>'+html+'</div>')
         QApplication.restoreOverrideCursor()
         l.addWidget(self.tb)
         
@@ -372,13 +343,17 @@ class ViewLogDialog(Dialog):
         QApplication.clipboard().setText(txt)
 
 
-class ImageDialog(QDialog):
-    def __init__(self, existing_images=[], resources_dir=None, parent=None):
-        QDialog.__init__(self, parent or GUI)
-        
+class ImageDialog(Dialog):
+    def __init__(self, existing_images: List[str]=None, resources_dir: str=None, parent=None):
         self.resources_dir = resources_dir or get_local_resource.IMAGES
         self.existing_images = existing_images or []
-        self.setWindowTitle(_('Add New Image'))
+        Dialog.__init__(self,
+            title=_('Add New Image'),
+            name='plugin.common_utils:add_new_image',
+            parent=parent or GUI,
+        )
+    
+    def setup_ui(self):
         v = QVBoxLayout(self)
         
         group_box = QGroupBox(_('&Select image source'), self)
@@ -415,16 +390,13 @@ class ImageDialog(QDialog):
         save_layout.addWidget(lbl_ext, 1, Qt.AlignLeft)
         v.addLayout(save_layout)
         
-        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        button_box.accepted.connect(self.ok_clicked)
-        button_box.rejected.connect(self.reject)
-        v.addWidget(button_box)
+        v.addWidget(self.bb)
         self.resize(self.sizeHint())
         self._web_domain_edit.setFocus()
         self.new_image_name = None
     
     @property
-    def image_name(self):
+    def image_name(self) -> str:
         return self.new_image_name
     
     def pick_file_to_import(self):
@@ -439,7 +411,7 @@ class ImageDialog(QDialog):
         self._save_as_edit.setText(os.path.splitext(os.path.basename(f))[0])
         self._radio_file.click()
     
-    def ok_clicked(self):
+    def accept(self):
         # Validate all the inputs
         save_name = self._save_as_edit.text().strip()
         if not save_name:
@@ -464,7 +436,6 @@ class ImageDialog(QDialog):
                 return error_dialog(self, _('Cannot import image'), _('You must specify a web domain url'), show=True)
             url = 'http://www.google.com/s2/favicons?domain=' + domain
             urlretrieve(url, dest_path)
-            return self.accept()
         else:
             source_file_path = self._input_file_edit.text().strip()
             if not source_file_path:
@@ -474,10 +445,10 @@ class ImageDialog(QDialog):
             if not os.path.exists(source_file_path):
                 return error_dialog(self, _('Cannot import image'), _('Source image does not exist!'), show=True)
             shutil.copyfile(source_file_path, dest_path)
-            return self.accept()
+        Dialog.accept(self)
 
 
-def custom_exception_dialog(exception, additional_msg=None, title=None, parent=None, show_detail=True):
+def custom_exception_dialog(exception: Error, additional_msg: str=None, title: str=None, show_detail=True, parent=None):
     
     from polyglot.io import PolyglotStringIO
     import traceback

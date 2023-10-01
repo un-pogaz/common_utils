@@ -13,26 +13,30 @@ except NameError:
 
 from collections import defaultdict, OrderedDict
 from functools import partial
+from typing import Any, Dict, List
 
 try:
     from qt.core import (
-        Qt, QAbstractItemView, QComboBox, QDateTime, QFont, QFont, QHBoxLayout, QLabel, QLineEdit,
-        QStyledItemDelegate, QSize, QTableWidgetItem, QTreeWidget, QTreeWidgetItem, pyqtSignal,
+        Qt, QAbstractItemView, QComboBox, QDateTime, QFont, QFont, QHBoxLayout, QIcon, QLabel,
+        QLineEdit, QStyledItemDelegate, QSize, QTableWidgetItem, QTreeWidget, QTreeWidgetItem,
+        pyqtSignal,
     )
 except ImportError:
     from PyQt5.Qt import (
-        Qt, QAbstractItemView, QComboBox, QDateTime, QFont, QFont, QHBoxLayout, QLabel, QLineEdit,
-        QStyledItemDelegate, QSize, QTableWidgetItem, QTreeWidget, QTreeWidgetItem, pyqtSignal,
+        Qt, QAbstractItemView, QComboBox, QDateTime, QFont, QFont, QHBoxLayout, QIcon, QLabel,
+        QLineEdit, QStyledItemDelegate, QSize, QTableWidgetItem, QTreeWidget, QTreeWidgetItem,
+        pyqtSignal,
     )
 
 from calibre.gui2 import error_dialog, UNDEFINED_QDATETIME
 from calibre.gui2.dnd import dnd_get_files
-from calibre.utils.date import now, format_date, UNDEFINED_DATE
+from calibre.utils.date import now, datetime, format_date, UNDEFINED_DATE
 from calibre.gui2.library.delegates import DateDelegate as _DateDelegate
 from calibre.ebooks.metadata import rating_to_stars
 
-from . import debug_print, get_icon, get_pixmap, get_date_format, GUI
+from . import debug_print, get_icon, get_pixmap, get_date_format, GUI, current_db
 from .librarys import get_category_icons_map, get_tags_browsable_fields
+from .columns import get_all_identifiers
 
 
 # ----------------------------------------------
@@ -43,8 +47,8 @@ class ImageTitleLayout(QHBoxLayout):
     """
     A reusable layout widget displaying an image followed by a title
     """
-    def __init__(self, parent, icon_name, title):
-        QHBoxLayout.__init__(self)
+    def __init__(self, icon_name: str, title: str, parent=None):
+        QHBoxLayout.__init__(self, parent)
         self.title_image_label = QLabel(parent)
         self.update_title_icon(icon_name)
         self.addWidget(self.title_image_label)
@@ -70,9 +74,14 @@ class CheckableTableWidgetItem(QTableWidgetItem):
     """
     For use in a table cell, displays a checkbox that can potentially be tristate
     """
-    def __init__(self, checked=False, is_tristate=False):
-        QTableWidgetItem.__init__(self, '')
-        self.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsUserCheckable | Qt.ItemFlag.ItemIsEnabled )
+    def __init__(self, checked: bool=False, text: str='', is_tristate=False, is_read_only=False):
+        QTableWidgetItem.__init__(self, text)
+        self.is_read_only = is_read_only
+        if is_read_only:
+            self.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
+        else:
+            self.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsUserCheckable | Qt.ItemFlag.ItemIsEnabled)
+        
         if is_tristate:
             self.setFlags(self.flags() | Qt.ItemFlag.ItemIsUserTristate)
         if checked:
@@ -83,7 +92,7 @@ class CheckableTableWidgetItem(QTableWidgetItem):
             else:
                 self.setCheckState(Qt.CheckState.Unchecked)
     
-    def get_boolean_value(self):
+    def get_boolean_value(self) -> bool:
         """
         Return a boolean value indicating whether checkbox is checked
         If this is a tristate checkbox, a partially checked value is returned as None
@@ -99,13 +108,14 @@ class DateDelegate(_DateDelegate):
     format as an instance variable, a new instance must be created for each
     column. This differs from all the other delegates.
     """
-    def __init__(self, parent, fmt='dd MMM yyyy', default_to_today=True):
+    def __init__(self, fmt='dd MMM yyyy', default_to_today=True, parent=None):
         DateDelegate.__init__(self, parent)
         self.format = get_date_format(default_fmt=fmt)
         self.default_to_today = default_to_today
-        debug_print('DateDelegate fmt:',fmt)
+        self.parent = parent
 
-    def createEditor(self, parent, option, index):
+    def createEditor(self, option, index, parent=None):
+        parent = parent or self.parent or GUI
         qde = QStyledItemDelegate.createEditor(self, parent, option, index)
         qde.setDisplayFormat(self.format)
         qde.setMinimumDateTime(UNDEFINED_QDATETIME)
@@ -132,81 +142,45 @@ class DateDelegate(_DateDelegate):
             model.setData(index, QDateTime(val), Qt.EditRole)
 
 class DateTableWidgetItem(QTableWidgetItem):
-    def __init__(self, date_read, is_read_only=False, default_to_today=False, fmt=None):
+    def __init__(self, date_read: datetime, default_to_today=False, fmt=None, is_read_only=False):
         if date_read is None or date_read == UNDEFINED_DATE and default_to_today:
             date_read = now()
+        self.is_read_only = is_read_only
         if is_read_only:
             QTableWidgetItem.__init__(self, format_date(date_read, fmt))
-            self.setFlags(Qt.ItemIsSelectable|Qt.ItemIsEnabled)
+            self.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
             self.setData(Qt.DisplayRole, QDateTime(date_read))
         else:
             QTableWidgetItem.__init__(self, '')
             self.setData(Qt.DisplayRole, QDateTime(date_read))
 
 class RatingTableWidgetItem(QTableWidgetItem):
-    def __init__(self, rating, is_read_only=False):
+    def __init__(self, rating: int, is_read_only=False):
         QTableWidgetItem.__init__(self, '')
         self.setData(Qt.DisplayRole, rating)
-        if is_read_only:
-            self.setFlags(Qt.ItemIsSelectable|Qt.ItemIsEnabled)
+        self.is_read_only = is_read_only
+        if is_read_only: self.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
 
 class TextIconWidgetItem(QTableWidgetItem):
-    def __init__(self, text, icon, tooltip=None, is_read_only=False):
+    def __init__(self, text: str, icon_name: str, tooltip=None, is_read_only=False):
         QTableWidgetItem.__init__(self, text)
-        if icon: self.setIcon(icon)
-        if tooltip: self.setToolTip(tooltip)
-        if is_read_only: self.setFlags(Qt.ItemIsSelectable|Qt.ItemIsEnabled)
+        self.setIcon(get_icon(icon_name))
+        self.setToolTip(tooltip)
+        self.is_read_only = is_read_only
+        if is_read_only: self.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
 
 class ReadOnlyTableWidgetItem(QTableWidgetItem):
     """
     For use in a table cell, displays text the user cannot select or modify.
     """
-    def __init__(self, text):
+    def __init__(self, text: str):
         text = text or ''
         QTableWidgetItem.__init__(self, text)
-        self.setFlags(Qt.ItemIsSelectable|Qt.ItemIsEnabled)
-
-class ReadOnlyCheckableTableWidgetItem(ReadOnlyTableWidgetItem):
-    '''
-    For use in a table cell, displays a checkbox next to some text the user cannot select or modify.
-    '''
-    def __init__(self, text, checked=False, is_tristate=False):
-        ReadOnlyTableWidgetItem.__init__(self, text)
-        try: # For Qt Backwards compatibility.
-            self.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsUserCheckable | Qt.ItemFlag.ItemIsEnabled )
-        except:
-            self.setFlags(Qt.ItemFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled ))
-        if is_tristate:
-            self.setFlags(self.flags() | Qt.ItemIsTristate)
-        if checked:
-            self.setCheckState(Qt.Checked)
-        else:
-            if is_tristate and checked is None:
-                self.setCheckState(Qt.PartiallyChecked)
-            else:
-                self.setCheckState(Qt.Unchecked)
-
-    def get_boolean_value(self):
-        '''
-        Return a boolean value indicating whether checkbox is checked
-        If this is a tristate checkbox, a partially checked value is returned as None
-        '''
-        if self.checkState() == Qt.PartiallyChecked:
-            return None
-        else:
-            return self.checkState() == Qt.Checked
-
-class ReadOnlyTextIconWidgetItem(ReadOnlyTableWidgetItem):
-    """
-    For use in a table cell, displays an icon the user cannot select or modify.
-    """
-    def __init__(self, text, icon):
-        ReadOnlyTableWidgetItem.__init__(self, text)
-        if icon: self.setIcon(icon)
+        self.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
 
 
 class FieldsValueTreeWidget(QTreeWidget):
-    def __init__(self, book_ids=[], parent=None):
+    def __init__(self, book_ids: List[int]=[], parent=None):
         'If book_ids is not None, display a entry that contain a subset of Notes for listed books'
         QTreeWidget.__init__(self, parent)
         
@@ -215,16 +189,16 @@ class FieldsValueTreeWidget(QTreeWidget):
         self.setSelectionMode(QAbstractItemView.MultiSelection)
         self.itemChanged.connect(self.item_changed)
         
-        self._dbAPI = GUI.current_db.new_api
+        self._dbAPI = current_db().new_api
         self._book_item = None
         self._separator_item = None
         
         self.populate_tree(book_ids=book_ids)
     
-    def _build_content_map(self, book_ids):
+    def _build_content_map(self, book_ids: List[int]):
         raise NotImplementedError()
     
-    def populate_tree(self, book_ids=[]):
+    def populate_tree(self, book_ids: List[int]=[]):
         
         self.content_map = content_map = self._build_content_map(None)
         self.book_ids = book_ids
@@ -241,7 +215,7 @@ class FieldsValueTreeWidget(QTreeWidget):
             rslt = QTreeWidgetItem(parent)
             rslt.setText(0, text)
             rslt.setData(0, Qt.UserRole, data)
-            rslt.setFlags(Qt.ItemIsEnabled|Qt.ItemIsUserCheckable)
+            rslt.setFlags(Qt.ItemIsEnabled | Qt.ItemIsUserCheckable)
             rslt.setCheckState(0, Qt.Unchecked)
             rslt.setIcon(0, icon)
             return rslt
@@ -303,7 +277,14 @@ class FieldsValueTreeWidget(QTreeWidget):
             has_book_values=_('{:d} books'),
         )
     
-    def update_texts(self, empty=None, separator=None, tooltip=None, zero_book=None, zero_values=None, has_book_values=None):
+    def update_texts(self,
+            empty: str=None,
+            separator: str=None,
+            tooltip: str=None,
+            zero_book: str=None,
+            zero_values: str=None,
+            has_book_values: str=None,
+        ):
         if not self.content_map:
             if empty is not None:
                 self._separator_item.setText(0, empty)
@@ -325,7 +306,7 @@ class FieldsValueTreeWidget(QTreeWidget):
             if separator is not None:
                 self._separator_item.setText(0, separator)
     
-    def item_changed(self, item, column):
+    def item_changed(self, item: QTreeWidgetItem, column: int):
         self.blockSignals(True)
         
         parent = item.parent()
@@ -340,13 +321,13 @@ class FieldsValueTreeWidget(QTreeWidget):
             if item.checkState(column) == Qt.CheckState.Checked:
                 state = Qt.ItemIsUserCheckable
             else:
-                state = Qt.ItemIsEnabled|Qt.ItemIsUserCheckable
+                state = Qt.ItemIsEnabled | Qt.ItemIsUserCheckable
             for idx in range(item.childCount()):
                 item.child(idx).setFlags(state)
         
         self.blockSignals(False)
     
-    def get_selected(self):
+    def get_selected(self) -> Dict[str, List[tuple]]:
         rslt = defaultdict(list)
         
         def parse_tree_item(item):
@@ -373,11 +354,11 @@ class FieldsValueTreeWidget(QTreeWidget):
         return rslt
 
 class SelectFieldValuesWidget(FieldsValueTreeWidget):
-    def __init__(self, book_ids=[], parent=None):
+    def __init__(self, book_ids: List[int]=[], parent=None):
         'If book_ids is not None, display a entry that contain a subset of Notes for listed books'
         FieldsValueTreeWidget.__init__(self, book_ids=book_ids, parent=parent)
     
-    def _build_content_map(self, book_ids):
+    def _build_content_map(self, book_ids: List[int]):
         
         list_field = get_tags_browsable_fields(include_composite=False)
         for f in ['news', 'formats']:
@@ -390,7 +371,9 @@ class SelectFieldValuesWidget(FieldsValueTreeWidget):
                 for (id, value) in self._dbAPI.get_id_map(field).items():
                     rslt[field].append((value, id))
             
-            for id in self._dbAPI.fields['identifiers'].table.all_identifier_types():
+            identifiers = list(get_all_identifiers().keys())
+            
+            for id in identifiers:
                 rslt['identifiers'].append((id, id))
         else:
             for field in list_field:
@@ -411,12 +394,12 @@ class SelectFieldValuesWidget(FieldsValueTreeWidget):
         return rslt
 
 class SelectNotesWidget(FieldsValueTreeWidget):
-    def __init__(self, book_ids=[], parent=None):
+    def __init__(self, book_ids: List[int]=[], parent=None):
         'If book_ids is not None, display a entry that contain a subset of Notes for listed books'
         FieldsValueTreeWidget.__init__(self, book_ids=book_ids, parent=parent)
         self.update_texts(empty=_('No notes'))
     
-    def _build_content_map(self, book_ids=None):
+    def _build_content_map(self, book_ids: List[int]=None):
         '''
         Return item_ids for items that have notes in the specified field or all fields if field_name is None.
         If book_ids if passed, return for entry only relative to this book list.
@@ -443,7 +426,7 @@ class SelectNotesWidget(FieldsValueTreeWidget):
 # ----------------------------------------------
 
 class ReadOnlyLineEdit(QLineEdit):
-    def __init__(self, text, parent):
+    def __init__(self, text: str, parent=None):
         text = text or ''
         QLineEdit.__init__(self, text, parent)
         self.setEnabled(False)
@@ -468,7 +451,7 @@ class ImageComboBox(NoWheelComboBox):
         self.populate_combo(image_map, selected_image_name=selected_image_name)
         self.currentIndexChanged.connect(self.index_changed)
     
-    def populate_combo(self, image_map, selected_image_name=None):
+    def populate_combo(self, image_map: Dict[str, QIcon], selected_image_name: str=None):
         self.clear()
         self.image_map = image_map or {}
         
@@ -484,7 +467,7 @@ class ImageComboBox(NoWheelComboBox):
         self.setCurrentIndex(idx)
         self.setItemData(0, idx)
     
-    def index_changed(self, idx):
+    def index_changed(self, idx: int):
         if self.currentText() == ImageComboBox.COMBO_IMAGE_ADD:
             self.blockSignals(True)
             # Special item in the combo for choosing a new image to add to Calibre
@@ -511,11 +494,10 @@ class ImageComboBox(NoWheelComboBox):
 
 
 class ListComboBox(QComboBox):
-    def __init__(self, parent, values, selected_value=None):
+    def __init__(self, values: str, selected_value: Any=None, parent=None):
         QComboBox.__init__(self, parent)
         self.values = values
-        if selected_value is not None:
-            self.populate_combo(selected_value)
+        self.populate_combo(selected_value)
     
     def populate_combo(self, selected_value):
         self.clear()
@@ -531,15 +513,15 @@ class ListComboBox(QComboBox):
         return self.currentText()
 
 class KeyValueComboBox(QComboBox):
-    def __init__(self, parent, values, selected_key=None, values_ToolTip={}):
+    def __init__(self, values: Dict[str, Any], selected_key: str=None, values_ToolTip: Dict[str, str]=None, parent=None):
         QComboBox.__init__(self, parent)
         self.populate_combo(values, selected_key, values_ToolTip)
-        self.refresh_ToolTip()
         self.currentIndexChanged.connect(self.key_value_changed)
+        self.currentIndexChanged.emit(-1)
     
-    def populate_combo(self, values, selected_key=None, values_ToolTip={}):
+    def populate_combo(self, values, selected_key: str=None, values_ToolTip: Dict[str, str]=None):
         self.clear()
-        self.values_ToolTip = values_ToolTip
+        self.values_ToolTip = values_ToolTip or {}
         self.values = values
         
         selected_idx = start = 0
@@ -556,7 +538,7 @@ class KeyValueComboBox(QComboBox):
             if value == currentText:
                 return key
     
-    def key_value_changed(self, val):
+    def key_value_changed(self, idx: int):
         self.refresh_ToolTip()
     
     def refresh_ToolTip(self):
@@ -564,13 +546,13 @@ class KeyValueComboBox(QComboBox):
             self.setToolTip(self.values_ToolTip.get(self.selected_key(), ''))
 
 class CustomColumnComboBox(QComboBox):
-    def __init__(self, parent, custom_columns, selected_column='', initial_items=['']):
+    def __init__(self, custom_columns: Dict[str, str], selected_column='', initial_items: List[str]=[''], parent=None):
         QComboBox.__init__(self, parent)
         self.populate_combo(custom_columns, selected_column, initial_items)
         self.refresh_ToolTip()
         self.currentTextChanged.connect(self.current_text_changed)
     
-    def populate_combo(self, custom_columns, selected_column='', initial_items=['']):
+    def populate_combo(self, custom_columns: Dict[str, str], selected_column='', initial_items: List[str]=['']):
         self.clear()
         self.custom_columns = custom_columns
         self.column_names = []
@@ -596,7 +578,7 @@ class CustomColumnComboBox(QComboBox):
         else:
             self.setToolTip('')
     
-    def get_selected_column(self):
+    def get_selected_column(self) -> str:
         return self.column_names[self.currentIndex()]
     
     def current_text_changed(self, new_text):
@@ -604,14 +586,14 @@ class CustomColumnComboBox(QComboBox):
         self.current_index = self.currentIndex()
 
 class ReorderedComboBox(QComboBox):
-    def __init__(self, parent, strip_items=True):
+    def __init__(self, strip_items=True, parent=None):
         QComboBox.__init__(self, parent)
         self.strip_items = strip_items
         self.setEditable(True)
         self.setMaxCount(10)
         self.setInsertPolicy(QComboBox.InsertAtTop)
     
-    def populate_items(self, items, sel_item):
+    def populate_items(self, items: List[str], sel_item: str):
         self.blockSignals(True)
         self.clear()
         self.clearEditText()
@@ -652,7 +634,7 @@ class DragDropLineEdit(QLineEdit):
     if you drag into the editable text area. Working around this by having
     a custom LineEdit() set for the parent combobox.
     """
-    def __init__(self, parent, drop_mode):
+    def __init__(self, drop_mode: str, parent=None):
         QLineEdit.__init__(self, parent)
         self.drop_mode = drop_mode
         self.setAcceptDrops(True)
@@ -697,9 +679,9 @@ class DragDropComboBox(ReorderedComboBox):
     if you drag into the editable text area. Working around this by having
     a custom LineEdit() set for the parent combobox.
     """
-    def __init__(self, parent, drop_mode='url'):
+    def __init__(self, drop_mode='url', parent=None):
         ReorderedComboBox.__init__(self, parent)
-        self.drop_line_edit = DragDropLineEdit(parent, drop_mode)
+        self.drop_line_edit = DragDropLineEdit(drop_mode, parent)
         self.setLineEdit(self.drop_line_edit)
         self.setAcceptDrops(True)
         self.setEditable(True)

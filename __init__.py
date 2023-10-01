@@ -13,26 +13,33 @@ except NameError:
 
 from collections import defaultdict, OrderedDict
 from functools import partial
+from typing import Any, Dict, Iterable, List, Optional, Union
 
-import os, sys, copy, time
+import os
+import copy
+import time
 
 from calibre import prints
-from calibre.constants import DEBUG, iswindows, numeric_version as calibre_version
+from calibre.constants import DEBUG, iswindows, numeric_version as CALIBRE_VERSION
 from calibre.customize.ui import find_plugin
 from calibre.gui2 import show_restart_warning
+from calibre.db.legacy import LibraryDatabase
 from calibre.gui2.ui import Main
 
 from calibre.utils.config import config_dir, JSONConfig, DynamicConfig
 
-def get_gui():
+def get_gui() -> Main:
     from calibre.gui2.ui import get_gui
     return get_gui()
 
 GUI = get_gui()
 
+def current_db() -> LibraryDatabase:
+    return getattr(GUI,'current_db', None)
+
 
 PLUGIN_CLASSE = None
-def get_plugin_attribut(name, default=None):
+def get_plugin_attribut(name: str, default: Optional[Any]=None) -> Any:
     """Retrieve a attribut on the main plugin class"""
     global PLUGIN_CLASSE
     if not PLUGIN_CLASSE:
@@ -46,7 +53,7 @@ def get_plugin_attribut(name, default=None):
     
     return getattr(PLUGIN_CLASSE, name, default)
 
-ROOT = __name__.split('.')[-2]
+ROOT = __name__.split('.')[1]
 
 # Global definition of our plugin name. Used for common functions that require this.
 PLUGIN_NAME = get_plugin_attribut('name', ROOT)
@@ -95,54 +102,100 @@ except ImportError:
         QApplication, QIcon, QPixmap,
     )
 
-class ZipResources(dict):
-    def __init__(self, zip_path, preload_keys=[]):
-        dict.__init__(self)
-        self.zip_path = zip_path
+
+def linux(path: str) -> str:
+    return path.replace('\\', '/')
+
+def _class_name(obj, inside) -> str:
+    if not isinstance(obj, type):
+        obj.__class__
+    return obj.__name__+'('+inside+')'
+
+class PathDict(dict):
+    'dict than contain only path string as keys'
+    
+    def _k(self, __key):
+        if not isinstance(__key, str):
+            raise KeyError("Key can only can only be str. Type pased: "+ type(__key).__name__)
+        if not __key:
+            raise KeyError("Key can't be a empty string")
+        return linux(__key)
+    
+    def __contains__(self, __key: str) -> bool:
+        return dict.__contains__(self, self._k(__key))
+    
+    def __setitem__(self, __key: str, __value):
+        return dict.__setitem__(self, self._k(__key), __value)
+    
+    def __getitem__(self, __key: str) -> Any:
+        return dict.__getitem__(self, self._k(__key))
+    
+    def __delitem__(self, __key):
+        return dict.__delitem__(self, self._k(__key))
+    
+    def get(self, __key, __default) -> Any:
+        return dict.get(self, self._k(__key), __default)
+    
+    def pop(self, __key, __default: Any=Any) -> Any:
+        if __key in self:
+            return dict.pop(__key)
+        if __default == Any:
+            raise KeyError(__key)
+        else:
+            return __default
+
+class ZipResources(PathDict):
+    def __init__(self, zip_path: str, preload_keys: List[str]=None):
+        PathDict.__init__(self)
+        self.zip_path = linux(zip_path)
         self.load_many(preload_keys)
     
-    def __getitem__(self, __key):
+    def __getitem__(self, __key: str) -> Union[bytes, Any]:
         if __key in self:
-            return dict.__getitem__(self, __key)
+            return PathDict.__getitem__(self, __key)
         else:
-            return self.load_many([__key])[__key]
+            data = self.load(__key)
+            if data is None:
+                raise KeyError(__key)
+            return data
     
     def __str__(self):
-        return self.__class__.__name__+'('+ repr(self.zip_path)+', '+str(list(self.keys()))+')'
+        return _class_name(self, repr(self.zip_path)+', '+str(list(self.keys())))
     
     def __repr__(self):
-        return self.__class__.__name__+'(zip_path='+ repr(self.zip_path)+', '+repr(list(self.keys()))+')'
+        return _class_name(self,'zip_path='+ repr(self.zip_path)+', '+repr(list(self.keys())))
     
-    def load(self, name):
-        return self.load_many([name]).get(name, None)
-    def load_many(self, names):
-        names = names or []
+    def load(self, key: str) -> Union[bytes, Any]:
+        return self.load_many([key]).get(key, None)
+    
+    def load_many(self, keys: Optional[List[str]]) -> Dict[str, Union[bytes, str]]:
+        names = set(linux(n) for n in (keys or []) if n)
         rslt = {}
         from calibre.utils.zipfile import ZipFile
         with ZipFile(self.zip_path, 'r') as zf:
             for entry in zf.namelist():
                 if entry in names:
                     data = zf.read(entry)
-                    self.__setitem__(entry, data)
+                    self[entry] = data
                     rslt[entry] = data
         return rslt
 
 class PluginResources(ZipResources):
-    def __init__(self, preload_keys=[]):
+    def __init__(self, preload_keys: List[str]=None):
         from calibre.utils.zipfile import ZipFile
         ZipResources.__init__(self, PLUGIN_INSTANCE.plugin_path)
         
+        preload_keys = preload_keys or []
         with ZipFile(self.zip_path, 'r') as zf:
             for entry in zf.namelist():
                 if entry.startswith('images/') and os.path.splitext(entry)[1].lower() == '.png' or entry in preload_keys:
-                    data = zf.read(entry)
-                    self.__setitem__(entry, data)
+                    self.__setitem__(entry, zf.read(entry))
     
     def __str__(self):
-        return self.__class__.__name__+'('+str(list(self.keys()))+')'
+        return _class_name(self, str(list(self.keys())))
     
     def __repr__(self):
-        return self.__class__.__name__+'('+repr(list(self.keys()))+')'
+        return _class_name(self, repr(list(self.keys())))
 
 # Global definition of our plugin resources. Used to share between the xxxAction and xxxBase
 # classes if you need any zip images to be displayed on the configuration dialog.
@@ -151,9 +204,9 @@ PLUGIN_RESOURCES = PluginResources()
 
 THEME_COLOR = ['', 'dark', 'light']
 
-def get_theme_color():
+def get_theme_color() -> str:
     """Get the theme color of Calibre"""
-    if calibre_version >= (6,0,0):
+    if CALIBRE_VERSION >= (6,0,0):
         return THEME_COLOR[1] if QApplication.instance().is_dark_theme else THEME_COLOR[2]
     return THEME_COLOR[0]
 
@@ -163,28 +216,35 @@ def get_icon_themed(icon_name, theme_color=None):
     path, ext = os.path.splitext(icon_name)
     return (path+('' if not theme_color else '-'+ theme_color)+ext).replace('//', '/')
 
+def themed_icon(icon_name) -> QIcon:
+    if CALIBRE_VERSION >= (6,0,0):
+        return QIcon.ic(icon_name)
+    else:
+        return QIcon(I(icon_name))
 
-def get_icon(icon_name):
+def get_icon(icon_name: str) -> QIcon:
     """
     Retrieve a QIcon for the named image from the zip file if it exists,
     or if not then from Calibre's image cache.
     """
-    def themed_icon(icon_name):
-        if calibre_version >= (6,0,0):
-            return QIcon.ic(icon_name)
-        else:
-            return QIcon(I(icon_name))
+    if isinstance(icon_name, QIcon):
+        return icon_name
     
     if icon_name:
-        pixmap = get_pixmap(icon_name)
-        if pixmap is None:
-            # Look in Calibre's cache for the icon
+        if not icon_name.startswith('images/'):
+            # We know this is definitely not an icon belonging to this plugin
             return themed_icon(icon_name)
-        else:
-            return QIcon(pixmap)
+        
+        if icon_name:
+            pixmap = get_pixmap(icon_name)
+            if pixmap is None:
+                # Look in Calibre's cache for the icon
+                return themed_icon(icon_name)
+            else:
+                return QIcon(pixmap)
     return QIcon()
 
-def get_pixmap(icon_name):
+def get_pixmap(icon_name: str) -> QPixmap:
     """
     Retrieve a QPixmap for the named image
     Any icons belonging to the plugin must be prefixed with 'images/'
@@ -234,7 +294,7 @@ def get_pixmap(icon_name):
     
     return pixmap
 
-def get_local_resource(*subfolder):
+def get_local_resource(*subfolder: Optional[List[str]]) -> str:
     """
     Returns a path to the user's local resources folder
     If a subfolder name parameter is specified, appends this to the path
@@ -250,17 +310,17 @@ get_local_resource.IMAGES = get_local_resource('images')+'/'
 #               Functions
 # ----------------------------------------------
 
-def get_date_format(tweak_name='gui_timestamp_display_format', default_fmt='dd MMM yyyy'):
+def get_date_format(tweak_name: str='gui_timestamp_display_format', default_fmt: Optional[str]='dd MMM yyyy') -> str:
     from calibre.utils.config import tweaks
     format = tweaks[tweak_name]
     if format is None:
         format = default_fmt
     return format
 
-def truncate_title(title, length=75):
+def truncate_title(title: str, length: int=75) -> str:
     return (title[:length] + '…') if len(title) > length else title
 
-def get_image_map(resources_dir='images'):
+def get_image_map(resources_dir: str='images') -> Dict[str, QIcon]:
     rslt = {}
     resources_dir = get_local_resource(resources_dir)
     
@@ -269,7 +329,7 @@ def get_image_map(resources_dir='images'):
         for f in sorted(os.listdir(resources_dir)):
             if f.lower().endswith('.png'):
                 name = os.path.basename(f)
-                rslt[name] = get_icon(name)
+                rslt[linux(name)] = get_icon(name)
     
     return rslt
 
@@ -278,12 +338,7 @@ def get_image_map(resources_dir='images'):
 #               Ohters
 # ----------------------------------------------
 
-def current_db():
-    """Safely provides the current_db or None"""
-    return getattr(GUI,'current_db', None)
-    # db.library_id
-
-def has_restart_pending(show_warning=True, msg_warning=None):
+def has_restart_pending(show_warning=True, msg_warning=None) -> bool:
     restart_pending = GUI.must_restart_before_config
     if restart_pending and show_warning:
         msg = msg_warning or _('You cannot configure this plugin before calibre is restarted.')
@@ -292,8 +347,9 @@ def has_restart_pending(show_warning=True, msg_warning=None):
     return restart_pending
 
 
-def duplicate_entry(lst):
-    return list(set([x for x in lst if lst.count(x) > 1]))
+def duplicate_entry(lst: Iterable) -> set:
+    'retrive the entry in double inside a iterable'
+    return set([x for x in lst if lst.count(x) > 1])
 
 # Simple Regex
 class regex():
@@ -304,12 +360,8 @@ class regex():
         #set the default flag
         self.flag = flag
         if not self.flag:
-            if sys.version_info < (3,):
-                self.flag = regex._re.MULTILINE + regex._re.DOTALL
-            else:
-                self.flag = regex._re.ASCII + regex._re.MULTILINE + regex._re.DOTALL
-                # calibre 5 // re.ASCII for Python3 only
-            
+            self.flag = regex._re.ASCII + regex._re.MULTILINE + regex._re.DOTALL
+            # calibre 5 // re.ASCII for Python3 only
     
     def __call__(self, flag=None):
         return self.__class__(flag)
@@ -437,6 +489,7 @@ class PREFS_library(dict):
     Defined a custom namespaced at the root of __init__.py // __init__.PREFS_NAMESPACE
     """
     def __init__(self, key='settings', defaults={}):
+        dict.__init__(self)
         self._no_commit = False
         self._db = None
         self.key = key if key else ''
@@ -451,7 +504,6 @@ class PREFS_library(dict):
         self._namespace = PREFS_NAMESPACE
         
         self.refresh()
-        dict.__init__(self)
     
     @property
     def namespace(self):
@@ -492,9 +544,8 @@ class PREFS_library(dict):
         return dict.__str__(self.deepcopy_dict())
     
     def _check_db(self):
-        new_db = current_db()
-        if new_db and self._db != new_db:
-            self._db = new_db
+        if current_db() and self._db != current_db():
+            self._db = current_db()
         return self._db != None
     
     def refresh(self):

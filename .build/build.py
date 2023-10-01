@@ -14,16 +14,21 @@ All subfolders of the plugin folder will be included, unless prefixed with '.'
 i.e. .build and .tx will not be included in the zip.
 '''
 
-import os, zipfile, re, shutil
+import os
+import re
+import shutil
+import zipfile
 from glob import glob
+from subprocess import Popen, PIPE
+from typing import Tuple, Union
 
 CALIBRE_CONFIG_DIRECTORY = os.environ.get('CALIBRE_CONFIG_DIRECTORY', os.path.join(os.environ.get('appdata'), 'calibre'))
 PLUGINS_DIRECTORY = os.path.join(CALIBRE_CONFIG_DIRECTORY, 'plugins')
 
-def get_calibre_bin(calibre_bin):
+def get_calibre_bin(calibre_bin: str) -> str:
     return os.path.join(os.environ.get('CALIBRE_DIRECTORY', ''), calibre_bin)
 
-def run_command(command_line, wait=False):
+def run_command(command_line: Union[list, str], wait=False) -> Popen:
     """
     Lauch a command line and return the subprocess
     
@@ -35,9 +40,6 @@ def run_command(command_line, wait=False):
     :return:            The pointer the subprocess returned by the Popen call
     """
     
-    import os
-    from subprocess import Popen, PIPE
-    
     if not isinstance(command_line, str):
         for idx in range(len(command_line)):
             if ' ' in command_line[idx]: command_line[idx] = '"'+command_line[idx]+'"'
@@ -48,7 +50,7 @@ def run_command(command_line, wait=False):
         subproc.wait()
     return subproc
 
-def read_plugin_name():
+def read_plugin_name() -> Tuple[str, str]:
     init_file = os.path.join(os.getcwd(), '__init__.py')
     if not os.path.exists(init_file):
         print('ERROR: No __init__.py file found for this plugin')

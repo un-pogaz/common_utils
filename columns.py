@@ -13,333 +13,34 @@ except NameError:
 
 from collections import defaultdict, OrderedDict
 from functools import partial
+from typing import Callable, Dict, List, Optional, Tuple
 
-import os, sys, copy, re
+import os
+import sys
+import copy
 
 from calibre import prints
-from calibre.constants import numeric_version as calibre_version
+from calibre.constants import numeric_version as CALIBRE_VERSION
+from calibre.db.legacy import LibraryDatabase
 from calibre.library.field_metadata import FieldMetadata
 
 
-def current_db():
-    """Safely provides the current_db or None"""
+def current_db() -> LibraryDatabase:
     from calibre.gui2.ui import get_gui
     return getattr(get_gui(),'current_db', None)
 
-
-typeproperty_registry = []
 class typeproperty(property):
+    registry = []
+    
     def __init__(self, func):
         property.__init__(self, fget=func)
-        typeproperty_registry.append(func)
+        typeproperty.registry.append(func)
 
-
-def get_columns_from_dict(src_dict, predicate=None):
-    """
-    Convert a FieldMetadata dict to a ColumnMetadata dict
-    
-    predicate:
-        function with ColumnMetadata as argument to filtre
-    
-    return: dict(ColumnMetadata)
-    """
-    def _predicate(column):
-        return True
-    predicate = predicate or _predicate
-    return {cm.name:cm for cm in [ColumnMetadata(fm, k.startswith('#')) for k,fm in src_dict.items() if fm.get('label', None)] if predicate(cm)}
-
-def get_columns_where(predicate=None):
-    """
-    Get ColumnMetadata of the currend library
-
-    predicate:
-        function with ColumnMetadata as argument to filtre
-    
-    return: dict(ColumnMetadata)
-    """
-    if current_db():
-        return get_columns_from_dict(current_db().field_metadata, predicate)
-    else:
-        return {}
-
-
-def _test_is_custom(column, only_custom):
-    """
-    only_custom:
-        True= Only custom
-        False= Only default
-        None= Both
-    
-    return: bool
-    """
-    if only_custom == True:
-        return column.is_custom
-    elif only_custom == False:
-        return not column.is_custom
-    else:
-        return True
-
-def _test_include_composite(column, only_custom=None, include_composite=False):
-    if not include_composite and column.is_composite:
-        return False
-    elif include_composite and only_custom == None:
-        return True
-    else:
-        return _test_is_custom(column, only_custom)
-
-
-def get_all_columns(only_custom=None, include_composite=False):
-    """
-    only_custom:
-        True= Only custom
-        False= Only default
-        None= Both
-    
-    return: dict(ColumnMetadata)
-    """
-    def predicate(column):
-        return _test_include_composite(column, only_custom=only_custom, include_composite=include_composite)
-    return get_columns_where(predicate)
-
-def get_column_from_name(name):
-    """Get the column with the specified name, else None
-    
-    return: ColumnMetadata
-    """
-    def predicate(column):
-        return column.name == name
-    for v in get_columns_where(predicate).values():
-        return v
-    return None
-
-
-def _get_columns_type(type, only_custom):
-    def predicate(column):
-        if type == column.type:
-            return _test_is_custom(column, only_custom)
-        else:
-            return False
-    
-    return get_columns_where(predicate)
-
-def get_categories(only_custom=None, include_composite=False):
-    def predicate(column: ColumnMetadata):
-        if column.is_category:
-            return _test_include_composite(column, only_custom=only_custom, include_composite=include_composite)
-    return get_columns_where(predicate)
-
-# get type
-def get_names(only_custom=None):
-    """
-    only_custom:
-        True= Only custom
-        False= Only default
-        None= Both
-    
-    return: dict(ColumnMetadata)
-    """
-    return _get_columns_type(ColumnTypes.names, only_custom)
-def get_tags(only_custom=None):
-    """
-    only_custom:
-        True= Only custom
-        False= Only default
-        None= Both
-    
-    return: dict(ColumnMetadata)
-    """
-    return _get_columns_type(ColumnTypes.tags, only_custom)
-def get_enumeration(only_custom=None):
-    """
-    only_custom:
-        True= Only custom
-        False= Only default
-        None= Both
-    
-    return: dict(ColumnMetadata)
-    """
-    return _get_columns_type(ColumnTypes.enumeration, only_custom)
-def get_float(only_custom=None):
-    """
-    only_custom:
-        True= Only custom
-        False= Only default
-        None= Both
-    
-    return: dict(ColumnMetadata)
-    """
-    return _get_columns_type(ColumnTypes.float, only_custom)
-def get_datetime(only_custom=None):
-    """
-    only_custom:
-        True= Only custom
-        False= Only default
-        None= Both
-    
-    return: dict(ColumnMetadata)
-    """
-    return _get_columns_type(ColumnTypes.datetime, only_custom)
-def get_rating(only_custom=None):
-    """
-    only_custom:
-        True= Only custom
-        False= Only default
-        None= Both
-    
-    return: dict(ColumnMetadata)
-    """
-    return _get_columns_type(ColumnTypes.rating, only_custom)
-def get_series(only_custom=None):
-    """
-    only_custom:
-        True= Only custom
-        False= Only default
-        None= Both
-    
-    return: dict(ColumnMetadata)
-    """
-    return _get_columns_type(ColumnTypes.series, only_custom)
-def get_series_index(only_custom=None):
-    """
-    only_custom:
-        True= Only custom
-        False= Only default
-        None= Both
-    
-    return: dict(ColumnMetadata)
-    """
-    return _get_columns_type(ColumnTypes.series_index, only_custom)
-def get_text(only_custom=None):
-    """
-    only_custom:
-        True= Only custom
-        False= Only default
-        None= Both
-    
-    return: dict(ColumnMetadata)
-    """
-    return _get_columns_type(ColumnTypes.text, only_custom)
-def get_bool(only_custom=None):
-    """
-    only_custom:
-        True= Only custom
-        False= Only default
-        None= Both
-    
-    return: dict(ColumnMetadata)
-    """
-    return _get_columns_type(ColumnTypes.bool, only_custom)
-def get_html(only_custom=None):
-    """
-    only_custom:
-        True= Only custom
-        False= Only default
-        None= Both
-    
-    return: dict(ColumnMetadata)
-    """
-    return _get_columns_type(ColumnTypes.html, only_custom)
-def get_markdown(only_custom=None):
-    """
-    only_custom:
-        True= Only custom
-        False= Only default
-        None= Both
-    
-    return: dict(ColumnMetadata)
-    """
-    return _get_columns_type(ColumnTypes.markdown, only_custom)
-def get_long_text(only_custom=None):
-    """
-    only_custom:
-        True= Only custom
-        False= Only default
-        None= Both
-    
-    return: dict(ColumnMetadata)
-    """
-    return _get_columns_type(ColumnTypes.long_text, only_custom)
-def get_title(only_custom=None):
-    """
-    only_custom:
-        True= Only custom
-        False= Only default
-        None= Both
-    
-    return: dict(ColumnMetadata)
-    """
-    return _get_columns_type(ColumnTypes.title, only_custom)
-def get_composite_text(only_custom=None):
-    """
-    only_custom:
-        True= Only custom
-        False= Only default
-        None= Both
-    
-    return: dict(ColumnMetadata)
-    """
-    return _get_columns_type(ColumnTypes.composite_text, only_custom)
-def get_composite_tag(only_custom=None):
-    """
-    only_custom:
-        True= Only custom
-        False= Only default
-        None= Both
-    
-    return: dict(ColumnMetadata)
-    """
-    return _get_columns_type(ColumnTypes.composite_tag, only_custom)
-
-
-def get_possible_fields():
-    """
-    Get the fields of the current library
-    
-    return: all_fields -> list(str), writable_fields -> list(str)
-    """
-    def predicate(column):
-        if column.name not in ['id' , 'au_map', 'timestamp', 'formats', 'ondevice', 'news', 'series_sort', 'path', 'in_tag_browser'] and column.type:
-            return True
-        else:
-            return False
-    
-    columns = get_columns_where(predicate)
-    
-    all_fields = [cc.name for cc in columns.values()]
-    all_fields.sort()
-    all_fields.insert(0, '{template}')
-    writable_fields = [cc.name for cc in columns.values() if not cc.is_composite]
-    writable_fields.sort()
-    return all_fields, writable_fields
-
-def get_possible_columns():
-    """
-    Get the name of the columns in the library
-    
-    return: list(str)
-    """
-    standard = ['title', 'authors', 'tags', 'series', 'publisher', 'pubdate', 'rating', 'languages', 'last_modified', 'timestamp', 'comments', 'author_sort', 'title_sort', 'marked']
-    if calibre_version >= (6,17,0):
-        standard += ['id', 'path']
-    
-    def predicate(column):
-        if column.is_custom and not (column.is_composite or column._is_series_index):
-            return True
-        else:
-            return False
-    
-    return standard + sorted(get_columns_where(predicate).keys())
-
-def get_possible_idents():
-    """
-    Get the identifiers in the library
-    
-    return: list(str)
-    """
+def get_all_identifiers() -> List[str]:
+    'Get the identifiers in the library'
     return current_db().get_all_identifier_types()
 
-
-def is_enum_value(name, value):
+def is_enum_value(name, value) -> bool:
     """
     Test if the value is valide in the column enumeration
     
@@ -361,7 +62,7 @@ def is_enum_value(name, value):
     else:
         return True
 
-def is_bool_value(value):
+def is_bool_value(value: str) -> bool:
     """
     Test if the value is considered as a boulean by Calibre
     
@@ -399,6 +100,23 @@ class ColumnTypes:
     
     cover          = 'cover'
     news           = 'news'
+
+class MutipleValue(dict):
+    def __init__(self, data: dict):
+        self.update(data)
+    
+    def __repr__(self):
+        return self.__class__.__name__ +'('+ repr(self._data)[1:-1]+')'
+    
+    @property
+    def ui_to_list(self) -> str:
+        return self._data.get('ui_to_list', None)
+    @property
+    def list_to_ui(self) -> str:
+        return self._data.get('list_to_ui', None)
+    @property
+    def cache_to_list(self) -> str:
+        return self._data.get('cache_to_list', None)
 
 class ColumnMetadata():
     """
@@ -477,7 +195,8 @@ class ColumnMetadata():
             self._multiple = None
         
         self._type = None
-        for func in typeproperty_registry:
+        for func in typeproperty.registry:
+            import re
             if func.__call__(self):
                 self._type = re.sub(r'^_is_', '', func.__name__)
         
@@ -547,115 +266,115 @@ class ColumnMetadata():
     
     # type property
     @property
-    def name(self):
+    def name(self) -> str:
         if self._custom:
             return '#' + self.label
         else:
             if self.label == 'sort': return 'title_sort'
             return self.label
     @property
-    def display_name(self):
+    def display_name(self) -> str:
         return self.metadata.get('name', None)
     @property
-    def description(self):
+    def description(self) -> str:
         return self.display.get('description', None)
     @property
-    def type(self):
+    def type(self) -> str:
         return self._type
     
     @typeproperty
-    def _is_names(self):
+    def _is_names(self) -> bool:
         return bool(self.label == 'authors' or self.datatype == 'text' and self.is_multiple and self.display.get('is_names', False))
     @typeproperty
-    def _is_tags(self):
+    def _is_tags(self) -> bool:
         return bool(self.label == 'tags' or self.datatype == 'text' and self.is_multiple and not (self.label == 'authors' or self.display.get('is_names', False) or self.is_csp))
     
     @typeproperty
-    def _is_title(self):
+    def _is_title(self) -> bool:
         return bool(self.label == 'title' or self.datatype == 'comments' and self.display.get('interpret_as', None) == 'short-text')
     
     @typeproperty
-    def _is_text(self):
+    def _is_text(self) -> bool:
         return bool(self.label not in ['comments', 'title'] and self.datatype == 'text' and not self.is_multiple)
     
     @typeproperty
-    def _is_series(self):
+    def _is_series(self) -> bool:
         return bool(self.datatype == 'series')
     @typeproperty
-    def _is_float(self):
+    def _is_float(self) -> bool:
         return bool(self.label == 'size' or self.datatype == 'float' and self._src_is_custom and self.label != 'series_index')
     @typeproperty
-    def _is_series_index(self):
+    def _is_series_index(self) -> bool:
         return bool(self.label == 'series_index' or self.datatype == 'float' and not self._src_is_custom and self.label != 'size')
     
     @typeproperty
-    def _is_integer(self):
+    def _is_integer(self) -> bool:
         return bool(self.datatype == 'int' and self.label != 'cover')
     @typeproperty
-    def _is_cover(self):
+    def _is_cover(self) -> bool:
         return bool(self.label == 'cover')
     @typeproperty
-    def _is_datetime(self):
+    def _is_datetime(self) -> bool:
         return bool(self.datatype == 'datetime')
     @typeproperty
-    def _is_rating(self):
+    def _is_rating(self) -> bool:
         return bool(self.datatype == 'rating')
     @typeproperty
-    def _is_bool(self):
+    def _is_bool(self) -> bool:
         return bool(self.datatype == 'bool')
     @typeproperty
-    def _is_enumeration(self):
+    def _is_enumeration(self) -> bool:
         return bool(self.datatype == 'enumeration')
     
     @property
-    def enum_values(self):
+    def enum_values(self) -> List[str]:
         if self._is_enumeration:
-            rslt = self.display.get('enum_values', None)
-            rslt.append('')
+            rslt = self.display.get('enum_values', [])
+            rslt.insert(0, '')
             return rslt
         else:
             return None
     @property
-    def enum_colors(self):
+    def enum_colors(self) -> List[str]:
         if self._is_enumeration:
             return self.display.get('enum_colors', None)
         else:
             return None
     
     @property
-    def _is_comments(self):
+    def _is_comments(self) -> bool:
         return bool(self.label == 'comments' or self.datatype == 'comments' and self.display.get('interpret_as', None) != 'short-text')
     @typeproperty
-    def _is_html(self):
+    def _is_html(self) -> bool:
         return bool(self.label == 'comments' or self._is_comments and self.display.get('interpret_as', None) == 'html')
     @typeproperty
-    def _is_markdown(self):
+    def _is_markdown(self) -> bool:
         return bool(self._is_comments and self.display.get('interpret_as', None) == 'markdown')
     @typeproperty
-    def _is_long_text(self):
+    def _is_long_text(self) -> bool:
         return bool(self._is_comments and self.display.get('interpret_as', None)== 'long-text')
     
     @property
-    def is_composite(self):
+    def is_composite(self) -> bool:
         return bool(self.datatype == 'composite')
     @typeproperty
-    def _is_composite_text(self):
+    def _is_composite_text(self) -> bool:
         return bool(self.is_composite and self.is_multiple)
     @typeproperty
-    def _is_composite_tag(self):
+    def _is_composite_tag(self) -> bool:
         return bool(self.is_composite and not self.is_multiple)
     
     @typeproperty
-    def _is_identifiers(self):
+    def _is_identifiers(self) -> bool:
         return bool(self.is_csp)
     @typeproperty
-    def _is_news(self):
+    def _is_news(self) -> bool:
         return bool(self.label == 'news')
     #
     
     # others
     @property
-    def heading_position(self):
+    def heading_position(self) -> str:
         # 'hide', 'above', 'side'
         if self._is_comments:
             return self.display.get('heading_position', None)
@@ -663,126 +382,350 @@ class ColumnMetadata():
             return None
     
     @property
-    def use_decorations(self):
+    def use_decorations(self) -> str:
         # 'hide', 'above', 'side'
         if self._is_text or self._is_enumeration or self._is_composite_text:
             return self.display.get('use_decorations', None)
         else:
             return None
     @property
-    def allow_half_stars(self):
+    def allow_half_stars(self) -> bool:
         if self._is_rating:
-            return self.display.get('allow_half_stars', None)
+            return bool(self.display.get('allow_half_stars', False))
         else:
             return None
     
     @property
-    def composite_sort(self):
+    def composite_sort(self) -> str:
         if self.is_composite:
             return self.display.get('composite_sort', None)
         else:
             return None
     @property
-    def composite_make_category(self):
+    def composite_make_category(self) -> bool:
         if self.is_composite:
             return self.display.get('make_category', None)
         else:
             return None
     @property
-    def composite_contains_html(self):
+    def composite_contains_html(self) -> bool:
         if self.is_composite:
             return self.display.get('contains_html', None)
         else:
             return None
     @property
-    def composite_template(self):
+    def composite_template(self) -> str:
         if self.is_composite:
             return self.display.get('composite_template', None)
         else:
             return None
     @property
-    def number_format(self):
+    def number_format(self) -> str:
         if self._is_float:
             return self.display.get('number_format', None)
         else:
             return None
     
     @property
-    def table(self):
+    def table(self) -> str:
         return self.metadata.get('table', None)
     @property
-    def column(self):
+    def column(self) -> str:
         return self.metadata.get('column', None)
     @property
-    def datatype(self):
+    def datatype(self) -> str:
         return self.metadata.get('datatype', None)
     @property
-    def kind(self):
+    def kind(self) -> str:
         return self.metadata.get('kind', None)
     @property
-    def search_terms(self):
+    def search_terms(self) -> str:
         return self.metadata.get('search_terms', None)
     @property
-    def label(self):
+    def label(self) -> str:
         return self.metadata.get('label', None)
     @property
-    def colnum(self):
+    def colnum(self) -> int:
         return self.metadata.get('colnum', None)
     @property
-    def display(self):
+    def display(self) -> str:
         return self.metadata.get('display', None)
     @property
-    def is_custom(self):
+    def is_custom(self) -> bool:
         return self._custom
     @property
-    def _src_is_custom(self):
+    def _src_is_custom(self) -> str:
         return self.metadata.get('is_custom', None)
                     #the custom series index are not marked as custom
                     #a internal bool is nesecary
     
     @property
-    def is_category(self):
-        return self.metadata.get('is_category', None)
+    def is_category(self) -> bool:
+        return self.metadata.get('is_category', False)
     @property
-    def is_multiple(self):
+    def is_multiple(self) -> bool:
         return self._multiple != None
     @property
-    def multiple(self):
+    def multiple(self) -> bool:
         return self._multiple
     @property
-    def link_column(self):
+    def link_column(self) -> str:
         return self.metadata.get('link_column', None)
     @property
-    def category_sort(self):
+    def category_sort(self)-> str:
         return self.metadata.get('category_sort', None)
     @property
-    def rec_index(self):
+    def rec_index(self)-> int:
         return self.metadata.get('rec_index', None)
     @property
-    def is_editable(self):
-        return self.metadata.get('is_editable', None)
+    def is_editable(self) -> bool:
+        return self.metadata.get('is_editable', False)
     @property
-    def is_csp(self):
+    def is_csp(self) -> bool:
         """Colon-Separated Pairs, field 'identifiers'"""
-        return self.metadata.get('is_csp', None)
+        return self.metadata.get('is_csp', False)
+
+def _test_is_custom(column: ColumnMetadata, only_custom: Optional[bool]) -> bool:
+    """
+    only_custom:
+        True= Only custom
+        False= Only default
+        None= Both
+    """
+    if only_custom == True:
+        return column.is_custom
+    elif only_custom == False:
+        return not column.is_custom
+    else:
+        return True
+
+def _test_include_composite(column: ColumnMetadata, only_custom: Optional[bool]=None, include_composite: Optional[bool]=False) -> bool:
+    if not include_composite and column.is_composite:
+        return False
+    elif include_composite and only_custom == None:
+        return True
+    else:
+        return _test_is_custom(column, only_custom)
 
 
-class MutipleValue():
-    def __init__(self, data):
-        self._data = data
+def get_all_columns(only_custom: Optional[bool]=None, include_composite: Optional[bool]=False) -> Dict[str, ColumnMetadata]:
+    """
+    only_custom:
+        True= Only custom
+        False= Only default
+        None= Both
+    """
+    def predicate(column):
+        return _test_include_composite(column, only_custom=only_custom, include_composite=include_composite)
+    return get_columns_where(predicate)
+
+def get_column_from_name(name: str) -> ColumnMetadata:
+    'Get the column with the specified name, else None'
+    def predicate(column: ColumnMetadata):
+        return column.name == name
+    for v in get_columns_where(predicate).values():
+        return v
+    return None
+
+
+def _get_columns_type(type, only_custom: Optional[bool]=None) -> Dict[str, ColumnMetadata]:
+    def predicate(column: ColumnMetadata):
+        if type == column.type:
+            return _test_is_custom(column, only_custom)
+        else:
+            return False
     
-    def __repr__(self):
-        return self._data
+    return get_columns_where(predicate)
+
+def get_categories(only_custom: Optional[bool]=None, include_composite: Optional[bool]=None) -> Dict[str, ColumnMetadata]:
+    def predicate(column: ColumnMetadata):
+        if column.is_category:
+            return _test_include_composite(column, only_custom=only_custom, include_composite=include_composite)
+    return get_columns_where(predicate)
+
+# get type
+def get_names(only_custom: Optional[bool]=None) -> Dict[str, ColumnMetadata]:
+    """
+    only_custom:
+        True= Only custom
+        False= Only default
+        None= Both
+    """
+    return _get_columns_type(ColumnTypes.names, only_custom)
+def get_tags(only_custom: Optional[bool]=None) -> Dict[str, ColumnMetadata]:
+    """
+    only_custom:
+        True= Only custom
+        False= Only default
+        None= Both
+    """
+    return _get_columns_type(ColumnTypes.tags, only_custom)
+def get_enumeration(only_custom: Optional[bool]=None) -> Dict[str, ColumnMetadata]:
+    """
+    only_custom:
+        True= Only custom
+        False= Only default
+        None= Both
+    """
+    return _get_columns_type(ColumnTypes.enumeration, only_custom)
+def get_float(only_custom: Optional[bool]=None) -> Dict[str, ColumnMetadata]:
+    """
+    only_custom:
+        True= Only custom
+        False= Only default
+        None= Both
+    """
+    return _get_columns_type(ColumnTypes.float, only_custom)
+def get_datetime(only_custom: Optional[bool]=None) -> Dict[str, ColumnMetadata]:
+    """
+    only_custom:
+        True= Only custom
+        False= Only default
+        None= Both
+    """
+    return _get_columns_type(ColumnTypes.datetime, only_custom)
+def get_rating(only_custom: Optional[bool]=None) -> Dict[str, ColumnMetadata]:
+    """
+    only_custom:
+        True= Only custom
+        False= Only default
+        None= Both
+    """
+    return _get_columns_type(ColumnTypes.rating, only_custom)
+def get_series(only_custom: Optional[bool]=None) -> Dict[str, ColumnMetadata]:
+    """
+    only_custom:
+        True= Only custom
+        False= Only default
+        None= Both
+    """
+    return _get_columns_type(ColumnTypes.series, only_custom)
+def get_series_index(only_custom: Optional[bool]=None) -> Dict[str, ColumnMetadata]:
+    """
+    only_custom:
+        True= Only custom
+        False= Only default
+        None= Both
+    """
+    return _get_columns_type(ColumnTypes.series_index, only_custom)
+def get_text(only_custom: Optional[bool]=None) -> Dict[str, ColumnMetadata]:
+    """
+    only_custom:
+        True= Only custom
+        False= Only default
+        None= Both
+    """
+    return _get_columns_type(ColumnTypes.text, only_custom)
+def get_bool(only_custom: Optional[bool]=None) -> Dict[str, ColumnMetadata]:
+    """
+    only_custom:
+        True= Only custom
+        False= Only default
+        None= Both
+    """
+    return _get_columns_type(ColumnTypes.bool, only_custom)
+def get_html(only_custom: Optional[bool]=None) -> Dict[str, ColumnMetadata]:
+    """
+    only_custom:
+        True= Only custom
+        False= Only default
+        None= Both
+    """
+    return _get_columns_type(ColumnTypes.html, only_custom)
+def get_markdown(only_custom: Optional[bool]=None) -> Dict[str, ColumnMetadata]:
+    """
+    only_custom:
+        True= Only custom
+        False= Only default
+        None= Both
+    """
+    return _get_columns_type(ColumnTypes.markdown, only_custom)
+def get_long_text(only_custom: Optional[bool]=None) -> Dict[str, ColumnMetadata]:
+    """
+    only_custom:
+        True= Only custom
+        False= Only default
+        None= Both
+    """
+    return _get_columns_type(ColumnTypes.long_text, only_custom)
+def get_title(only_custom: Optional[bool]=None) -> Dict[str, ColumnMetadata]:
+    """
+    only_custom:
+        True= Only custom
+        False= Only default
+        None= Both
+    """
+    return _get_columns_type(ColumnTypes.title, only_custom)
+def get_composite_text(only_custom: Optional[bool]=None) -> Dict[str, ColumnMetadata]:
+    """
+    only_custom:
+        True= Only custom
+        False= Only default
+        None= Both
+    """
+    return _get_columns_type(ColumnTypes.composite_text, only_custom)
+def get_composite_tag(only_custom: Optional[bool]=None) -> Dict[str, ColumnMetadata]:
+    """
+    only_custom:
+        True= Only custom
+        False= Only default
+        None= Both
+    """
+    return _get_columns_type(ColumnTypes.composite_tag, only_custom)
+
+
+def get_possible_fields() -> Tuple[List[str], List[str]]:
+    """
+    Get the fields of the current library
     
-    @property
-    def ui_to_list(self):
-        return self._data.get('ui_to_list', None)
-    @property
-    def list_to_ui(self):
-        return self._data.get('list_to_ui', None)
-    @property
-    def cache_to_list(self):
-        return self._data.get('cache_to_list', None)
+    return: all_fields, writable_fields
+    """
+    def predicate(column):
+        if column.name not in ['id' , 'au_map', 'timestamp', 'formats', 'ondevice', 'news', 'series_sort', 'path', 'in_tag_browser'] and column.type:
+            return True
+        else:
+            return False
+    
+    columns = get_columns_where(predicate)
+    
+    all_fields = [cc.name for cc in columns.values()]
+    all_fields.sort()
+    all_fields.insert(0, '{template}')
+    writable_fields = [cc.name for cc in columns.values() if not cc.is_composite]
+    writable_fields.sort()
+    return all_fields, writable_fields
+
+def get_possible_columns() -> List[str]:
+    """
+    Get the name of the columns in the library
+    
+    return: list(str)
+    """
+    standard = ['title', 'authors', 'tags', 'series', 'publisher', 'pubdate', 'rating', 'languages', 'last_modified', 'timestamp', 'comments', 'author_sort', 'title_sort', 'marked']
+    if CALIBRE_VERSION >= (6,17,0):
+        standard += ['id', 'path']
+    
+    def predicate(column):
+        if column.is_custom and not (column.is_composite or column._is_series_index):
+            return True
+        else:
+            return False
+    
+    return standard + sorted(get_columns_where(predicate).keys())
+
+def get_columns_from_dict(src_dict: FieldMetadata, predicate=None) -> Dict[str, ColumnMetadata]:
+    'Convert a FieldMetadata dict to a ColumnMetadata dict'
+    def _predicate(column: ColumnMetadata):
+        return True
+    predicate = predicate or _predicate
+    return {cm.name:cm for cm in [ColumnMetadata(fm, k.startswith('#')) for k,fm in src_dict.items() if fm.get('label', None)] if predicate(cm)}
+
+def get_columns_where(predicate: Callable[[ColumnMetadata], bool]=None) -> Dict[str, ColumnMetadata]:
+    'Get ColumnMetadata of the currend library'
+    if current_db():
+        return get_columns_from_dict(current_db().field_metadata, predicate)
+    else:
+        return {}
 
 if __name__ == '__main__':
     def wait_exit():
@@ -798,13 +741,10 @@ if __name__ == '__main__':
         prints('The path "'+path+'" don\'t exists')
         exit()
     
-    from calibre.library import db
-    
+    prints('Loading library:', path)
     def current_db():
         return current_db.db
-    
-    prints('Loading library:', path)
-    current_db.db = db(path=path, read_only=True)
+    current_db.db = LibraryDatabase(path=path, read_only=True)
     prints()
     
     prints('All columns:')
@@ -824,5 +764,5 @@ if __name__ == '__main__':
         prints(f.__name__, f())
         prints()
     
-    current_db.db.close()
+    current_db().close()
     wait_exit()
