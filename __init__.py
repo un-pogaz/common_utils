@@ -19,6 +19,15 @@ import os
 import copy
 import time
 
+try:
+    from qt.core import (
+        QApplication, QIcon, QPixmap,
+    )
+except ImportError:
+    from PyQt5.Qt import (
+        QApplication, QIcon, QPixmap,
+    )
+
 from calibre import prints
 from calibre.constants import DEBUG, iswindows, numeric_version as CALIBRE_VERSION
 from calibre.customize.ui import find_plugin
@@ -93,18 +102,118 @@ def debug_print(*args, **kw):
 #          Icon Management functions
 # ----------------------------------------------
 
-try:
-    from qt.core import (
-        QApplication, QIcon, QPixmap,
-    )
-except ImportError:
-    from PyQt5.Qt import (
-        QApplication, QIcon, QPixmap,
-    )
+THEME_COLOR = ['', 'dark', 'light']
 
+def get_theme_name() -> str:
+    """Get the theme color of Calibre"""
+    if CALIBRE_VERSION >= (6,0,0):
+        return THEME_COLOR[1] if QApplication.instance().is_dark_theme else THEME_COLOR[2]
+    return THEME_COLOR[0]
 
 def linux(path: str) -> str:
     return path.replace('\\', '/')
+
+def get_icon_themed_names(icon_name) -> List[str]:
+    # images/<icon_name>-for-dark-theme.png
+    # images/dark/<icon_name>.png
+    # images/<icon_name>.png
+    rslt = []
+    theme_name = get_theme_name()
+    if theme_name:
+        path, ext = os.path.splitext(linux(icon_name).strip('/'))
+        name = os.path.basename(path)
+        dir = os.path.dirname(path).strip('/')
+        rslt.append(f'{dir}/{name}-for-{theme_name}-theme{ext}')
+        rslt.append(f'{dir}/{theme_name}/{name}{ext}')
+    
+    rslt.append(icon_name)
+    return rslt
+
+if not hasattr(QIcon, 'ic'):
+    QIcon.ic = lambda x: QIcon(I(x))
+
+def get_icon(icon_name: str) -> QIcon:
+    """
+    Retrieve a QIcon for the named image from the zip file if it exists,
+    or if not then from Calibre's image cache.
+    """
+    if isinstance(icon_name, QIcon):
+        return icon_name
+    
+    if icon_name:
+        icon_name = linux(icon_name).strip('/')
+        if not icon_name.startswith('images/'):
+            # We know this is definitely not an icon belonging to this plugin
+            return QIcon.ic(icon_name)
+        
+        rslt = PLUGIN_RESOURCES.ICONS.get(icon_name, None)
+        if not rslt:
+            pixmap = get_pixmap(icon_name)
+            if pixmap:
+                rslt = QIcon(pixmap)
+                PLUGIN_RESOURCES.ICONS[icon_name] = rslt
+        
+        if rslt:
+            return rslt
+    
+    return QIcon()
+
+def get_pixmap(icon_name: str) -> QPixmap:
+    """
+    Retrieve a QPixmap for the named image
+    Any icons belonging to the plugin must be prefixed with 'images/'
+    """
+    
+    if icon_name:
+        icon_name = linux(icon_name).strip('/')
+        
+        def from_resources(search_name):
+            raw = None
+            for name in get_icon_themed_names(search_name):
+                try:
+                    raw = I(name, data=True, allow_user_override=True)
+                except:
+                    pass
+                
+                if raw:
+                    rslt = QPixmap()
+                    rslt.loadFromData(raw)
+                    return rslt
+            return None
+        
+        if not icon_name.startswith('images/'):
+            # We know this is definitely not an icon belonging to this plugin
+            return from_resources(icon_name)
+        
+        rslt = PLUGIN_RESOURCES.PIXMAP.get(icon_name, None)
+        if not rslt:
+            # test user overide
+            rslt = from_resources(os.path.join(PLUGIN_NAME, icon_name.split('/', 1)[-1]))
+            if not rslt:
+                # inside plugin ZIP
+                for name in get_icon_themed_names(icon_name):
+                    if name in PLUGIN_RESOURCES:
+                        rslt = QPixmap()
+                        rslt.loadFromData(PLUGIN_RESOURCES[name])
+                        break
+            
+            if rslt:
+                PLUGIN_RESOURCES.PIXMAP[icon_name] = rslt
+        
+        if rslt:
+            return rslt
+
+def local_resource(*subfolders: Optional[List[str]]) -> str:
+    """
+    Returns a path to the user's local resources folder
+    If a subfolder name parameter is specified, appends this to the path
+    """
+    rslt = os.path.join(config_dir, 'resources', *[f.replace('/','-').replace('\\','-') for f in subfolders])
+    
+    if iswindows:
+        rslt = os.path.normpath(rslt)
+    return linux(rslt)
+local_resource.IMAGES = local_resource('images')+'/'
 
 def _class_name(obj, inside) -> str:
     if not isinstance(obj, type):
@@ -181,14 +290,16 @@ class ZipResources(PathDict):
         return rslt
 
 class PluginResources(ZipResources):
-    def __init__(self, preload_keys: List[str]=None):
+    def __init__(self):
         from calibre.utils.zipfile import ZipFile
         ZipResources.__init__(self, PLUGIN_INSTANCE.plugin_path)
         
-        preload_keys = preload_keys or []
+        self.ICONS = PathDict()
+        self.PIXMAP = PathDict()
+        
         with ZipFile(self.zip_path, 'r') as zf:
             for entry in zf.namelist():
-                if entry.startswith('images/') and os.path.splitext(entry)[1].lower() == '.png' or entry in preload_keys:
+                if entry.startswith('images/') and os.path.splitext(entry)[1].lower() == '.png':
                     self.__setitem__(entry, zf.read(entry))
     
     def __str__(self):
@@ -201,110 +312,6 @@ class PluginResources(ZipResources):
 # classes if you need any zip images to be displayed on the configuration dialog.
 PLUGIN_RESOURCES = PluginResources()
 
-
-THEME_COLOR = ['', 'dark', 'light']
-
-def get_theme_color() -> str:
-    """Get the theme color of Calibre"""
-    if CALIBRE_VERSION >= (6,0,0):
-        return THEME_COLOR[1] if QApplication.instance().is_dark_theme else THEME_COLOR[2]
-    return THEME_COLOR[0]
-
-def get_icon_themed(icon_name, theme_color=None):
-    """Apply the theme color to a path"""
-    theme_color = get_theme_color() if theme_color is None else theme_color
-    path, ext = os.path.splitext(icon_name)
-    return (path+('' if not theme_color else '-'+ theme_color)+ext).replace('//', '/')
-
-def themed_icon(icon_name) -> QIcon:
-    if CALIBRE_VERSION >= (6,0,0):
-        return QIcon.ic(icon_name)
-    else:
-        return QIcon(I(icon_name))
-
-def get_icon(icon_name: str) -> QIcon:
-    """
-    Retrieve a QIcon for the named image from the zip file if it exists,
-    or if not then from Calibre's image cache.
-    """
-    if isinstance(icon_name, QIcon):
-        return icon_name
-    
-    if icon_name:
-        if not icon_name.startswith('images/'):
-            # We know this is definitely not an icon belonging to this plugin
-            return themed_icon(icon_name)
-        
-        if icon_name:
-            pixmap = get_pixmap(icon_name)
-            if pixmap is None:
-                # Look in Calibre's cache for the icon
-                return themed_icon(icon_name)
-            else:
-                return QIcon(pixmap)
-    return QIcon()
-
-def get_pixmap(icon_name: str) -> QPixmap:
-    """
-    Retrieve a QPixmap for the named image
-    Any icons belonging to the plugin must be prefixed with 'images/'
-    """
-    
-    if not icon_name.startswith('images/'):
-        # We know this is definitely not an icon belonging to this plugin
-        pixmap = QPixmap()
-        pixmap.load(I(icon_name))
-        return pixmap
-    
-    # Build the icon_name according to the theme of the OS or Qt
-    icon_themed = get_icon_themed(icon_name)
-    
-    if PLUGIN_NAME:
-        # Check to see whether the icon exists as a Calibre resource
-        # This will enable skinning if the user stores icons within a folder like:
-        # %CALIBRE_CONFIG_DIRECTORY%\resources\images\Plugin_Name\
-        def get_from_local(name):
-            local_images_dir = get_local_resource('images', PLUGIN_NAME)
-            local_image_path = os.path.join(local_images_dir, name.replace('images/', ''))
-            if os.path.exists(local_image_path):
-                pxm = QPixmap()
-                pxm.load(local_image_path)
-                return pxm
-            return None
-        
-        pixmap = get_from_local(icon_themed)
-        if not pixmap:
-            pixmap = get_from_local(icon_name)
-        if pixmap:
-            return pixmap
-    
-    ##
-    # As we did not find an icon elsewhere, look within our zip resources
-    global PLUGIN_RESOURCES
-    def get_from_resources(name):
-        if name in PLUGIN_RESOURCES:
-            pxm = QPixmap()
-            pxm.loadFromData(PLUGIN_RESOURCES[name])
-            return pxm
-        return None
-    
-    pixmap = get_from_resources(icon_themed)
-    if not pixmap:
-        pixmap = get_from_resources(icon_name)
-    
-    return pixmap
-
-def get_local_resource(*subfolder: Optional[List[str]]) -> str:
-    """
-    Returns a path to the user's local resources folder
-    If a subfolder name parameter is specified, appends this to the path
-    """
-    rslt = os.path.join(config_dir, 'resources', *[f.replace('/','-').replace('\\','-') for f in subfolder])
-    
-    if iswindows:
-        rslt = os.path.normpath(rslt)
-    return rslt.replace('\\', '/')
-get_local_resource.IMAGES = get_local_resource('images')+'/'
 
 # ----------------------------------------------
 #               Functions
@@ -320,9 +327,9 @@ def get_date_format(tweak_name: str='gui_timestamp_display_format', default_fmt:
 def truncate_title(title: str, length: int=75) -> str:
     return (title[:length] + '…') if len(title) > length else title
 
-def get_image_map(resources_dir: str='images') -> Dict[str, QIcon]:
+def get_image_map(subdir: str=None) -> Dict[str, QIcon]:
     rslt = {}
-    resources_dir = get_local_resource(resources_dir)
+    resources_dir = os.path.join([config_dir, 'resources', 'images', subdir or ''])
     
     if os.path.exists(resources_dir):
         # Get the names of any .png images in this directory

@@ -196,9 +196,8 @@ class ColumnMetadata():
         
         self._type = None
         for func in typeproperty.registry:
-            import re
             if func.__call__(self):
-                self._type = re.sub(r'^_is_', '', func.__name__)
+                self._type = func.__name__.split('_is_', 1)[-1]
         
         if not self._type:
             prints(self.name)
@@ -744,7 +743,7 @@ if __name__ == '__main__':
     prints('Loading library:', path)
     def current_db():
         return current_db.db
-    current_db.db = LibraryDatabase(path=path, read_only=True)
+    current_db.db = LibraryDatabase(library_path=path, read_only=True)
     prints()
     
     prints('All columns:')

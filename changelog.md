@@ -1,5 +1,8 @@
 # Changelog - common_utils
 
+## 2023/10/01
+- Rework get_icon() to support calibre themed icons
+
 ## 2023/09/30
 - Drop Python 2 / Calibre 4 compatibility, only 5 and above
 

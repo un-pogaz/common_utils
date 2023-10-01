@@ -226,7 +226,6 @@ class FieldsValueTreeWidget(QTreeWidget):
             root = create_tree_item(parent, f'{name} ({field})', field, icon)
             
             for data in items:
-                debug_print(data)
                 if self._dbAPI.field_metadata[field]['datatype'] == 'rating':
                     text = rating_to_stars(data[0], allow_half_stars=True)
                 else:
@@ -235,7 +234,6 @@ class FieldsValueTreeWidget(QTreeWidget):
                 ch = create_tree_item(root, text, data, icon)
                 root.addChild(ch)
             
-            debug_print('')
             root.sortChildren(0, Qt.AscendingOrder)
             return root
         
@@ -265,8 +263,6 @@ class FieldsValueTreeWidget(QTreeWidget):
             items = content_map.get(field, None)
             if items:
                 self.addTopLevelItem(create_root_item(self, field, items))
-        
-        debug_print('==========')
         
         self.update_texts(
             empty='',

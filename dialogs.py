@@ -39,7 +39,7 @@ from calibre.gui2.actions import InterfaceAction
 from calibre.gui2.keyboard import ShortcutConfig
 from calibre.gui2.widgets2 import Dialog
 
-from . import GUI, current_db, PLUGIN_NAME, PREFS_NAMESPACE, debug_print, get_icon, get_local_resource
+from . import GUI, current_db, PLUGIN_NAME, PREFS_NAMESPACE, debug_print, get_icon, local_resource
 
 
 class KeyboardConfigDialog(Dialog):
@@ -345,7 +345,7 @@ class ViewLogDialog(Dialog):
 
 class ImageDialog(Dialog):
     def __init__(self, existing_images: List[str]=None, resources_dir: str=None, parent=None):
-        self.resources_dir = resources_dir or get_local_resource.IMAGES
+        self.resources_dir = resources_dir or local_resource.IMAGES
         self.existing_images = existing_images or []
         Dialog.__init__(self,
             title=_('Add New Image'),
