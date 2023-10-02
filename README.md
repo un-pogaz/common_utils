@@ -27,6 +27,7 @@ git submodule update --remote --merge
 | dialogs.py | Pre-build useful dialogs |
 | librarys.py | Functions to retrive Book IDs for various case |
 | menus.py | Helper functions for building menus for `action.py` |
+| template.py | Various template tools |
 | widgets.py | Additional Qt widgets for use in dialogs or grid tables |
 
 The folder `/translations/` contains the base PO file to translate the various string of the `common_utils`. This entrys need to be manualy merged to your real translation files.

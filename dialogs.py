@@ -55,6 +55,7 @@ class KeyboardConfigDialog(Dialog):
         )
     
     def setup_ui(self):
+        self.setWindowIcon(get_icon('keyboard-prefs.png'))
         layout = QVBoxLayout(self)
         self.setLayout(layout)
         
@@ -72,13 +73,13 @@ class KeyboardConfigDialog(Dialog):
 
 def edit_keyboard_shortcuts_dialog(plugin_action: InterfaceAction, parent=None):
     getattr(plugin_action, 'rebuild_menus', ())()
-    d = KeyboardConfigDialog(plugin_action.action_spec[0], parent=None)
+    d = KeyboardConfigDialog(plugin_action.action_spec[0], parent=parent)
     if d.exec():
         GUI.keyboard.finalize()
 
 class KeyboardConfigDialogButton(QPushButton):
-    def __init__(self, parent=None):
-        QPushButton.__init__(self, get_icon('keyboard-prefs.png'), _('Keyboard shortcuts')+'…', parent)
+    def __init__(self, show_icon=True, parent=None):
+        QPushButton.__init__(self, get_icon('keyboard-prefs.png' if show_icon else None), _('Keyboard shortcuts')+'…', parent)
         self.setToolTip(_('Edit the keyboard shortcuts associated with this plugin'))
         self.clicked.connect(self.edit_shortcuts)
 
@@ -196,8 +197,8 @@ class LibraryPrefsViewerDialogButton(QPushButton):
     
     library_prefs_changed = pyqtSignal()
     
-    def __init__(self, prefs_namespace: str=PREFS_NAMESPACE, parent=None):
-        QPushButton.__init__(self, get_icon('lt.png'), _('View library preferences')+'…', parent)
+    def __init__(self, prefs_namespace: str=PREFS_NAMESPACE, show_icon=False, parent=None):
+        QPushButton.__init__(self, get_icon('lt.png' if show_icon else None), _('View library preferences')+'…', parent)
         self.setToolTip(_('View data stored in the library database for this plugin'))
         self.clicked.connect(self.library_prefs_dialog)
         self.prefs_namespace = prefs_namespace

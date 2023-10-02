@@ -3,6 +3,7 @@
 ## 2023/10/02
 - Add time to debug_print
 - fix PREFS_json get dict entry
+- Add template.py
 
 ## 2023/10/01
 - Rework get_icon() to support calibre themed icons
