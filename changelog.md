@@ -1,7 +1,8 @@
 # Changelog - common_utils
 
 ## 2023/10/02
-- add time to debug_print
+- Add time to debug_print
+- fix PREFS_json get dict entry
 
 ## 2023/10/01
 - Rework get_icon() to support calibre themed icons

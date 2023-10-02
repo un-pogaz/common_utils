@@ -442,6 +442,15 @@ class PREFS_json(JSONConfig):
         JSONConfig.__init__(self, 'plugins/'+PLUGIN_NAME)
         self._is_init = False
     
+    def __getitem__(self, key):
+        d = self.defaults.get(key, None)
+        if isinstance(d, dict):
+            d = d.copy()
+            d.update(JSONConfig.get(self, key, {}))
+            return d
+        else:
+            return JSONConfig.__getitem__(self, key)
+    
     def update(self, other, **kvargs):
         JSONConfig.update(self, other, **kvargs)
         if not self._is_init:
@@ -451,17 +460,12 @@ class PREFS_json(JSONConfig):
         self.refresh()
         return self
     
-    def deepcopy_dict(self):
+    def copy(self):
         """
-        get a deepcopy dict of this instance
+        get a copy dict of this instance
         """
-        rslt = {}
-        for k,v in self.items():
-            rslt[copy.deepcopy(k)] = copy.deepcopy(v)
-        
-        for k, v in self.defaults.items():
-            if k not in rslt:
-                rslt[k] = copy.deepcopy(v)
+        rslt = {copy.deepcopy(k):copy.deepcopy(v) for k,v in self.items()}
+        rslt.update({copy.deepcopy(k):copy.deepcopy(v) for k,v in self.defaults.items() if k not in rslt})
         return rslt
 
 class PREFS_dynamic(DynamicConfig):
@@ -493,9 +497,9 @@ class PREFS_dynamic(DynamicConfig):
         DynamicConfig.update(self, other, **kvargs)
         self.commit()
     
-    def deepcopy_dict(self):
+    def copy(self):
         """
-        get a deepcopy dict of this instance
+        get a copy dict of this instance
         """
         rslt = {}
         for k,v in self.items():
@@ -536,7 +540,13 @@ class PREFS_library(dict):
     def __getitem__(self, key):
         self.refresh()
         try:
-            return dict.__getitem__(self, key)
+            d = self.defaults.get(key, None)
+            if isinstance(d, dict):
+                d = d.copy()
+                d.update(dict.get(self, key, {}))
+                return d
+            else:
+                return dict.__getitem__(self, key)
         except KeyError:
             return self.defaults[key]
     
@@ -565,7 +575,7 @@ class PREFS_library(dict):
     
     def __str__(self):
         self.refresh()
-        return dict.__str__(self.deepcopy_dict())
+        return dict.__str__(self.copy())
     
     def _check_db(self):
         if current_db() and self._db != current_db():
@@ -585,7 +595,7 @@ class PREFS_library(dict):
             return
         
         if self._check_db():
-            self._db.prefs.set_namespaced(self.namespace, self.key, self.deepcopy_dict())
+            self._db.prefs.set_namespaced(self.namespace, self.key, self.copy())
             self.refresh()
     
     def __enter__(self):
@@ -604,15 +614,10 @@ class PREFS_library(dict):
         dict.update(self, other, **kvargs)
         self.commit()
     
-    def deepcopy_dict(self):
+    def copy(self):
         """
-        get a deepcopy dict of this instance
+        get a copy dict of this instance
         """
-        rslt = {}
-        for k,v in self.items():
-            rslt[copy.deepcopy(k)] = copy.deepcopy(v)
-        
-        for k, v in self.defaults.items():
-            if k not in rslt:
-                rslt[k] = copy.deepcopy(v)
+        rslt = {copy.deepcopy(k):copy.deepcopy(v) for k,v in self.items()}
+        rslt.update({copy.deepcopy(k):copy.deepcopy(v) for k,v in self.defaults.items() if k not in rslt})
         return rslt
