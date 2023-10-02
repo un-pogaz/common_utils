@@ -4,6 +4,7 @@
 - Add time to debug_print
 - fix PREFS_json get dict entry
 - Add template.py
+- Rework KeyValue and CustomColumn ComboBox
 
 ## 2023/10/01
 - Rework get_icon() to support calibre themed icons
@@ -16,7 +17,7 @@
 
 ## 2023/09/28
 - Add PLUGIN_CLASSE
-- remove load_plugin_resources(), Add ZipResources and PluginResources
+- Remove load_plugin_resources(), Add ZipResources and PluginResources
     - PLUGIN_RESOURCES will now auto load any requested items
 - Drop Calibre 2 and 3 compatibility, only 4 and above
     - !! Remove SizePersistedDialog !!

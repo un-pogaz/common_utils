@@ -13,7 +13,7 @@ except NameError:
 
 from collections import defaultdict, OrderedDict
 from functools import partial
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 try:
     from qt.core import (
@@ -36,7 +36,7 @@ from calibre.ebooks.metadata import rating_to_stars
 
 from . import debug_print, get_icon, get_pixmap, get_date_format, GUI, current_db
 from .librarys import get_category_icons_map, get_tags_browsable_fields
-from .columns import get_all_identifiers
+from .columns import get_all_identifiers, ColumnMetadata
 
 
 # ----------------------------------------------
@@ -509,77 +509,67 @@ class ListComboBox(QComboBox):
         return self.currentText()
 
 class KeyValueComboBox(QComboBox):
-    def __init__(self, values: Dict[str, Any], selected_key: str=None, values_ToolTip: Dict[str, str]=None, parent=None):
+    def __init__(self, key_text_map: Dict[str, str], selected_key: str=None, tooltip_map: Dict[str, str]=None, parent=None):
         QComboBox.__init__(self, parent)
-        self.populate_combo(values, selected_key, values_ToolTip)
+        self.populate_combo(key_text_map, selected_key, tooltip_map)
         self.currentIndexChanged.connect(self.key_value_changed)
         self.currentIndexChanged.emit(-1)
     
-    def populate_combo(self, values, selected_key: str=None, values_ToolTip: Dict[str, str]=None):
+    def populate_combo(self, key_text_map: Dict[str, str], selected_key: str=None, tooltip_map: Dict[str, str]=None):
         self.clear()
-        self.values_ToolTip = values_ToolTip or {}
-        self.values = values
+        self.key_text_map = key_text_map
+        self.tooltip_map = tooltip_map or {}
         
-        selected_idx = start = 0
-        for idx, (key, value) in enumerate(self.values.items(), start):
-            self.addItem(value)
+        selected_idx = 0
+        for idx, (key, value) in enumerate(self.key_text_map.items()):
+            self.addItem(value, key)
             if key == selected_key:
                 selected_idx = idx
         
         self.setCurrentIndex(selected_idx)
     
-    def selected_key(self):
-        currentText = self.currentText().strip()
-        for key, value in self.values.items():
-            if value == currentText:
-                return key
+    def selected_entry(self) -> Tuple[str, str]:
+        key = self.selected_key()
+        if key:
+            return key, self.key_text_map[key]
+    
+    def selected_key(self) -> str:
+        key = self.currentData()
+        if key:
+            return key
+    
+    def selected_text(self) -> str:
+        return self.key_text_map.get(self.selected_key(), None)
     
     def key_value_changed(self, idx: int):
-        self.refresh_ToolTip()
-    
-    def refresh_ToolTip(self):
-        if self.values_ToolTip:
-            self.setToolTip(self.values_ToolTip.get(self.selected_key(), ''))
+        self.setToolTip(self.tooltip_map.get(self.selected_key(), ''))
 
-class CustomColumnComboBox(QComboBox):
-    def __init__(self, custom_columns: Dict[str, str], selected_column='', initial_items: List[str]=[''], parent=None):
-        QComboBox.__init__(self, parent)
-        self.populate_combo(custom_columns, selected_column, initial_items)
-        self.refresh_ToolTip()
-        self.currentTextChanged.connect(self.current_text_changed)
-    
-    def populate_combo(self, custom_columns: Dict[str, str], selected_column='', initial_items: List[str]=['']):
-        self.clear()
+class CustomColumnComboBox(KeyValueComboBox):
+    def __init__(self, custom_columns: Dict[str ,ColumnMetadata], selected_column='', parent=None):
         self.custom_columns = custom_columns
-        self.column_names = []
-        initial_items = initial_items or []
-        
-        selected_idx = start = 0
-        for start, init in enumerate(initial_items, 1):
-            self.column_names.append(init)
-            self.addItem(init)
-        
-        for idx, (key, value) in enumerate(self.custom_columns.items(), start):
-            self.column_names.append(key)
-            self.addItem(f'{key} ({value.display_name})')
-            if key == selected_column:
-                selected_idx = idx
-        
-        self.setCurrentIndex(selected_idx)
+        cc = OrderedDict()
+        cc['']=''
+        tt = OrderedDict()
+        tt['']=''
+        for entry in custom_columns.values():
+            cc[entry.name] = f'{entry.display_name} ({entry.name})'
+            tt[entry.name] = entry.description
+        KeyValueComboBox.__init__(self, key_text_map=cc, selected_key=selected_column, tooltip_map=tt, parent=parent)
     
-    def refresh_ToolTip(self):
-        cc = self.custom_columns.get(self.get_selected_column(), None)
-        if cc:
-            self.setToolTip(cc.description)
-        else:
-            self.setToolTip('')
+    def selected_name(self) -> str:
+        name = self.selected_key()
+        if name:
+            return name
     
-    def get_selected_column(self) -> str:
-        return self.column_names[self.currentIndex()]
+    def selected_entry(self) -> str:
+        name = self.selected_name()
+        if name:
+            return name, self.custom_columns.get(name, None)
     
-    def current_text_changed(self, new_text):
-        self.refresh_ToolTip()
-        self.current_index = self.currentIndex()
+    def selected_column(self) -> ColumnMetadata:
+        kv = self.selected_entry()
+        if kv:
+            return kv[1]
 
 class ReorderedComboBox(QComboBox):
     def __init__(self, strip_items=True, parent=None):
