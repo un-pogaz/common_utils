@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2023-09-30 07:59+0200\n"
-"PO-Revision-Date: 2023-09-30 07:59+0200\n"
+"POT-Creation-Date: 2023-10-02 17:04+0200\n"
+"PO-Revision-Date: 2023-10-02 17:06+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -14,193 +14,213 @@ msgstr ""
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: __init__.py:289
+#: __init__.py:368
 msgid "You cannot configure this plugin before calibre is restarted."
 msgstr "Vous ne pouvez pas configurer ce plugin avant le redémarrage de Calibre."
 
-#: dialogs.py:45 dialogs.py:71
+#: dialogs.py:52 dialogs.py:82
 msgid "Keyboard shortcuts"
 msgstr "Raccourcis clavier"
 
-#: dialogs.py:72
+#: dialogs.py:83
 msgid "Edit the keyboard shortcuts associated with this plugin"
 msgstr "Modifier les raccourcis clavier associés à cette extension"
 
-#: dialogs.py:87
+#: dialogs.py:99
 msgid "Preferences for:"
 msgstr "Préférences pour :"
 
-#: dialogs.py:105
-msgid "Clear"
-msgstr "Effacer"
-
-#: dialogs.py:107
+#: dialogs.py:122
 msgid "Clear all settings for this plugin"
 msgstr "Effacer tous les paramètres de ce plugin"
 
-#: dialogs.py:149
+#: dialogs.py:164
 msgid "The changes cannot be applied."
 msgstr "Les modifications ne peuvent pas être appliquées."
 
-#: dialogs.py:153
+#: dialogs.py:168
 msgid "Are you sure you want to change your settings in this library for this plugin?"
 msgstr "Êtes-vous sûr de vouloir modifier vos paramètres dans cette bibliothèque pour ce plugin ?"
 
-#: dialogs.py:154 dialogs.py:166
+#: dialogs.py:169 dialogs.py:181
 msgid "Any settings in other libraries or stored in a JSON file in your calibre plugins folder will not be touched."
 msgstr "Les paramètres présents dans d'autres bibliothèques ou stockés dans un fichier JSON dans le dossier des plugins de Calibre ne seront pas modifiés."
 
-#: dialogs.py:165
+#: dialogs.py:180
 msgid "Are you sure you want to clear your settings in this library for this plugin?"
 msgstr "Êtes-vous sûr de vouloir effacer vos paramètres dans cette bibliothèque pour ce plugin ?"
 
-#: dialogs.py:186
+#: dialogs.py:201
 msgid "View library preferences"
 msgstr "Afficher les préférences de la bibliothèque"
 
-#: dialogs.py:187
+#: dialogs.py:202
 msgid "View data stored in the library database for this plugin"
 msgstr "Afficher les données stockées dans la base de données de la bibliothèque pour ce plugin"
 
-#: dialogs.py:264
+#: dialogs.py:232
 msgid "Cancel"
 msgstr "Annuler"
 
-#: dialogs.py:274
+#: dialogs.py:242
 #, python-brace-format
 msgid "{PLUGIN_NAME} progress"
 msgstr "Progression de {PLUGIN_NAME}"
 
-#: dialogs.py:330
+#: dialogs.py:298
 msgid "Book {:d} of {:d}"
 msgstr "Livre {:d} sur {:d}"
 
-#: dialogs.py:361
+#: dialogs.py:333
 msgid "Copy to clipboard"
 msgstr "Copier dans le presse-papiers"
 
-#: dialogs.py:381
+#: dialogs.py:352
 msgid "Add New Image"
 msgstr "Ajouter une nouvelle image"
 
-#: dialogs.py:384
+#: dialogs.py:360
 msgid "&Select image source"
 msgstr "&Sélectionner la source de l'image"
 
-#: dialogs.py:387
+#: dialogs.py:363
 msgid "From &web domain favicon"
 msgstr "Depuis favicon de site &web"
 
-#: dialogs.py:394
+#: dialogs.py:370
 msgid "From .png &file"
 msgstr "Depuis un &fichier .png"
 
-#: dialogs.py:407
+#: dialogs.py:383
 msgid "&Save as filename:"
 msgstr "&Enregitrement comme nom de fichier :"
 
-#: dialogs.py:431
+#: dialogs.py:404
 msgid "Select a .png file for the menu icon"
 msgstr "Sélectionner un fichier .png pour l'icône du menu"
 
-#: dialogs.py:437 dialogs.py:446 dialogs.py:449 dialogs.py:464 dialogs.py:471
-#: dialogs.py:473 dialogs.py:475
+#: dialogs.py:410 dialogs.py:419 dialogs.py:422 dialogs.py:437 dialogs.py:443
+#: dialogs.py:445 dialogs.py:447
 msgid "Cannot import image"
 msgstr "Impossible d'importer l'image"
 
-#: dialogs.py:437 dialogs.py:473
+#: dialogs.py:410 dialogs.py:445
 msgid "Source image must be a .png file."
 msgstr "L'image source doit être un fichier .png."
 
-#: dialogs.py:446
+#: dialogs.py:419
 msgid "You must specify a filename to save as."
 msgstr "Vous devez spécifier un nom de fichier pour l'enregistrer."
 
-#: dialogs.py:449
+#: dialogs.py:422
 msgid "The save as filename should consist of a filename only."
 msgstr "L'enregitrement en tant que nom de fichier doit consister uniquement en un nom de fichier."
 
-#: dialogs.py:454
+#: dialogs.py:427
 msgid "Are you sure?"
 msgstr "Êtes-vous sûr ?"
 
-#: dialogs.py:454
+#: dialogs.py:427
 msgid "An image with this name already exists - overwrite it?"
 msgstr "Une image portant ce nom existe déjà, l'écraser ?"
 
-#: dialogs.py:464
+#: dialogs.py:437
 msgid "You must specify a web domain url"
 msgstr "Vous devez spécifier une url de site web"
 
-#: dialogs.py:471
+#: dialogs.py:443
 msgid "You must specify a source file."
 msgstr "Vous devez spécifier un fichier source."
 
-#: dialogs.py:475
+#: dialogs.py:447
 msgid "Source image does not exist!"
 msgstr "L'image source n'existe pas !"
 
-#: dialogs.py:505
+#: dialogs.py:477
 #, python-brace-format
 msgid "The {PLUGIN_NAME} plugin has encounter a unhandled exception."
 msgstr "Le plugin {PLUGIN_NAME} a rencontré une exception non gérée."
 
-#: dialogs.py:514
+#: dialogs.py:486
 msgid "Unhandled exception"
 msgstr "Exception non gérée"
 
-#: librarys.py:51
+#: librarys.py:48
 msgid "Could not to launch {:s}"
 msgstr "Impossible de lancer {:s}"
 
-#: librarys.py:65
+#: librarys.py:62
 msgid "No book selected"
 msgstr "Aucun livre sélectionné"
 
-#: librarys.py:70
+#: librarys.py:67
 msgid "No book in the library"
 msgstr "Pas de livres dans bibliothèque"
 
-#: librarys.py:75 librarys.py:81
+#: librarys.py:72 librarys.py:78
 msgid "No book in the virtual library"
 msgstr "Pas de livres dans la bibliothèque virtuel"
 
-#: librarys.py:86
+#: librarys.py:83
 msgid "No book in the current search"
 msgstr "Pas de livres dans la recherche actuelle"
 
-#: widgets.py:62
+#: templates.py:57
+msgid "Unknown"
+msgstr "Inconue"
+
+#: templates.py:64
+msgid "Template Error"
+msgstr "Erreur de modèle"
+
+#: templates.py:65
+msgid "Running the template returned an error:"
+msgstr "L'exécution du modèle a renvoyé une erreur :"
+
+#: templates.py:77
+msgid "Enter a template to test using data from the selected book"
+msgstr "Saisissez un modèle à tester en utilisant les données du livre sélectionné"
+
+#: templates.py:84
+msgid "Template editor"
+msgstr "Éditeur de modèle"
+
+#: templates.py:105 templates.py:106
+msgid "Open the template editor"
+msgstr "Ouvrir l'éditeur de modèle"
+
+#: widgets.py:66
 msgid "Restart required"
 msgstr "Redémarrage nécessaire"
 
-#: widgets.py:63
+#: widgets.py:67
 msgid "Title image not found - you must restart Calibre before using this plugin!"
 msgstr "L'image d'icone n'a pas était trouvée - vous devriez mieux redémarrer Calibre avant d'utiliser ce plugin !"
 
-#: widgets.py:112
+#: widgets.py:122
 msgid "Undefined"
 msgstr "Non défini"
 
-#: widgets.py:300
+#: widgets.py:270
 msgid "Subset of values associate to the books"
 msgstr "Sous-ensemble de valeurs associées aux livres"
 
-#: widgets.py:301
+#: widgets.py:271
 msgid "No books"
 msgstr "Aucun livre"
 
-#: widgets.py:302
+#: widgets.py:272
 msgid "{:d} books (no values)"
 msgstr "{:d} livres (pas de valeurs)"
 
-#: widgets.py:303
+#: widgets.py:273
 msgid "{:d} books"
 msgstr "{:d} livres"
 
-#: widgets.py:417
+#: widgets.py:396
 msgid "No notes"
 msgstr "Aucune notes"
 
-#: widgets.py:462
+#: widgets.py:441
 msgid "Add New Image…"
 msgstr "Ajouter une nouvelle image…"
