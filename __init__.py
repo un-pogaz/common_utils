@@ -17,7 +17,6 @@ from typing import Any, Dict, Iterable, List, Optional, Union
 
 import os
 import copy
-import time
 
 try:
     from qt.core import (
@@ -34,6 +33,7 @@ from calibre.customize.ui import find_plugin
 from calibre.gui2 import show_restart_warning
 from calibre.db.legacy import LibraryDatabase
 from calibre.gui2.ui import Main
+from calibre.utils.monotonic import monotonic
 
 from calibre.utils.config import config_dir, JSONConfig, DynamicConfig
 
@@ -72,7 +72,7 @@ DEBUG_PRE = get_plugin_attribut('DEBUG_PRE', PLUGIN_NAME)
 # Plugin instance.
 PLUGIN_INSTANCE = find_plugin(PLUGIN_NAME)
 
-BASE_TIME = time.time()
+BASE_TIME = monotonic()
 def debug_print(*args, **kw):
     '''
     Print a output assigned to the plugin
@@ -89,13 +89,30 @@ def debug_print(*args, **kw):
     '''
     if DEBUG:
         pre = kw.get('pre', DEBUG_PRE)
-        if not pre:
-            prints(*args, **kw)
-        else:
-            if not pre.endswith(':'):
-                pre = pre+':'
+        time_format = kw.get('time', None)
+        if time_format:
+            if not isinstance(time_format, str):
+                time_format = '.2f'
+            try:
+                time_format = (monotonic()-BASE_TIME).__format__(time_format)
+            except:
+                time_format = (monotonic()-BASE_TIME).__format__('.2f')
+            time_format =  f'[{time_format}]'
+        
+        if pre or time_format:
+            if pre and time_format:
+                pre = f'{time_format} {pre}'
+            
+            if pre:
+                if not pre.endswith(':'):
+                    pre = pre+':'
+            else:
+                pre = time_format+' '
+            
             prints(pre, *args, **kw)
-        #prints('DEBUG', DEBUG_PRE,'({:.3f})'.format(time.time()-BASE_TIME),':', *args)
+        else:
+            prints(*args, **kw)
+        #prints(DEBUG_PRE,'[{:.2f}]'.format(monotonic()-BASE_TIME),':', *args, **kw)
 
 
 # ----------------------------------------------
@@ -290,16 +307,17 @@ class ZipResources(PathDict):
         return rslt
 
 class PluginResources(ZipResources):
-    def __init__(self):
+    def __init__(self, preload_keys: List[str]=None):
         from calibre.utils.zipfile import ZipFile
         ZipResources.__init__(self, PLUGIN_INSTANCE.plugin_path)
+        preload_keys = [linux(k) for k in preload_keys or []]
         
         self.ICONS = PathDict()
         self.PIXMAP = PathDict()
         
         with ZipFile(self.zip_path, 'r') as zf:
             for entry in zf.namelist():
-                if entry.startswith('images/') and os.path.splitext(entry)[1].lower() == '.png':
+                if entry.startswith('images/') and os.path.splitext(entry)[1].lower() == '.png' or entry in preload_keys:
                     self.__setitem__(entry, zf.read(entry))
     
     def __str__(self):
@@ -329,8 +347,7 @@ def truncate_title(title: str, length: int=75) -> str:
 
 def get_image_map(subdir: str=None) -> Dict[str, QIcon]:
     rslt = {}
-    resources_dir = os.path.join([config_dir, 'resources', 'images', subdir or ''])
-    
+    resources_dir = os.path.join(config_dir, 'resources', 'images', subdir or '')
     if os.path.exists(resources_dir):
         # Get the names of any .png images in this directory
         for f in sorted(os.listdir(resources_dir)):
