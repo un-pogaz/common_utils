@@ -13,7 +13,7 @@ except NameError:
 
 from collections import defaultdict, OrderedDict
 from functools import partial
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 try:
     from qt.core import (
@@ -180,7 +180,7 @@ class ReadOnlyTableWidgetItem(QTableWidgetItem):
 
 
 class FieldsValueTreeWidget(QTreeWidget):
-    def __init__(self, book_ids: List[int]=[], parent=None):
+    def __init__(self, book_ids: List[int]=None, parent=None):
         'If book_ids is not None, display a entry that contain a subset of Notes for listed books'
         QTreeWidget.__init__(self, parent)
         
@@ -195,10 +195,10 @@ class FieldsValueTreeWidget(QTreeWidget):
         
         self.populate_tree(book_ids=book_ids)
     
-    def _build_content_map(self, book_ids: List[int]):
+    def _build_content_map(self, book_ids: Union[List[int], None]):
         raise NotImplementedError()
     
-    def populate_tree(self, book_ids: List[int]=[]):
+    def populate_tree(self, book_ids: List[int]=None):
         
         self.content_map = content_map = self._build_content_map(None)
         self.book_ids = book_ids
@@ -350,11 +350,11 @@ class FieldsValueTreeWidget(QTreeWidget):
         return rslt
 
 class SelectFieldValuesWidget(FieldsValueTreeWidget):
-    def __init__(self, book_ids: List[int]=[], parent=None):
+    def __init__(self, book_ids: List[int]=None, parent=None):
         'If book_ids is not None, display a entry that contain a subset of Notes for listed books'
         FieldsValueTreeWidget.__init__(self, book_ids=book_ids, parent=parent)
     
-    def _build_content_map(self, book_ids: List[int]):
+    def _build_content_map(self, book_ids: Union[List[int], None]):
         
         list_field = get_tags_browsable_fields(include_composite=False)
         for f in ['news', 'formats']:
@@ -390,12 +390,12 @@ class SelectFieldValuesWidget(FieldsValueTreeWidget):
         return rslt
 
 class SelectNotesWidget(FieldsValueTreeWidget):
-    def __init__(self, book_ids: List[int]=[], parent=None):
+    def __init__(self, book_ids: List[int]=None, parent=None):
         'If book_ids is not None, display a entry that contain a subset of Notes for listed books'
         FieldsValueTreeWidget.__init__(self, book_ids=book_ids, parent=parent)
         self.update_texts(empty=_('No notes'))
     
-    def _build_content_map(self, book_ids: List[int]=None):
+    def _build_content_map(self, book_ids: Union[List[int], None]):
         '''
         Return item_ids for items that have notes in the specified field or all fields if field_name is None.
         If book_ids if passed, return for entry only relative to this book list.
@@ -491,22 +491,20 @@ class ImageComboBox(NoWheelComboBox):
 
 
 class ListComboBox(QComboBox):
-    def __init__(self, values: str, selected_value: Any=None, parent=None):
+    def __init__(self, values: List[str], selected_value: str=None, parent=None):
         QComboBox.__init__(self, parent)
-        self.values = values
-        self.populate_combo(selected_value)
+        self.populate_combo(values=values, selected_value=selected_value)
     
-    def populate_combo(self, selected_value):
+    def populate_combo(self, values: List[str], selected_value: str=None):
         self.clear()
-        selected_idx = idx = -1
-        for value in self.values:
-            idx = idx + 1
+        selected_idx = 0
+        for value in values:
             self.addItem(value)
             if value == selected_value:
-                selected_idx = idx
+                selected_idx = self.count()-1
         self.setCurrentIndex(selected_idx)
     
-    def selected_value(self):
+    def selected_value(self) -> str:
         return self.currentText()
 
 class KeyValueComboBox(QComboBox):
@@ -514,7 +512,7 @@ class KeyValueComboBox(QComboBox):
         QComboBox.__init__(self, parent)
         self.populate_combo(key_text_map, selected_key, tooltip_map)
         self.currentIndexChanged.connect(self.key_value_changed)
-        self.currentIndexChanged.emit(-1)
+        self.key_value_changed(-1)
     
     def populate_combo(self, key_text_map: Dict[str, str], selected_key: str=None, tooltip_map: Dict[str, str]=None):
         self.clear()
@@ -522,11 +520,10 @@ class KeyValueComboBox(QComboBox):
         self.tooltip_map = tooltip_map or {}
         
         selected_idx = 0
-        for idx, (key, value) in enumerate(self.key_text_map.items()):
+        for key, value in self.key_text_map.items():
             self.addItem(value, key)
             if key == selected_key:
-                selected_idx = idx
-        
+                selected_idx = self.count()-1
         self.setCurrentIndex(selected_idx)
     
     def selected_entry(self) -> Tuple[str, str]:
@@ -545,24 +542,37 @@ class KeyValueComboBox(QComboBox):
     def key_value_changed(self, idx: int):
         self.setToolTip(self.tooltip_map.get(self.selected_key(), ''))
 
-class CustomColumnComboBox(KeyValueComboBox):
-    def __init__(self, custom_columns: Dict[str ,ColumnMetadata], selected_column='', parent=None):
-        self.custom_columns = custom_columns
-        cc = OrderedDict()
-        cc['']=''
-        tt = OrderedDict()
-        tt['']=''
+class CustomColumnComboBox(QComboBox):
+    def __init__(self, custom_columns: Dict[str ,ColumnMetadata], selected_column: str='', parent=None):
+        QComboBox.__init__(self, parent)
+        self.populate_combo(custom_columns=custom_columns, selected_column=selected_column)
+        self.currentIndexChanged.connect(self.column_changed)
+        self.column_changed(-1)
+    
+    def populate_combo(self, custom_columns: Dict[str ,ColumnMetadata], selected_column: str=''):
+        self.clear()
+        self.custom_columns = cc = OrderedDict()
+        self.custom_columns['']=''
+        self.description_map = tt = OrderedDict()
+        self.description_map['']=''
         for entry in custom_columns.values():
-            cc[entry.name] = f'{entry.display_name} ({entry.name})'
-            tt[entry.name] = entry.description
-        KeyValueComboBox.__init__(self, key_text_map=cc, selected_key=selected_column, tooltip_map=tt, parent=parent)
+            if entry:
+                cc[entry.name] = f'{entry.display_name} ({entry.name})'
+                tt[entry.name] = entry.description
+        
+        selected_idx = 0
+        for key, value in cc.items():
+            self.addItem(value, key)
+            if key == selected_column:
+                selected_idx = self.count()-1
+        self.setCurrentIndex(selected_idx)
     
     def selected_name(self) -> str:
-        name = self.selected_key()
+        name = self.currentData()
         if name:
             return name
     
-    def selected_entry(self) -> str:
+    def selected_entry(self) -> Tuple[str ,ColumnMetadata]:
         name = self.selected_name()
         if name:
             return name, self.custom_columns.get(name, None)
@@ -571,6 +581,9 @@ class CustomColumnComboBox(KeyValueComboBox):
         kv = self.selected_entry()
         if kv:
             return kv[1]
+    
+    def column_changed(self, idx: int):
+        self.setToolTip(self.description_map.get(self.selected_name(), ''))
 
 class ReorderedComboBox(QComboBox):
     def __init__(self, strip_items=True, parent=None):
