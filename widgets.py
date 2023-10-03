@@ -404,9 +404,10 @@ class SelectNotesWidget(FieldsValueTreeWidget):
         
         rslt = defaultdict(list)
         if book_ids is None:
-            for field in items_map.keys():
-                for (id, value) in self._dbAPI.get_id_map(field).items():
-                    rslt[field].append((value, id))
+            for field,items in items_map.items():
+                id_map = self._dbAPI.get_id_map(field)
+                for id in items:
+                    rslt[field].append((id_map[id], id))
         else:
             for book_id in book_ids:
                 for field,items in items_map.items():
