@@ -34,7 +34,7 @@ from calibre.utils.date import now, datetime, format_date, UNDEFINED_DATE
 from calibre.gui2.library.delegates import DateDelegate as _DateDelegate
 from calibre.ebooks.metadata import rating_to_stars
 
-from . import debug_print, get_icon, get_pixmap, get_date_format, GUI, current_db
+from . import debug_print, get_icon, get_pixmap, get_date_format, return_line_long_text, current_db, GUI
 from .librarys import get_category_icons_map, get_tags_browsable_fields
 from .columns import get_all_identifiers, ColumnMetadata
 
@@ -540,7 +540,7 @@ class KeyValueComboBox(QComboBox):
         return self.key_text_map.get(self.selected_key(), None)
     
     def key_value_changed(self, idx: int):
-        self.setToolTip(self.tooltip_map.get(self.selected_key(), ''))
+        self.setToolTip(return_line_long_text(self.tooltip_map.get(self.selected_key(), '')))
 
 class CustomColumnComboBox(QComboBox):
     def __init__(self, custom_columns: Dict[str ,ColumnMetadata], selected_column: str='', parent=None):
@@ -583,7 +583,7 @@ class CustomColumnComboBox(QComboBox):
             return kv[1]
     
     def column_changed(self, idx: int):
-        self.setToolTip(self.description_map.get(self.selected_name(), ''))
+        self.setToolTip(return_line_long_text(self.description_map.get(self.selected_name(), '')))
 
 class ReorderedComboBox(QComboBox):
     def __init__(self, strip_items=True, parent=None):

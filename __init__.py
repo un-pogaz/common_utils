@@ -13,7 +13,7 @@ except NameError:
 
 from collections import defaultdict, OrderedDict
 from functools import partial
-from typing import Any, Dict, Iterable, List, Optional, Union
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import os
 import copy
@@ -342,8 +342,8 @@ def get_date_format(tweak_name: str='gui_timestamp_display_format', default_fmt:
         format = default_fmt
     return format
 
-def truncate_title(title: str, length: int=75) -> str:
-    return (title[:length] + '…') if len(title) > length else title
+def truncate_title(title: str, max_length: int=75) -> str:
+    return (title[:max_length] + '…') if len(title) > max_length else title
 
 def get_image_map(subdir: str=None) -> Dict[str, QIcon]:
     rslt = {}
@@ -357,6 +357,45 @@ def get_image_map(subdir: str=None) -> Dict[str, QIcon]:
     
     return rslt
 
+def split_long_text(text: str, max_length: int=70) -> List[str]:
+    'Split a long text to various lines with a max lenght for each one'
+    text_lenght = len(text)
+    if text_lenght < max_length+10:
+        return [text]
+    
+    def split_to_space(src_text: str, lentgh: int) -> Tuple[str, str]:
+        if len(src_text) < lentgh:
+            return src_text, None
+        
+        end = src_text[lentgh:]
+        if ' ' not in end:
+            return src_text, None
+        
+        split_lentgh = lentgh + end.index(' ')
+        return src_text[:split_lentgh], src_text[split_lentgh+1:]
+    
+    for spliting in range(2, 11):
+        length_attempt = text_lenght // spliting
+        rslt = []
+        
+        adding_line, next_line = None, text
+        while next_line:
+            adding_line, next_line = split_to_space(next_line, length_attempt)
+            rslt.append(adding_line)
+        
+        to_long = False
+        for l in rslt:
+            if len(l) > max_length:
+                to_long = True
+                break
+        
+        if not to_long:
+            break
+    
+    return rslt
+
+def return_line_long_text(text: str, max_length: int=70) -> str:
+    return '\n'.join(split_long_text(text=text, max_length=max_length))
 
 # ----------------------------------------------
 #               Ohters

@@ -1,5 +1,8 @@
 # Changelog - common_utils
 
+## 2023/10/03
+- Add return_line_long_text(). Split a long text to various lines with a max lenght for each one
+
 ## 2023/10/02
 - Add time to debug_print
 - fix PREFS_json get dict entry
@@ -10,7 +13,7 @@
 - Rework get_icon() to support calibre themed icons
 
 ## 2023/09/30
-- Drop Python 2 / Calibre 4 compatibility, only 5 and above
+- Drop Python 2 / Calibre 4 compatibility, only Calibre 5 and above
 
 ## 2023/09/29
 - Add SelectFieldValuesWidget and SelectNotesWidget
