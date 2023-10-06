@@ -216,12 +216,12 @@ def build_MobileRead_post():
             list_prefix = line.split('-', maxsplit=1)[0]
             if list_prefix != list_prefix_last:
                 if list_prefix_last is None or len(list_prefix_last) < len(list_prefix):
-                    bb_list_level = bb_list_level + 1
+                    bb_list_level += 1
                     changelog.append('[LIST]')
                 elif len(list_prefix_last) == len(list_prefix):
                     pass
                 elif len(list_prefix_last) > len(list_prefix):
-                    bb_list_level = bb_list_level - 1
+                    bb_list_level -= 1
                     changelog.append('[/LIST]')
                 
                 list_prefix_last = list_prefix
