@@ -1,5 +1,8 @@
 # Changelog - common_utils
 
+## 2023/10/10
+- fix PREFS_json get dict entry
+
 ## 2023/10/03
 - Add return_line_long_text(). Split a long text to various lines with a max lenght for each one
 

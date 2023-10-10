@@ -484,9 +484,16 @@ class PREFS_json(JSONConfig):
     def __getitem__(self, key):
         d = self.defaults.get(key, None)
         if isinstance(d, dict):
-            d = d.copy()
-            d.update(JSONConfig.get(self, key, {}))
-            return d
+            if not dict.__contains__(self, key):
+                dict.__setitem__(self, key, {})
+            
+            rslt = dict.get(self, key, {})
+            
+            for k,v in d.items():
+                if k not in rslt:
+                    rslt[k] = copy.copy(v)
+            
+            return rslt
         else:
             return JSONConfig.__getitem__(self, key)
     
@@ -581,9 +588,16 @@ class PREFS_library(dict):
         try:
             d = self.defaults.get(key, None)
             if isinstance(d, dict):
-                d = d.copy()
-                d.update(dict.get(self, key, {}))
-                return d
+                if not dict.__contains__(self, key):
+                    dict.__setitem__(self, key, {})
+                
+                rslt = dict.get(self, key, {})
+                
+                for k,v in d.items():
+                    if k not in rslt:
+                        rslt[k] = copy.copy(v)
+                
+                return rslt
             else:
                 return dict.__getitem__(self, key)
         except KeyError:
