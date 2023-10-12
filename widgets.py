@@ -195,7 +195,7 @@ class FieldsValueTreeWidget(QTreeWidget):
         
         self.populate_tree(book_ids=book_ids)
     
-    def _build_content_map(self, book_ids: Union[List[int], None]):
+    def _build_content_map(self, book_ids: Union[List[int], None]) -> Dict[str, List[Tuple[str, int]]]:
         raise NotImplementedError()
     
     def populate_tree(self, book_ids: List[int]=None):
@@ -354,7 +354,7 @@ class SelectFieldValuesWidget(FieldsValueTreeWidget):
         'If book_ids is not None, display a entry that contain a subset of Notes for listed books'
         FieldsValueTreeWidget.__init__(self, book_ids=book_ids, parent=parent)
     
-    def _build_content_map(self, book_ids: Union[List[int], None]):
+    def _build_content_map(self, book_ids: Union[List[int], None]) -> Dict[str, List[Tuple[str, int]]]:
         
         list_field = get_tags_browsable_fields(include_composite=False)
         for f in ['news', 'formats']:
@@ -395,7 +395,7 @@ class SelectNotesWidget(FieldsValueTreeWidget):
         FieldsValueTreeWidget.__init__(self, book_ids=book_ids, parent=parent)
         self.update_texts(empty=_('No notes'))
     
-    def _build_content_map(self, book_ids: Union[List[int], None]):
+    def _build_content_map(self, book_ids: Union[List[int], None]) -> Dict[str, List[Tuple[str, int]]]:
         '''
         Return item_ids for items that have notes in the specified field or all fields if field_name is None.
         If book_ids if passed, return for entry only relative to this book list.
@@ -409,11 +409,16 @@ class SelectNotesWidget(FieldsValueTreeWidget):
                 for id in items:
                     rslt[field].append((id_map[id], id))
         else:
+            map = defaultdict(dict)
             for book_id in book_ids:
                 for field,items in items_map.items():
                     for id_field in self._dbAPI.field_ids_for(field, book_id):
                         if id_field in items:
-                            rslt[field].append((self._dbAPI.get_item_name(field, id_field), id_field))
+                            map[field][id_field] = self._dbAPI.get_item_name(field, id_field)
+            
+            for field,items in map.items():
+                for id,val in items.items():
+                    rslt[field].append((val, id))
         
         return rslt
 

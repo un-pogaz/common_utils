@@ -1,5 +1,8 @@
 # Changelog - common_utils
 
+## 2023/10/12
+- fix doublon for SelectNotesWidget
+
 ## 2023/10/10
 - fix PREFS_json get dict entry
 
