@@ -91,6 +91,7 @@ def build_plugin():
     files = []
     files.extend(glob('plugin-import-name-*.txt'))
     files.extend(glob('**/*.py', recursive=True))
+    files.extend(glob('**/*.ui', recursive=True))
     files.extend(glob('images/**/*.png', recursive=True))
     files.extend(glob('translations/*.pot'))
     files.extend(glob('translations/*.mo'))

@@ -1,5 +1,8 @@
 # Changelog - common_utils
 
+## 2023/10/13
+- add UI files to build script
+
 ## 2023/10/12
 - fix doublon for SelectNotesWidget
 
