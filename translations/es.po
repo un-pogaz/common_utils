@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "POT-Creation-Date: 2023-10-02 17:03+0200\n"
-"PO-Revision-Date: 2023-10-02 17:03+0200\n"
+"PO-Revision-Date: 2023-10-21 21:48+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es\n"
@@ -10,7 +10,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 3.3.2\n"
+"X-Generator: Poedit 3.4\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-SearchPath-0: .\n"
 
@@ -52,11 +52,11 @@ msgstr "¿Está seguro de que desea borrar su configuración en esta biblioteca 
 
 #: dialogs.py:201
 msgid "View library preferences"
-msgstr ""
+msgstr "Ver preferencias de biblioteca"
 
 #: dialogs.py:202
 msgid "View data stored in the library database for this plugin"
-msgstr ""
+msgstr "Ver datos almacenados en la base de datos de la biblioteca para este complemento"
 
 #: dialogs.py:232
 msgid "Cancel"
@@ -187,7 +187,7 @@ msgstr "Editor de plantilla"
 
 #: templates.py:105 templates.py:106
 msgid "Open the template editor"
-msgstr ""
+msgstr "Abra el editor de plantillas"
 
 #: widgets.py:66
 msgid "Restart required"
@@ -203,24 +203,24 @@ msgstr "Indefinido"
 
 #: widgets.py:270
 msgid "Subset of values associate to the books"
-msgstr ""
+msgstr "Subconjunto de valores asociados a los libros"
 
 #: widgets.py:271
 msgid "No books"
-msgstr ""
+msgstr "Sin libros"
 
 #: widgets.py:272
 msgid "{:d} books (no values)"
-msgstr ""
+msgstr "{:d} libros (sin valores)"
 
 #: widgets.py:273
 msgid "{:d} books"
-msgstr ""
+msgstr "{:d} libros"
 
 #: widgets.py:396
 msgid "No notes"
-msgstr ""
+msgstr "Sin notas"
 
 #: widgets.py:441
 msgid "Add New Image…"
-msgstr ""
+msgstr "Agregar nueva imagen…"
