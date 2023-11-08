@@ -17,13 +17,13 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 try:
     from qt.core import (
-        Qt, QAbstractItemView, QComboBox, QDateTime, QFont, QFont, QHBoxLayout, QIcon, QLabel,
+        Qt, QAbstractItemView, QComboBox, QFont, QFont, QHBoxLayout, QIcon, QLabel,
         QLineEdit, QStyledItemDelegate, QSize, QTableWidgetItem, QTreeWidget, QTreeWidgetItem,
         pyqtSignal,
     )
 except ImportError:
     from PyQt5.Qt import (
-        Qt, QAbstractItemView, QComboBox, QDateTime, QFont, QFont, QHBoxLayout, QIcon, QLabel,
+        Qt, QAbstractItemView, QComboBox, QFont, QFont, QHBoxLayout, QIcon, QLabel,
         QLineEdit, QStyledItemDelegate, QSize, QTableWidgetItem, QTreeWidget, QTreeWidgetItem,
         pyqtSignal,
     )
@@ -37,6 +37,7 @@ from calibre.ebooks.metadata import rating_to_stars
 from . import debug_print, get_icon, get_pixmap, get_date_format, return_line_long_text, current_db, GUI
 from .librarys import get_category_icons_map, get_tags_browsable_fields
 from .columns import get_all_identifiers, ColumnMetadata
+from .compatibility import qt_from_dt
 
 
 # ----------------------------------------------
@@ -131,7 +132,7 @@ class DateDelegate(_DateDelegate):
                 val = self.default_date
             else:
                 val = UNDEFINED_QDATETIME
-        editor.setDateTime(val)
+        editor.setDateTime(qt_from_dt(val))
 
     def setModelData(self, editor, model, index):
         val = editor.dateTime()
@@ -139,7 +140,7 @@ class DateDelegate(_DateDelegate):
         if val <= UNDEFINED_QDATETIME:
             model.setData(index, UNDEFINED_QDATETIME, Qt.EditRole)
         else:
-            model.setData(index, QDateTime(val), Qt.EditRole)
+            model.setData(index, qt_from_dt(val), Qt.EditRole)
 
 class DateTableWidgetItem(QTableWidgetItem):
     def __init__(self, date_read: datetime, default_to_today=False, fmt=None, is_read_only=False):
@@ -149,10 +150,10 @@ class DateTableWidgetItem(QTableWidgetItem):
         if is_read_only:
             QTableWidgetItem.__init__(self, format_date(date_read, fmt))
             self.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
-            self.setData(Qt.DisplayRole, QDateTime(date_read))
+            self.setData(Qt.DisplayRole, qt_from_dt(date_read))
         else:
             QTableWidgetItem.__init__(self, '')
-            self.setData(Qt.DisplayRole, QDateTime(date_read))
+            self.setData(Qt.DisplayRole, qt_from_dt(date_read))
 
 class RatingTableWidgetItem(QTableWidgetItem):
     def __init__(self, rating: int, is_read_only=False):

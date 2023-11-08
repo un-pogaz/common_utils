@@ -32,3 +32,14 @@ except:
             if not is_standard_category(key):
                 cat_ord.append(key)
         return cat_ord
+
+try:
+    from calibre.utils.date import qt_from_dt
+except:
+    try:
+        from qt.core import QDateTime
+    except ImportError:
+        from PyQt5.Qt import QDateTime
+    
+    def qt_from_dt(d, as_utc: bool = False, assume_utc: bool = False):
+        return QDateTime(d)

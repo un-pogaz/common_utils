@@ -1,5 +1,8 @@
 # Changelog - common_utils
 
+## 2023/11/08
+- add compatibility qt_from_dt()
+
 ## 2023/10/13
 - add UI files to build script
 
