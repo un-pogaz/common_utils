@@ -126,7 +126,7 @@ def create_GitHub_release(api_repo_url: str, api_token: str, plugin_name: str, t
     data = data.encode()
     req = request.Request(url=endpoint, data=data, method='POST')
     req.add_header('accept', 'application/vnd.github+json')
-    req.add_header(f'Authorization', 'BEARER {api_token}')
+    req.add_header(f'Authorization', f'BEARER {api_token}')
     req.add_header('Content-Type', 'application/json')
     try:
         print(f'Creating release: {endpoint}')
@@ -151,7 +151,7 @@ def upload_zip_to_release(api_token: str, upload_url: str, zip_file: str, tag_na
     
     req = request.Request(url=endpoint, data=content, method='POST')
     req.add_header('accept', 'application/vnd.github+json')
-    req.add_header(f'Authorization', 'BEARER {api_token}')
+    req.add_header(f'Authorization', f'BEARER {api_token}')
     req.add_header('Content-Type', 'application/octet-stream')
     try:
         print(f'Uploading zip for release: {endpoint}')
