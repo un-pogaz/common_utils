@@ -39,14 +39,14 @@ def read_plugin_details() -> Tuple[str, str, str]:
         raise FileNotFoundError(initFile)
     
     plugin_name = None
-    with open(initFile, 'r') as file:
+    with open(initFile) as file:
         content = file.read()
-        nameMatches = re.findall("\s+name\s*=\s*\'([^\']*)\'", content)
+        nameMatches = re.findall(r"\s+name\s*=\s*\'([^\']*)\'", content)
         if nameMatches: 
             plugin_name = nameMatches[0]
         else:
             raise RuntimeError('Could not find plugin name in __init__.py')
-        versionMatches = re.findall("\s+version\s*=\s*\(([^\)]*)\)", content)
+        versionMatches = re.findall(r"\s+version\s*=\s*\(([^\)]*)\)", content)
         if versionMatches: 
             version = versionMatches[0].replace(',','.').replace(' ','')
 
@@ -66,7 +66,7 @@ def read_change_log_for_version(version: str) -> str:
         print(f'ERROR: No change log found for this plugin at: {changeLogFile}')
         raise FileNotFoundError(changeLogFile)
     
-    with open(changeLogFile, 'r') as file:
+    with open(changeLogFile) as file:
         content = file.readlines()
     
     foundVersion = False
@@ -90,7 +90,7 @@ def read_change_log_for_version(version: str) -> str:
         while changeLines and len(changeLines[idx].strip()) == 0:
             changeLines.pop(idx)
 
-    print('ChangeLog details found: {:d} lines'.format(len(changeLines)))
+    print(f'ChangeLog details found: {len(changeLines):d} lines')
     return '\n'.join(changeLines)
 
 def check_if_release_exists(api_repo_url: str, api_token: str, tag_name: str):
@@ -171,10 +171,10 @@ def build_MobileRead_post():
         print(f'Creating {output_file} aborted: no body found')
         return
     
-    with open(MobileRead_body, 'r') as f:
+    with open(MobileRead_body) as f:
         MobileRead_body = f.read().strip()
     
-    with open(os.path.join(os.getcwd(), 'changelog.md'), 'r') as f:
+    with open(os.path.join(os.getcwd(), 'changelog.md')) as f:
         changelog_src = f.read().strip().splitlines()
     
     changelog = []

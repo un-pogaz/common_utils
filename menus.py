@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 __license__   = 'GPL v3'
 __copyright__ = '2011, Grant Drake <grant.drake@gmail.com> ; 2020, un_pogaz <un.pogaz@gmail.com>'
-__docformat__ = 'restructuredtext en'
 
 
 try:
@@ -70,7 +68,7 @@ def create_menu_action_unique(
     InterfaceAction.create_menu_action() function which ensures that regardless of
     whether a shortcut is specified it will appear in Preferences->Keyboard
     
-    For a full description of the parameters, see: calibre\gui2\actions\__init__.py
+    For a full description of the parameters, see: calibre/gui2/actions/__init__.py
     """
     orig_shortcut = shortcut
     kb = ia.gui.keyboard

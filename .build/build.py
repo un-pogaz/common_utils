@@ -57,7 +57,7 @@ def read_plugin_name() -> Tuple[str, str]:
         raise FileNotFoundError(init_file)
     
     zip_file_name = None
-    with open(init_file, 'r') as file:
+    with open(init_file) as file:
         content = file.read()
         name_matches = re.findall(r"\s+name\s*=\s*\'([^\']*)\'", content)
         if name_matches: 

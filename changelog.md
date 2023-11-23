@@ -1,7 +1,10 @@
 # Changelog - common_utils
 
+## 2023/11/23
+- automated fixes by pyupgrade to py 3.8
+
 ## 2023/11/17
--- fix unauthorized error with GitHub
+- fix unauthorized error with GitHub
 
 ## 2023/11/08
 - add compatibility qt_from_dt()

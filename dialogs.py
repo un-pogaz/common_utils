@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 __license__   = 'GPL v3'
 __copyright__ = '2011, Grant Drake <grant.drake@gmail.com> ; 2020, un_pogaz <un.pogaz@gmail.com>'
-__docformat__ = 'restructuredtext en'
 
 
 try:
@@ -476,7 +474,7 @@ def custom_exception_dialog(exception: Error, additional_msg: str=None, title: s
     msg = []
     msg.append('<span>' + prepare_string_for_xml(as_unicode(_(f'The {PLUGIN_NAME} plugin has encounter a unhandled exception.'))))
     if additional_msg: msg.append(additional_msg)
-    if exception: msg.append('<b>{:s}</b>: '.format(exception.__class__.__name__) + prepare_string_for_xml(as_unicode(str(exception))))
+    if exception: msg.append(f'<b>{exception.__class__.__name__:s}</b>: ' + prepare_string_for_xml(as_unicode(str(exception))))
     
     if show_detail:
         det_msg=fe

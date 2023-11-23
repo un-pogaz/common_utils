@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 __license__   = 'GPL v3'
 __copyright__ = '2011, Grant Drake <grant.drake@gmail.com> ; 2022, un_pogaz <un.pogaz@gmail.com>'
-__docformat__ = 'restructuredtext en'
 
 
 try:
@@ -295,7 +293,7 @@ class ZipResources(PathDict):
         return self.load_many([key]).get(key, None)
     
     def load_many(self, keys: Optional[List[str]]) -> Dict[str, Union[bytes, str]]:
-        names = set(linux(n) for n in (keys or []) if n)
+        names = {linux(n) for n in (keys or []) if n}
         rslt = {}
         from calibre.utils.zipfile import ZipFile
         with ZipFile(self.zip_path, 'r') as zf:
@@ -412,7 +410,7 @@ def has_restart_pending(show_warning=True, msg_warning=None) -> bool:
 
 def duplicate_entry(lst: Iterable) -> List:
     'retrive the entry in double inside a iterable'
-    return list(set([x for x in lst if lst.count(x) > 1]))
+    return list({x for x in lst if lst.count(x) > 1})
 
 # Simple Regex
 class regex():
