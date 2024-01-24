@@ -232,7 +232,7 @@ local_resource.IMAGES = local_resource('images')+'/'
 
 def _class_name(obj, inside) -> str:
     if not isinstance(obj, type):
-        obj.__class__
+        obj = obj.__class__
     return obj.__name__+'('+inside+')'
 
 class PathDict(dict):
