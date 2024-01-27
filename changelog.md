@@ -1,6 +1,9 @@
 # Changelog - common_utils
 
 ## 2024/01/27
+- retrieve tag created during the plugin release
+
+## 2024/01/27
 - fix wrong text display when customizing keyboard shortcut
 
 ## 2023/11/23

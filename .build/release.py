@@ -17,7 +17,8 @@ import re
 import json
 import configparser
 from urllib import request, parse, error
-from typing import Tuple
+from subprocess import Popen, PIPE
+from typing import Tuple, Union
 
 def read_repos_detail() -> str:
     config = configparser.ConfigParser()
@@ -163,6 +164,25 @@ def upload_zip_to_release(api_token: str, upload_url: str, zip_file: str, tag_na
     except error.HTTPError as e:
         raise RuntimeError('Failed to upload zip due to:',e)
 
+def run_command(command_line: Union[list, str], wait=False) -> Popen:
+    """
+    Lauch a command line and return the subprocess
+    
+    :param command_line:    command line to execute
+    :param wait:            Wait for the file to be closed
+    :return:                The subprocess returned by the Popen call
+    """
+    
+    if not isinstance(command_line, str):
+        for idx in range(len(command_line)):
+            if ' ' in command_line[idx]: command_line[idx] = '"'+command_line[idx]+'"'
+        command_line = ' '.join(command_line)
+    
+    subproc = Popen(command_line, stdout=PIPE, stderr=PIPE, shell=True)
+    if wait:
+        subproc.wait()
+    return subproc
+
 
 def build_MobileRead_post():
     output_file = 'MobileRead_post.bbcode'
@@ -255,13 +275,14 @@ if __name__=="__main__":
     tag_name = version
     
     check_if_release_exists(api_repo_url, api_token, tag_name)
-
+    
     zip_file = get_plugin_zip_path(plugin_name)
     
     changeBody = read_change_log_for_version(version)
-
+    
     html_url, upload_url = create_GitHub_release(api_repo_url, api_token, plugin_name, tag_name, changeBody)
     upload_zip_to_release(api_token, upload_url, zip_file, tag_name)
     print('Github release completed:', html_url)
+    run_command('git pull --tags')
     
     build_MobileRead_post()

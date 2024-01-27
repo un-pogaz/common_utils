@@ -32,12 +32,9 @@ def run_command(command_line: Union[list, str], wait=False) -> Popen:
     """
     Lauch a command line and return the subprocess
     
-    :type filepath:     string
-    :param filepath:    Path to the file to open
-    :type wait:         bool
-    :param wait:        Wait for the file to be closed
-    :rtype:             subprocess
-    :return:            The pointer the subprocess returned by the Popen call
+    :param command_line:    command line to execute
+    :param wait:            Wait for the file to be closed
+    :return:                The subprocess returned by the Popen call
     """
     
     if not isinstance(command_line, str):
