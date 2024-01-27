@@ -25,7 +25,7 @@ git submodule update --remote --merge
 | \_\_init\_\_.py | Root element, `get_icon()` and various self-suffisant functions |
 | columns.py | Get colums information, based on their type |
 | dialogs.py | Pre-build useful dialogs |
-| librarys.py | Functions to retrive Book IDs for various case |
+| librarys.py | Functions to retrieve Book IDs for various case |
 | menus.py | Helper functions for building menus for `action.py` |
 | template.py | Various template tools |
 | widgets.py | Additional Qt widgets for use in dialogs or grid tables |

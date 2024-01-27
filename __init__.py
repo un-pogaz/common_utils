@@ -409,7 +409,7 @@ def has_restart_pending(show_warning=True, msg_warning=None) -> bool:
 
 
 def duplicate_entry(lst: Iterable) -> List:
-    'retrive the entry in double inside a iterable'
+    'retrieve the entry in double inside a iterable'
     return list({x for x in lst if lst.count(x) > 1})
 
 # Simple Regex
