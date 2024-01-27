@@ -84,7 +84,7 @@ def create_menu_action_unique(
                     shortcut = None
     
     if shortcut_name is None:
-        shortcut_name = unique_name.replace('&','')
+        shortcut_name = menu_text.replace('&','')
     
     if CALIBRE_VERSION >= (5,4,0):
         # The persist_shortcut parameter only added from 5.4.0 onwards.

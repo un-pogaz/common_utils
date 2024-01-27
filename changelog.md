@@ -1,5 +1,8 @@
 # Changelog - common_utils
 
+## 2024/01/27
+- fix wrong text display when customizing keyboard shortcut
+
 ## 2023/11/23
 - automated fixes by pyupgrade to py 3.8
 
