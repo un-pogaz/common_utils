@@ -237,7 +237,7 @@ class ProgressDialog(QProgressDialog):
         self.setAutoClose(True)
         self.setAutoReset(False)
         
-        title = kvargs.get('title', None) or self.title or _(f'{PLUGIN_NAME} progress')
+        title = kvargs.get('title', None) or self.title or _('{PLUGIN_NAME} progress').format(PLUGIN_NAME=PLUGIN_NAME)
         self.setWindowTitle(title)
         
         for icon in [kvargs.get('icon', None), self.icon, 'images/plugin.png', 'lt.png']:
@@ -451,7 +451,7 @@ def custom_exception_dialog(exception: Error, additional_msg: str=None, title: s
     
     from polyglot.io import PolyglotStringIO
     import traceback
-    from calibre import prints, force_unicode, as_unicode, prepare_string_for_xml
+    from calibre import prints, force_unicode, prepare_string_for_xml
     
     sio = PolyglotStringIO(errors='replace')
     try:
@@ -472,9 +472,9 @@ def custom_exception_dialog(exception: Error, additional_msg: str=None, title: s
         traceback.print_exc()
     
     msg = []
-    msg.append('<span>' + prepare_string_for_xml(as_unicode(_(f'The {PLUGIN_NAME} plugin has encounter a unhandled exception.'))))
+    msg.append('<span>' + prepare_string_for_xml(_('The {PLUGIN_NAME} plugin has encounter a unhandled exception.').format(PLUGIN_NAME=PLUGIN_NAME)))
     if additional_msg: msg.append(additional_msg)
-    if exception: msg.append(f'<b>{exception.__class__.__name__:s}</b>: ' + prepare_string_for_xml(as_unicode(str(exception))))
+    if exception: msg.append(f'<b>{exception.__class__.__name__:s}</b>: ' + prepare_string_for_xml(str(exception)))
     
     if show_detail:
         det_msg=fe

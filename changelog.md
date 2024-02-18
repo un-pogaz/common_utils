@@ -1,5 +1,8 @@
 # Changelog - common_utils
 
+## 2024/02/18
+- fix untranslated string
+
 ## 2024/01/27
 - retrieve tag created during the plugin release
 
