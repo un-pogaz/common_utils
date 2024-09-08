@@ -198,8 +198,8 @@ class ColumnMetadata():
                 self._type = func.__name__.split('_is_', 1)[-1]
         
         if not self._type:
-            prints(self.name)
-            prints('metadata',self.metadata)
+            prints('common_utils.columns.py', self.name)
+            prints('common_utils.columns.py', 'metadata', self.metadata)
             raise TypeError('Invalide Column metadata.')
     
     def __repr__(self):
