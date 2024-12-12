@@ -16,10 +16,9 @@ i.e. .build and .tx will not be included in the zip.
 
 import os
 import re
-import shutil
 import zipfile
 from glob import glob
-from subprocess import Popen, PIPE
+from subprocess import PIPE, Popen
 from typing import Tuple, Union
 
 CALIBRE_CONFIG_DIRECTORY = os.environ.get('CALIBRE_CONFIG_DIRECTORY', os.path.join(os.environ.get('appdata'), 'calibre'))

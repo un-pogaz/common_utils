@@ -9,28 +9,21 @@ try:
 except NameError:
     pass # load_translations() added in calibre 1.9
 
-from collections import defaultdict, OrderedDict
-from functools import partial
 from typing import List, Tuple
 
 try:
-    from qt.core import (
-        QPushButton, pyqtSignal,
-    )
+    from qt.core import QPushButton
 except ImportError:
-    from PyQt5.Qt import (
-        QPushButton, pyqtSignal,
-    )
+    from PyQt5.Qt import QPushButton
 
+from calibre.db.lazy import Metadata
 from calibre.ebooks.metadata import MetaInformation
 from calibre.ebooks.metadata.book.formatter import SafeFormat
-from calibre.db.lazy import Metadata
 from calibre.gui2 import error_dialog
 from calibre.gui2.dialogs.template_dialog import TemplateDialog
 from calibre.gui2.widgets2 import Dialog
 
-from . import get_icon, GUI, current_db
-
+from . import GUI, current_db, get_icon
 
 TEMPLATE_PREFIX = 'TEMPLATE: '
 TEMPLATE_ERROR = 'TEMPLATE_ERROR: '

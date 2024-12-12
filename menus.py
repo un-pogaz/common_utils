@@ -9,23 +9,16 @@ try:
 except NameError:
     pass # load_translations() added in calibre 1.9
 
-from collections import defaultdict, OrderedDict
-from functools import partial
-from typing import Any, Optional, Callable
+from typing import Any, Callable, Optional
 
 try:
-    from qt.core import (
-        QAction, QMenu,
-    )
+    from qt.core import QAction, QMenu
 except ImportError:
-    from PyQt5.Qt import (
-        QAction, QMenu,
-    )
+    from PyQt5.Qt import QAction, QMenu
 
-from calibre.gui2.actions import menu_action_unique_name, InterfaceAction
+from calibre.gui2.actions import InterfaceAction, menu_action_unique_name
 
-from . import CALIBRE_VERSION, GUI, debug_print, get_icon
-
+from . import CALIBRE_VERSION, GUI, get_icon
 
 # Global definition of our menu actions. Used to ensure we can cleanly unregister
 # keyboard shortcuts when rebuilding our menus.

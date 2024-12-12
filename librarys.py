@@ -9,19 +9,17 @@ try:
 except NameError:
     pass # load_translations() added in calibre 1.9
 
-from collections import defaultdict, OrderedDict
-from functools import partial
 from typing import List
 
 from calibre.gui2 import error_dialog
 
-from . import debug_print, GUI, current_db, PLUGIN_NAME
+from . import GUI, PLUGIN_NAME, current_db
 from .columns import get_categories
 from .compatibility import category_display_order
 
-
 try:
     import re
+    
     from calibre.utils.config import tweaks
     authors_split_regex = tweaks['authors_split_regex']
     re.compile(authors_split_regex)

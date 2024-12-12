@@ -12,13 +12,14 @@ Invocation should be via each plugin release.cmd, which will ensure that:
 - Pass through the CALIBRE_GITHUB_TOKEN environment variable value
 '''
 
+import configparser
+import json
 import os
 import re
-import json
-import configparser
-from urllib import request, parse, error
-from subprocess import Popen, PIPE
+from subprocess import PIPE, Popen
 from typing import Tuple, Union
+from urllib import error, parse, request
+
 
 def read_repos_detail() -> str:
     config = configparser.ConfigParser()

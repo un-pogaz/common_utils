@@ -9,31 +9,25 @@ try:
 except NameError:
     pass # load_translations() added in calibre 1.9
 
-from collections import defaultdict, OrderedDict
-from functools import partial
+import copy
+import os
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
-import os
-import copy
-
 try:
-    from qt.core import (
-        QApplication, QIcon, QPixmap,
-    )
+    from qt.core import QApplication, QIcon, QPixmap
 except ImportError:
-    from PyQt5.Qt import (
-        QApplication, QIcon, QPixmap,
-    )
+    from PyQt5.Qt import QApplication, QIcon, QPixmap
 
 from calibre import prints
-from calibre.constants import DEBUG, iswindows, numeric_version as CALIBRE_VERSION
+from calibre.constants import DEBUG, iswindows
+from calibre.constants import numeric_version as CALIBRE_VERSION
 from calibre.customize.ui import find_plugin
-from calibre.gui2 import show_restart_warning
 from calibre.db.legacy import LibraryDatabase
+from calibre.gui2 import show_restart_warning
 from calibre.gui2.ui import Main
+from calibre.utils.config import DynamicConfig, JSONConfig, config_dir
 from calibre.utils.monotonic import monotonic
 
-from calibre.utils.config import config_dir, JSONConfig, DynamicConfig
 
 def get_gui() -> Main:
     from calibre.gui2.ui import get_gui
@@ -51,6 +45,7 @@ def get_plugin_attribut(name: str, default: Optional[Any]=None) -> Any:
     global PLUGIN_CLASSE
     if not PLUGIN_CLASSE:
         import importlib
+
         from calibre.customize import Plugin
         #Yes, it's very long for a one line. It's seems crazy, but it's fun and it works
         plugin_classes = [ obj for obj in importlib.import_module('.'.join(__name__.split('.')[:-1])).__dict__.values() if isinstance(obj, type) and issubclass(obj, Plugin) and obj.name != 'Trivial Plugin' ]

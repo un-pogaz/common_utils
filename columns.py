@@ -9,13 +9,10 @@ try:
 except NameError:
     pass # load_translations() added in calibre 1.9
 
-from collections import defaultdict, OrderedDict
-from functools import partial
-from typing import Callable, Dict, List, Optional, Tuple
-
+import copy
 import os
 import sys
-import copy
+from typing import Callable, Dict, List, Optional, Tuple
 
 from calibre import prints
 from calibre.constants import numeric_version as CALIBRE_VERSION

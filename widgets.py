@@ -9,34 +9,54 @@ try:
 except NameError:
     pass # load_translations() added in calibre 1.9
 
-from collections import defaultdict, OrderedDict
-from functools import partial
-from typing import Any, Dict, List, Optional, Tuple, Union
+from collections import OrderedDict, defaultdict
+from typing import Dict, List, Tuple, Union
 
 try:
     from qt.core import (
-        Qt, QAbstractItemView, QComboBox, QFont, QFont, QHBoxLayout, QIcon, QLabel,
-        QLineEdit, QStyledItemDelegate, QSize, QTableWidgetItem, QTreeWidget, QTreeWidgetItem,
+        QAbstractItemView,
+        QComboBox,
+        QFont,
+        QHBoxLayout,
+        QIcon,
+        QLabel,
+        QLineEdit,
+        QSize,
+        QStyledItemDelegate,
+        Qt,
+        QTableWidgetItem,
+        QTreeWidget,
+        QTreeWidgetItem,
         pyqtSignal,
     )
 except ImportError:
     from PyQt5.Qt import (
-        Qt, QAbstractItemView, QComboBox, QFont, QFont, QHBoxLayout, QIcon, QLabel,
-        QLineEdit, QStyledItemDelegate, QSize, QTableWidgetItem, QTreeWidget, QTreeWidgetItem,
+        QAbstractItemView,
+        QComboBox,
+        QFont,
+        QHBoxLayout,
+        QIcon,
+        QLabel,
+        QLineEdit,
+        QSize,
+        QStyledItemDelegate,
+        Qt,
+        QTableWidgetItem,
+        QTreeWidget,
+        QTreeWidgetItem,
         pyqtSignal,
     )
 
-from calibre.gui2 import error_dialog, UNDEFINED_QDATETIME
-from calibre.gui2.dnd import dnd_get_files
-from calibre.utils.date import now, datetime, format_date, UNDEFINED_DATE
-from calibre.gui2.library.delegates import DateDelegate as _DateDelegate
 from calibre.ebooks.metadata import rating_to_stars
+from calibre.gui2 import UNDEFINED_QDATETIME, error_dialog
+from calibre.gui2.dnd import dnd_get_files
+from calibre.gui2.library.delegates import DateDelegate as _DateDelegate
+from calibre.utils.date import UNDEFINED_DATE, datetime, format_date, now
 
-from . import debug_print, get_icon, get_pixmap, get_date_format, return_line_long_text, current_db, GUI
-from .librarys import get_category_icons_map, get_tags_browsable_fields
-from .columns import get_all_identifiers, ColumnMetadata
+from . import GUI, current_db, debug_print, get_date_format, get_icon, get_pixmap, return_line_long_text
+from .columns import ColumnMetadata, get_all_identifiers
 from .compatibility import qt_from_dt
-
+from .librarys import get_category_icons_map, get_tags_browsable_fields
 
 # ----------------------------------------------
 #               Widgets

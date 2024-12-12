@@ -9,35 +9,64 @@ try:
 except NameError:
     pass # load_translations() added in calibre 1.9
 
-from collections import defaultdict, OrderedDict
-from functools import partial
+import os
+import shutil
+import sys
+import time
 from locale import Error
 from typing import Any, List
 
-import sys
-import time
-import os
-import shutil
-
 try:
     from qt.core import (
-        Qt, QAbstractItemView, QApplication, QDialogButtonBox, QGridLayout, QGroupBox, QHBoxLayout,
-        QLabel, QLineEdit, QListWidget, QProgressDialog, QPushButton, QRadioButton, QSize,
-        QTextBrowser, QTextEdit, QTimer, QVBoxLayout, pyqtSignal,
+        QAbstractItemView,
+        QApplication,
+        QDialogButtonBox,
+        QGridLayout,
+        QGroupBox,
+        QHBoxLayout,
+        QLabel,
+        QLineEdit,
+        QListWidget,
+        QProgressDialog,
+        QPushButton,
+        QRadioButton,
+        QSize,
+        Qt,
+        QTextBrowser,
+        QTextEdit,
+        QTimer,
+        QVBoxLayout,
+        pyqtSignal,
     )
 except ImportError:
     from PyQt5.Qt import (
-        Qt, QAbstractItemView, QApplication, QDialogButtonBox, QGridLayout, QGroupBox, QHBoxLayout,
-        QLabel, QLineEdit, QListWidget, QProgressDialog, QPushButton, QRadioButton, QSize,
-        QTextBrowser, QTextEdit, QTimer, QVBoxLayout, pyqtSignal,
+        QAbstractItemView,
+        QApplication,
+        QDialogButtonBox,
+        QGridLayout,
+        QGroupBox,
+        QHBoxLayout,
+        QLabel,
+        QLineEdit,
+        QListWidget,
+        QProgressDialog,
+        QPushButton,
+        QRadioButton,
+        QSize,
+        Qt,
+        QTextBrowser,
+        QTextEdit,
+        QTimer,
+        QVBoxLayout,
+        pyqtSignal,
     )
 
-from calibre.gui2 import error_dialog, question_dialog, choose_files
+from calibre.gui2 import choose_files, error_dialog, question_dialog
 from calibre.gui2.actions import InterfaceAction
 from calibre.gui2.keyboard import ShortcutConfig
 from calibre.gui2.widgets2 import Dialog
 
-from . import GUI, current_db, PLUGIN_NAME, PREFS_NAMESPACE, debug_print, get_icon, local_resource
+from . import GUI, PLUGIN_NAME, PREFS_NAMESPACE, current_db, debug_print, get_icon, local_resource
 
 
 class KeyboardConfigDialog(Dialog):
@@ -449,9 +478,10 @@ class ImageDialog(Dialog):
 
 def custom_exception_dialog(exception: Error, additional_msg: str=None, title: str=None, show_detail=True, parent=None):
     
-    from polyglot.io import PolyglotStringIO
     import traceback
-    from calibre import prints, force_unicode, prepare_string_for_xml
+
+    from calibre import force_unicode, prepare_string_for_xml, prints
+    from polyglot.io import PolyglotStringIO
     
     sio = PolyglotStringIO(errors='replace')
     try:
