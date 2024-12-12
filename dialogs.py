@@ -21,6 +21,7 @@ try:
         QAbstractItemView,
         QApplication,
         QDialogButtonBox,
+        QFileDialog,
         QGridLayout,
         QGroupBox,
         QHBoxLayout,
@@ -43,6 +44,7 @@ except ImportError:
         QAbstractItemView,
         QApplication,
         QDialogButtonBox,
+        QFileDialog,
         QGridLayout,
         QGroupBox,
         QHBoxLayout,
@@ -61,7 +63,7 @@ except ImportError:
         pyqtSignal,
     )
 
-from calibre.gui2 import choose_files, error_dialog, question_dialog
+from calibre.gui2 import FileDialog, choose_files, error_dialog, question_dialog
 from calibre.gui2.actions import InterfaceAction
 from calibre.gui2.keyboard import ShortcutConfig
 from calibre.gui2.widgets2 import Dialog
@@ -490,6 +492,53 @@ class ImageDialog(Dialog):
                 return error_dialog(self, _('Cannot import image'), _('Source image does not exist!'), show=True)
             shutil.copyfile(source_file_path, dest_path)
         Dialog.accept(self)
+
+
+def pick_archive_to_import(parent=None) -> str:
+    archives = choose_files(parent or GUI,
+        name='owip archive dialog',
+        title=_('Select a ZIP archive file to import…'),
+        filters=[('OWIP Files', ['owip','owip.zip']), ('ZIP Files', ['owip','zip'])],
+        all_files=False, select_only_single_file=True,
+    )
+    if not archives:
+        return None
+    return archives[0]
+
+def pick_archive_to_export(parent=None) -> str:
+    fd = FileDialog(parent=parent or GUI,
+        name='owip archive dialog',
+        title=_('Save ZIP archive file as…'),
+        filters=[('OWIP Files', ['owip.zip']), ('ZIP Files', ['zip'])],
+        add_all_files_filter=False, mode=QFileDialog.FileMode.AnyFile,
+    )
+    fd.setParent(None)
+    if not fd.accepted:
+        return None
+    return fd.get_files()[0]
+
+def pick_json_to_import(parent=None) -> str:
+    archives = choose_files(parent or GUI,
+        name='json dialog',
+        title=_('Select a JSON file to import…'),
+        filters=[('JSON Files', ['json'])],
+        all_files=False, select_only_single_file=True,
+    )
+    if not archives:
+        return None
+    return archives[0]
+
+def pick_json_to_export(parent=None) -> str:
+    fd = FileDialog(parent=parent or GUI,
+        name='json dialog',
+        title=_('Save the JSON file as…'),
+        filters=[('JSON Files', ['json'])],
+        add_all_files_filter=False, mode=QFileDialog.FileMode.AnyFile,
+    )
+    fd.setParent(None)
+    if not fd.accepted:
+        return None
+    return fd.get_files()[0]
 
 
 def custom_exception_dialog(exception: Error, additional_msg: str=None, title: str=None, show_detail=True, parent=None):
