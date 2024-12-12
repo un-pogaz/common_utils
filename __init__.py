@@ -7,7 +7,7 @@ __copyright__ = '2011, Grant Drake <grant.drake@gmail.com> ; 2022, un_pogaz <un.
 try:
     load_translations()
 except NameError:
-    pass # load_translations() added in calibre 1.9
+    pass  # load_translations() added in calibre 1.9
 
 import copy
 import os
@@ -40,8 +40,9 @@ def current_db() -> LibraryDatabase:
 
 
 PLUGIN_CLASSE = None
-def get_plugin_attribut(name: str, default: Optional[Any]=None) -> Any:
+def get_plugin_attribut(name: str, default=None):
     """Retrieve a attribut on the main plugin class"""
+    
     global PLUGIN_CLASSE
     if not PLUGIN_CLASSE:
         import importlib
@@ -70,7 +71,7 @@ PLUGIN_INSTANCE = find_plugin(PLUGIN_NAME)
 
 BASE_TIME = monotonic()
 def debug_print(*args, **kw):
-    '''
+    """
     Print a output assigned to the plugin
     
     **kw
@@ -82,7 +83,8 @@ def debug_print(*args, **kw):
     
     file: output file, else stdout
     flush: flush buffer
-    '''
+    """
+    
     if DEBUG:
         pre = kw.get('pre', DEBUG_PRE)
         time_format = kw.get('time', None)
@@ -150,6 +152,7 @@ def get_icon(icon_name: str) -> QIcon:
     Retrieve a QIcon for the named image from the zip file if it exists,
     or if not then from Calibre's image cache.
     """
+    
     if isinstance(icon_name, QIcon):
         return icon_name
     
@@ -221,8 +224,8 @@ def local_resource(*subfolders: Optional[List[str]]) -> str:
     Returns a path to the user's local resources folder
     If a subfolder name parameter is specified, appends this to the path
     """
-    rslt = os.path.join(config_dir, 'resources', *[f.replace('/','-').replace('\\','-') for f in subfolders])
     
+    rslt = os.path.join(config_dir, 'resources', *[f.replace('/','-').replace('\\','-') for f in subfolders])
     if iswindows:
         rslt = os.path.normpath(rslt)
     return linux(rslt)
@@ -474,6 +477,7 @@ class PREFS_json(JSONConfig):
     Use plugin name to create a JSONConfig file
     to store the preferences for plugin
     """
+    
     def __init__(self):
         self._is_init = True
         JSONConfig.__init__(self, 'plugins/'+PLUGIN_NAME)
@@ -517,6 +521,7 @@ class PREFS_dynamic(DynamicConfig):
     Use plugin name to create a DynamicConfig file
     to store the preferences for plugin
     """
+    
     def __init__(self):
         self._no_commit = False
         DynamicConfig.__init__(self, 'plugins/'+PLUGIN_NAME)
@@ -560,6 +565,7 @@ class PREFS_library(dict):
     
     Defined a custom namespaced at the root of __init__.py // __init__.PREFS_NAMESPACE
     """
+    
     def __init__(self, key='settings', defaults={}):
         dict.__init__(self)
         self._no_commit = False

@@ -7,7 +7,7 @@ __copyright__ = '2011, Grant Drake <grant.drake@gmail.com> ; 2020, un_pogaz <un.
 try:
     load_translations()
 except NameError:
-    pass # load_translations() added in calibre 1.9
+    pass  # load_translations() added in calibre 1.9
 
 from typing import List
 

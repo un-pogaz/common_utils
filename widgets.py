@@ -7,7 +7,7 @@ __copyright__ = '2011, Grant Drake <grant.drake@gmail.com> ; 2020, un_pogaz <un.
 try:
     load_translations()
 except NameError:
-    pass # load_translations() added in calibre 1.9
+    pass  # load_translations() added in calibre 1.9
 
 from collections import OrderedDict, defaultdict
 from typing import Dict, List, Tuple, Union
@@ -417,10 +417,11 @@ class SelectNotesWidget(FieldsValueTreeWidget):
         self.update_texts(empty=_('No notes'))
     
     def _build_content_map(self, book_ids: Union[List[int], None]) -> Dict[str, List[Tuple[str, int]]]:
-        '''
+        """
         Return item_ids for items that have notes in the specified field or all fields if field_name is None.
         If book_ids if passed, return for entry only relative to this book list.
-        '''
+        """
+        
         items_map = self._dbAPI.get_all_items_that_have_notes()
         
         rslt = defaultdict(list)

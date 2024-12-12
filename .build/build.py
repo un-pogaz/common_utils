@@ -3,7 +3,7 @@
 __license__   = 'GPL v3'
 __copyright__ = '2022, un_pogaz based on code from JimmXinu and Grant Drake'
 
-'''
+"""
 Creates an uncompressed zip file for the plugin.
 Plugin zips are uncompressed so to not negatively impact calibre load times.
 
@@ -12,7 +12,7 @@ Plugin zips are uncompressed so to not negatively impact calibre load times.
 
 All subfolders of the plugin folder will be included, unless prefixed with '.'
 i.e. .build and .tx will not be included in the zip.
-'''
+"""
 
 import os
 import re

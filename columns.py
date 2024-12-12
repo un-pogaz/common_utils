@@ -7,7 +7,7 @@ __copyright__ = '2021, un_pogaz <un.pogaz@gmail.com>'
 try:
     load_translations()
 except NameError:
-    pass # load_translations() added in calibre 1.9
+    pass  # load_translations() added in calibre 1.9
 
 import copy
 import os
@@ -47,7 +47,7 @@ def is_enum_value(name, value) -> bool:
     
     return: True / raise Error
     """
-    value
+    
     col_metadata = get_column_from_name(name)
     if not col_metadata._is_enumeration:
         raise ValueError(f'The column "{name}" is not a enumeration')
@@ -66,6 +66,7 @@ def is_bool_value(value: str) -> bool:
     
     return: True / False / raise Error
     """
+    
     if str(value).lower() in ['yes','y','true','1']:
         return True
     elif str(value).lower() in ['no','n','false','0']:
@@ -256,7 +257,6 @@ class ColumnMetadata():
         is_csp: field contains colon-separated pairs. Must also be text, is_multiple
         
         """
-    
     
     # type property
     @property
@@ -487,6 +487,7 @@ def _test_is_custom(column: ColumnMetadata, only_custom: Optional[bool]) -> bool
         False= Only default
         None= Both
     """
+    
     if only_custom is True:
         return column.is_custom
     elif only_custom is False:

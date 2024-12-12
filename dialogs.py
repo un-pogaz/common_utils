@@ -7,7 +7,7 @@ __copyright__ = '2011, Grant Drake <grant.drake@gmail.com> ; 2020, un_pogaz <un.
 try:
     load_translations()
 except NameError:
-    pass # load_translations() added in calibre 1.9
+    pass  # load_translations() added in calibre 1.9
 
 import os
 import shutil
@@ -432,8 +432,12 @@ class ImageDialog(Dialog):
         return self.new_image_name
     
     def pick_file_to_import(self):
-        images = choose_files(None, 'menu_icon_dialog', _('Select a .png file for the menu icon'),
-                             filters=[('PNG Image Files', ['png'])], all_files=False, select_only_single_file=True)
+        images = choose_files(None,
+            name='menu_icon_dialog',
+            title=_('Select a .png file for the menu icon'),
+            filters=[('PNG Image Files', ['png'])],
+            all_files=False, select_only_single_file=True,
+        )
         if not images:
             return
         f = images[0]

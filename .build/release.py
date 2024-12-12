@@ -3,14 +3,14 @@
 __license__   = 'GPL v3'
 __copyright__ = '2022, un_pogaz based on code from Grant Drake'
 
-'''
+"""
 Creates a GitHub release for a plugin, including uploading the zip file.
 
 Invocation should be via each plugin release.cmd, which will ensure that:
 - Working directory is set to the <plugin> subfolder
 - Zip file for plugin is rebuilt for latest local code/translations
 - Pass through the CALIBRE_GITHUB_TOKEN environment variable value
-'''
+"""
 
 import configparser
 import json
