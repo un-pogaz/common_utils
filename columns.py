@@ -52,7 +52,7 @@ def is_enum_value(name, value) -> bool:
     if not col_metadata._is_enumeration:
         raise ValueError(f'The column "{name}" is not a enumeration')
     col_vals = col_metadata.enum_values
-    if not value in col_vals:
+    if value not in col_vals:
         raise ValueError(f'\'{value}\' is not a valide value on the enumeration "{name}".')
     else:
         return True
@@ -128,9 +128,9 @@ class ColumnMetadata():
     @property (read-only) of ColumnMetadata instance
     return is None if the column does not support this element
         allow_half_stars = bool
-        category_sort = string > one of then [None, 'value', 'name'] 
+        category_sort = string > one of then [None, 'value', 'name']
         colnum = int
-        column = string > one of then [None, 'value', 'name'] 
+        column = string > one of then [None, 'value', 'name']
         composite_contains_html = bool
         composite_make_category = bool
         composite_sort = string > one of then ['text', 'number', 'date', 'bool']
@@ -264,7 +264,8 @@ class ColumnMetadata():
         if self._custom:
             return '#' + self.label
         else:
-            if self.label == 'sort': return 'title_sort'
+            if self.label == 'sort':
+                return 'title_sort'
             return self.label
     @property
     def display_name(self) -> str:
@@ -458,7 +459,7 @@ class ColumnMetadata():
         return self.metadata.get('is_category', False)
     @property
     def is_multiple(self) -> bool:
-        return self._multiple != None
+        return self._multiple is not None
     @property
     def multiple(self) -> bool:
         return self._multiple
@@ -486,9 +487,9 @@ def _test_is_custom(column: ColumnMetadata, only_custom: Optional[bool]) -> bool
         False= Only default
         None= Both
     """
-    if only_custom == True:
+    if only_custom is True:
         return column.is_custom
-    elif only_custom == False:
+    elif only_custom is False:
         return not column.is_custom
     else:
         return True
@@ -496,7 +497,7 @@ def _test_is_custom(column: ColumnMetadata, only_custom: Optional[bool]) -> bool
 def _test_include_composite(column: ColumnMetadata, only_custom: Optional[bool]=None, include_composite: Optional[bool]=False) -> bool:
     if not include_composite and column.is_composite:
         return False
-    elif include_composite and only_custom == None:
+    elif include_composite and only_custom is None:
         return True
     else:
         return _test_is_custom(column, only_custom)

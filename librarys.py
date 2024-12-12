@@ -41,7 +41,13 @@ def no_launch_error(title, name: str=None, msg: str=None):
     else:
         msg = ''
     
-    error_dialog(GUI, title, (title +'.\n'+ _('Could not to launch {:s}').format(PLUGIN_NAME or name) + msg), show=True, show_copy_button=False)
+    error_dialog(
+        GUI,
+        title,
+        (title +'.\n'+ _('Could not to launch {:s}').format(PLUGIN_NAME or name) + msg),
+        show=True,
+        show_copy_button=False,
+    )
 
 def _BookIds_error(book_ids: List[int], show_error: bool, title: str, name: str=None):
     if not book_ids and show_error:
@@ -94,8 +100,10 @@ def get_BookIds(query, use_search_restriction=True, use_virtual_library=True):
     data = current_db().data
     query = query or ''
     search_restriction = data.search_restriction if use_search_restriction else ''
-    return data.search_getting_ids(query, search_restriction,
-                                    set_restriction_count=False, use_virtual_library=use_virtual_library, sort_results=True)
+    return data.search_getting_ids(
+        query, search_restriction,
+        set_restriction_count=False, use_virtual_library=use_virtual_library, sort_results=True,
+    )
 
 
 def get_curent_search():
@@ -144,7 +152,7 @@ def get_marked(label: str=None):
         else:
             rslt[v].append(k)
     
-    if label == None:
+    if label is None:
         return rslt
     else:
         label = str(label).lower()
@@ -173,7 +181,8 @@ def set_marked(label: str, book_ids: List[int], append=False, reset=False):
     if not append:
         del_id = []
         for k,v in marked.items():
-            if v == label: del_id.append(k)
+            if v == label:
+                del_id.append(k)
         
         for k in del_id:
             del marked[k]

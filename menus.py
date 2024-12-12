@@ -67,12 +67,12 @@ def create_menu_action_unique(
     kb = ia.gui.keyboard
     if unique_name is None:
         unique_name = menu_text
-    if not shortcut == False:
+    if shortcut is not False:
         full_unique_name = menu_action_unique_name(ia, unique_name)
         if full_unique_name in kb.shortcuts:
             shortcut = False
         else:
-            if shortcut is not None and not shortcut == False:
+            if shortcut is not None and shortcut is not False:
                 if len(shortcut) == 0:
                     shortcut = None
     
@@ -90,7 +90,7 @@ def create_menu_action_unique(
         ac = ia.create_menu_action(parent_menu, unique_name, menu_text, icon=None,
                                    shortcut=shortcut, description=tooltip,
                                    triggered=triggered, shortcut_name=shortcut_name)
-    if shortcut == False and not orig_shortcut == False:
+    if shortcut is False and orig_shortcut is not False:
         if ac.calibre_shortcut_unique_name in ia.gui.keyboard.shortcuts:
             kb.replace_action(ac.calibre_shortcut_unique_name, ac)
     if image:

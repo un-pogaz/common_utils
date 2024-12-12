@@ -84,7 +84,11 @@ class TemplateEditorDialog(TemplateDialog):
         self.template = self.textbox.toPlainText().rstrip()
         TemplateDialog.accept(self)
 
-def open_template_dialog(mi: List[Metadata]=None, template_text: str=None, parent=None) -> Tuple[Dialog.DialogCode, str]:
+def open_template_dialog(
+    mi: List[Metadata]=None,
+    template_text: str=None,
+    parent=None,
+) -> Tuple[Dialog.DialogCode, str]:
     d = TemplateEditorDialog(parent=parent, mi=mi or [], template_text=template_text or '')
     rslt = d.exec()
     return rslt, d.template
@@ -93,5 +97,9 @@ class TemplateEditorDialogButton(QPushButton):
     def __init__(self, show_icon=True, show_text=True, parent=None):
         if not show_icon and not show_text:
             raise ValueError('Need at least the icon or text')
-        QPushButton.__init__(self, get_icon('template_funcs.png' if show_icon else None), (_('Open the template editor') if show_text else ''), parent=parent)
+        QPushButton.__init__(self,
+            get_icon('template_funcs.png' if show_icon else None),
+            (_('Open the template editor') if show_text else ''),
+            parent=parent,
+        )
         self.setToolTip(_('Open the template editor'))

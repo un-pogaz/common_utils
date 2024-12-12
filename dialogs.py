@@ -106,7 +106,11 @@ def edit_keyboard_shortcuts_dialog(plugin_action: InterfaceAction, parent=None):
 
 class KeyboardConfigDialogButton(QPushButton):
     def __init__(self, show_icon=True, parent=None):
-        QPushButton.__init__(self, get_icon('keyboard-prefs.png' if show_icon else None), _('Keyboard shortcuts')+'…', parent)
+        QPushButton.__init__(self,
+            get_icon('keyboard-prefs.png' if show_icon else None),
+            _('Keyboard shortcuts')+'…',
+            parent,
+        )
         self.setToolTip(_('Edit the keyboard shortcuts associated with this plugin'))
         self.clicked.connect(self.edit_shortcuts)
 
@@ -163,12 +167,12 @@ class LibraryPrefsViewerDialog(Dialog):
         for key in sorted([k[ns_len:] for k in self.db.prefs.keys() if k.startswith(ns_prefix)]):
             self.keys_list.addItem(key)
             val = self.db.prefs.get_namespaced(self.namespace, key, None)
-            self.prefs[key] = self.db.prefs.to_raw(val) if val != None else None
+            self.prefs[key] = self.db.prefs.to_raw(val) if val is not None else None
         self.keys_list.setMinimumWidth(self.keys_list.sizeHintForColumn(0))
         self.keys_list.currentRowChanged[int].connect(self._current_row_changed)
     
     def _save_current_row(self):
-        if self.current_key != None:
+        if self.current_key is not None:
             self.prefs[self.current_key] = self.value_text.toPlainText()
     
     def _current_row_changed(self, new_row):
@@ -446,12 +450,20 @@ class ImageDialog(Dialog):
             return error_dialog(self, _('Cannot import image'), _('You must specify a filename to save as.'), show=True)
         self.new_image_name = os.path.splitext(save_name)[0] + '.png'
         if save_name.find('\\') > -1 or save_name.find('/') > -1:
-            return error_dialog(self, _('Cannot import image'), _('The save as filename should consist of a filename only.'), show=True)
+            return error_dialog(self,
+                _('Cannot import image'),
+                _('The save as filename should consist of a filename only.'),
+                show=True,
+            )
         if not os.path.exists(self.resources_dir):
             os.makedirs(self.resources_dir)
         dest_path = os.path.join(self.resources_dir, self.new_image_name)
         if save_name in self.existing_images or os.path.exists(dest_path):
-            if not question_dialog(self, _('Are you sure?'), _('An image with this name already exists - overwrite it?'), show_copy_button=False):
+            if not question_dialog(self,
+                _('Are you sure?'),
+                _('An image with this name already exists - overwrite it?'),
+                show_copy_button=False,
+            ):
                 return
         
         if self._radio_web.isChecked():
@@ -479,7 +491,7 @@ class ImageDialog(Dialog):
 def custom_exception_dialog(exception: Error, additional_msg: str=None, title: str=None, show_detail=True, parent=None):
     
     import traceback
-
+    
     from calibre import force_unicode, prepare_string_for_xml, prints
     from polyglot.io import PolyglotStringIO
     
@@ -502,13 +514,23 @@ def custom_exception_dialog(exception: Error, additional_msg: str=None, title: s
         traceback.print_exc()
     
     msg = []
-    msg.append('<span>' + prepare_string_for_xml(_('The {PLUGIN_NAME} plugin has encounter a unhandled exception.').format(PLUGIN_NAME=PLUGIN_NAME)))
-    if additional_msg: msg.append(additional_msg)
-    if exception: msg.append(f'<b>{exception.__class__.__name__:s}</b>: ' + prepare_string_for_xml(str(exception)))
+    msg.append('<span>' + prepare_string_for_xml(
+        _('The {PLUGIN_NAME} plugin has encounter a unhandled exception.').format(PLUGIN_NAME=PLUGIN_NAME)
+    ))
+    if additional_msg:
+        msg.append(additional_msg)
+    if exception:
+        msg.append(f'<b>{exception.__class__.__name__:s}</b>: ' + prepare_string_for_xml(str(exception)))
     
     if show_detail:
         det_msg=fe
     else:
         det_msg=None
     
-    error_dialog(parent or GUI, title or _('Unhandled exception'), '\n'.join(msg).replace('\n', '<br>'), det_msg=det_msg, show=True, show_copy_button=bool(det_msg))
+    error_dialog(
+        parent or GUI,
+        title or _('Unhandled exception'),
+        '\n'.join(msg).replace('\n', '<br>'),
+        det_msg=det_msg, show=True,
+        show_copy_button=bool(det_msg),
+    )

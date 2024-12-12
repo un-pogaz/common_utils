@@ -11,6 +11,7 @@ ignore = ['E741', 'E402', 'E722', 'W293']
 select = ['E', 'F', 'I', 'W']
 
 [tool.ruff.lint.per-file-ignores]
+"columns.py" = ['E501']
 
 [tool.ruff.format]
 quote-style = 'single'

@@ -178,7 +178,8 @@ class RatingTableWidgetItem(QTableWidgetItem):
         QTableWidgetItem.__init__(self, '')
         self.setData(Qt.DisplayRole, rating)
         self.is_read_only = is_read_only
-        if is_read_only: self.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
+        if is_read_only:
+            self.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
 
 class TextIconWidgetItem(QTableWidgetItem):
     def __init__(self, text: str, icon_name: str, tooltip=None, is_read_only=False):
@@ -186,7 +187,8 @@ class TextIconWidgetItem(QTableWidgetItem):
         self.setIcon(get_icon(icon_name))
         self.setToolTip(tooltip)
         self.is_read_only = is_read_only
-        if is_read_only: self.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+        if is_read_only:
+            self.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
 
 class ReadOnlyTableWidgetItem(QTableWidgetItem):
     """
@@ -507,7 +509,8 @@ class ImageComboBox(NoWheelComboBox):
             self.blockSignals(False)
             
             if d.result():
-                # Now, emit the event than user has added a new image so we need to repopulate every combo with new sorted list
+                # Now, emit the event than user has added a new image
+                # so we need to repopulate every combo with new sorted list
                 self.new_image_added.emit(d.image_name)
             
         # Store the current index as item data in index 0 in case user cancels dialog in future
@@ -532,7 +535,13 @@ class ListComboBox(QComboBox):
         return self.currentText()
 
 class KeyValueComboBox(QComboBox):
-    def __init__(self, key_text_map: Dict[str, str], selected_key: str=None, tooltip_map: Dict[str, str]=None, parent=None):
+    def __init__(
+        self,
+        key_text_map: Dict[str, str],
+        selected_key: str=None,
+        tooltip_map: Dict[str, str]=None,
+        parent=None,
+    ):
         QComboBox.__init__(self, parent)
         self.populate_combo(key_text_map, selected_key, tooltip_map)
         self.currentIndexChanged.connect(self.key_value_changed)

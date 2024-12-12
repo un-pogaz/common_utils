@@ -21,7 +21,10 @@ from glob import glob
 from subprocess import PIPE, Popen
 from typing import Tuple, Union
 
-CALIBRE_CONFIG_DIRECTORY = os.environ.get('CALIBRE_CONFIG_DIRECTORY', os.path.join(os.environ.get('appdata'), 'calibre'))
+CALIBRE_CONFIG_DIRECTORY = os.environ.get(
+    'CALIBRE_CONFIG_DIRECTORY',
+    os.path.join(os.environ.get('appdata'), 'calibre'),
+)
 PLUGINS_DIRECTORY = os.path.join(CALIBRE_CONFIG_DIRECTORY, 'plugins')
 
 def get_calibre_bin(calibre_bin: str) -> str:
@@ -38,7 +41,8 @@ def run_command(command_line: Union[list, str], wait=False) -> Popen:
     
     if not isinstance(command_line, str):
         for idx in range(len(command_line)):
-            if ' ' in command_line[idx]: command_line[idx] = '"'+command_line[idx]+'"'
+            if ' ' in command_line[idx]:
+                command_line[idx] = '"'+command_line[idx]+'"'
         command_line = ' '.join(command_line)
     
     subproc = Popen(command_line, stdout=PIPE, stderr=PIPE, shell=True)
@@ -56,13 +60,13 @@ def read_plugin_name() -> Tuple[str, str]:
     with open(init_file) as file:
         content = file.read()
         name_matches = re.findall(r"\s+name\s*=\s*\'([^\']*)\'", content)
-        if name_matches: 
+        if name_matches:
             name = name_matches[0]
             zip_file_name = name+'.zip'
         else:
             raise RuntimeError('Could not find plugin name in __init__.py')
         version_matches = re.findall(r'\s+version\s*=\s*\(([^\)]*)\)', content)
-        if version_matches: 
+        if version_matches:
             version = '.'.join(re.findall(r'\d+', version_matches[0]))
     
     print(f'Plugin \'{name}\' v{version} will be zipped to: "{zip_file_name}"')
@@ -70,7 +74,12 @@ def read_plugin_name() -> Tuple[str, str]:
 
 def update_translations():
     for po in glob('translations/**/*.po', recursive=True):
-        run_command([get_calibre_bin('calibre-debug'), '-c', 'from calibre.translations.msgfmt import main; main()', os.path.abspath(po)], wait=True)
+        run_command([
+            get_calibre_bin('calibre-debug'),
+            '-c',
+            'from calibre.translations.msgfmt import main; main()',
+            os.path.abspath(po),
+        ], wait=True)
 
 def create_zip_file(filename, mode, files):
     with zipfile.ZipFile(filename, mode, zipfile.ZIP_STORED) as zip:
@@ -105,7 +114,8 @@ def build_plugin():
     versioning = os.path.join(os.getcwd(), '-- versioning')
     os.makedirs(versioning, exist_ok=True)
     out = os.path.join(versioning, PLUGIN)
-    if os.path.exists(out): os.remove(out)
+    if os.path.exists(out):
+        os.remove(out)
     os.rename(PLUGIN, out)
     
     print(f"Plugin '{PLUGIN}' build with succes.")

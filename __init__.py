@@ -45,10 +45,13 @@ def get_plugin_attribut(name: str, default: Optional[Any]=None) -> Any:
     global PLUGIN_CLASSE
     if not PLUGIN_CLASSE:
         import importlib
-
+        
         from calibre.customize import Plugin
         #Yes, it's very long for a one line. It's seems crazy, but it's fun and it works
-        plugin_classes = [ obj for obj in importlib.import_module('.'.join(__name__.split('.')[:-1])).__dict__.values() if isinstance(obj, type) and issubclass(obj, Plugin) and obj.name != 'Trivial Plugin' ]
+        plugin_classes = []
+        for obj in importlib.import_module('.'.join(__name__.split('.')[:-1])).__dict__.values():
+            if isinstance(obj, type) and issubclass(obj, Plugin) and obj.name != 'Trivial Plugin':
+                plugin_classes.append(obj)
         
         plugin_classes.sort(key=lambda c:(getattr(c, '__module__', None) or '').count('.'))
         PLUGIN_CLASSE = plugin_classes[0]
@@ -310,7 +313,9 @@ class PluginResources(ZipResources):
         
         with ZipFile(self.zip_path, 'r') as zf:
             for entry in zf.namelist():
-                if entry.startswith('images/') and os.path.splitext(entry)[1].lower() == '.png' or entry in preload_keys:
+                if entry in preload_keys:
+                    self.__setitem__(entry, zf.read(entry))
+                if entry.startswith('images/') and os.path.splitext(entry)[1].lower() == '.png':
                     self.__setitem__(entry, zf.read(entry))
     
     def __str__(self):
@@ -626,7 +631,7 @@ class PREFS_library(dict):
     def _check_db(self):
         if current_db() and self._db != current_db():
             self._db = current_db()
-        return self._db != None
+        return self._db is not None
     
     def refresh(self):
         if self._check_db():
