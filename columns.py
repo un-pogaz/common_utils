@@ -451,8 +451,7 @@ class ColumnMetadata():
     @property
     def _src_is_custom(self) -> str:
         return self.metadata.get('is_custom', None)
-                    #the custom series index are not marked as custom
-                    #a internal bool is nesecary
+        # the custom series index are not marked as custom a internal bool is nesecary
     
     @property
     def is_category(self) -> bool:

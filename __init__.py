@@ -48,7 +48,7 @@ def get_plugin_attribut(name: str, default=None):
         import importlib
         
         from calibre.customize import Plugin
-        #Yes, it's very long for a one line. It's seems crazy, but it's fun and it works
+        
         plugin_classes = []
         for obj in importlib.import_module('.'.join(__name__.split('.')[:-1])).__dict__.values():
             if isinstance(obj, type) and issubclass(obj, Plugin) and obj.name != 'Trivial Plugin':
@@ -421,7 +421,7 @@ class regex():
     import re as _re
     def __init__(self, flag=None):
         
-        #set the default flag
+        # set the default flag
         self.flag = flag
         if not self.flag:
             self.flag = regex._re.ASCII + regex._re.MULTILINE + regex._re.DOTALL
