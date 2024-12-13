@@ -1,5 +1,9 @@
 # Changelog - common_utils
 
+## 2024/12/13
+- add saved_code.py, to store various code not callable by import
+  - add initialize_embedded_plugin(): do initialize a embedded plugin
+
 ## 2024/12/12
 - add pyproject.toml
 - format the code with ruff
