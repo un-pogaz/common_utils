@@ -24,12 +24,13 @@ from . import CALIBRE_VERSION, GUI, get_icon
 # keyboard shortcuts when rebuilding our menus.
 plugin_menu_actions = []
 
+
 def unregister_menu_actions():
-    """
+    '''
     For plugins that dynamically rebuild their menus, we need to ensure that any
     keyboard shortcuts are unregistered for them each time.
     Make sure to call this before .clear() of the menu items.
-    """
+    '''
     global plugin_menu_actions
     for action in plugin_menu_actions:
         if hasattr(action, 'calibre_shortcut_unique_name'):
@@ -42,6 +43,7 @@ def unregister_menu_actions():
             except:
                 pass
     plugin_menu_actions = []
+
 
 def create_menu_action_unique(
                             ia: InterfaceAction,
@@ -56,13 +58,13 @@ def create_menu_action_unique(
                             unique_name: str=None,
                             favourites_menu_unique_name: str=None,
                             ) -> QAction:
-    """
+    '''
     Create a menu action with the specified criteria and action, using the new
     InterfaceAction.create_menu_action() function which ensures that regardless of
     whether a shortcut is specified it will appear in Preferences->Keyboard
     
     For a full description of the parameters, see: calibre/gui2/actions/__init__.py
-    """
+    '''
     orig_shortcut = shortcut
     kb = ia.gui.keyboard
     if unique_name is None:
@@ -112,6 +114,7 @@ def create_menu_action_unique(
     
     return ac
 
+
 def create_menu_item(
                     ia: InterfaceAction,
                     parent_menu: QMenu,
@@ -122,7 +125,7 @@ def create_menu_item(
                     triggered: Callable=None,
                     is_checked: Optional[bool]=None,
                     ) -> QAction:
-    """
+    '''
     Create a menu action with the specified criteria and action
     Note that if no shortcut is specified, will not appear in Preferences->Keyboard
     This method should only be used for actions which either have no shortcuts,
@@ -130,7 +133,7 @@ def create_menu_item(
 
     Currently this function is only used by open_with and search_the_internet plugins
     and would like to investigate one day if it can be removed from them.
-    """
+    '''
     if shortcut is not None:
         if len(shortcut) == 0:
             shortcut = ()

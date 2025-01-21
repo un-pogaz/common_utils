@@ -14,12 +14,12 @@ from calibre.customize import Plugin
 class MainPlugin(Plugin):
     
     def initialize_embedded_plugin(self, plugin, name: str=None, description: str=None):
-        """
+        '''
         A Calibre plugin can normally only contain one Plugin class.
         In our case, this would be the file type class.
         However, we want to load the GUI plugin, too, so we have to trick
         Calibre into believing that there's actually a 2nd plugin.
-        """
+        '''
         
         from calibre.customize.ui import _initialized_plugins, initialize_plugin
         

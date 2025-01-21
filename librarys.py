@@ -26,12 +26,14 @@ try:
     del re, tweaks
 except Exception:
     authors_split_regex = r'(?i),?\s+(and|with)\s+'
-    """tweaks split regex for authors"""
+    '''tweaks split regex for authors'''
+
 
 def string_to_authors(raw_string: str) -> List[str]:
     'Split a string into a list of authors'
     from calibre.ebooks.metadata import string_to_authors
     return string_to_authors(raw_string)
+
 
 def no_launch_error(title, name: str=None, msg: str=None):
     'Show a error dialog  for an operation that cannot be launched'
@@ -49,13 +51,15 @@ def no_launch_error(title, name: str=None, msg: str=None):
         show_copy_button=False,
     )
 
+
 def _BookIds_error(book_ids: List[int], show_error: bool, title: str, name: str=None):
     if not book_ids and show_error:
         no_launch_error(title, name=name)
     return book_ids
 
+
 def get_BookIds_selected(show_error=False):
-    """return the books id selected in the gui"""
+    '''return the books id selected in the gui'''
     try:
         ids = GUI.library_view.get_selected_ids()
     except:
@@ -63,29 +67,34 @@ def get_BookIds_selected(show_error=False):
    
     return _BookIds_error(ids, show_error, _('No book selected'))
 
+
 def get_BookIds_all(show_error=False):
-    """return all books id in the library"""
+    '''return all books id in the library'''
     ids = current_db().all_ids()
     return _BookIds_error(ids, show_error, _('No book in the library'))
 
+
 def get_BookIds_virtual(show_error=False):
-    """return the books id of the virtual library (without search restriction)"""
+    '''return the books id of the virtual library (without search restriction)'''
     ids = get_BookIds('', use_search_restriction=False, use_virtual_library=True)
     return _BookIds_error(ids, show_error, _('No book in the virtual library'))
 
+
 def get_BookIds_filtered(show_error=False):
-    """return the books id of the virtual library AND search restriction applied.
-    This is the strictest result"""
+    '''return the books id of the virtual library AND search restriction applied.
+    This is the strictest result'''
     ids = get_BookIds('', use_search_restriction=True, use_virtual_library=True)
     return _BookIds_error(ids, show_error, _('No book in the virtual library'))
 
+
 def get_BookIds_search(show_error=False):
-    """return the books id of the current search"""
+    '''return the books id of the current search'''
     ids = get_BookIds(get_curent_search(), use_search_restriction=True, use_virtual_library=True)
     return _BookIds_error(ids, show_error, _('No book in the current search'))
 
+
 def get_BookIds(query, use_search_restriction=True, use_virtual_library=True):
-    """
+    '''
     return the books id corresponding to the query
     
     query:
@@ -96,7 +105,7 @@ def get_BookIds(query, use_search_restriction=True, use_virtual_library=True):
     
     use_virtual_library:
         Limit the search to the actual virtual library
-    """
+    '''
     data = current_db().data
     query = query or ''
     search_restriction = data.search_restriction if use_search_restriction else ''
@@ -107,42 +116,47 @@ def get_BookIds(query, use_search_restriction=True, use_virtual_library=True):
 
 
 def get_curent_search():
-    """Get the current search string. Can be invalid"""
+    '''Get the current search string. Can be invalid'''
     return GUI.search.current_text
 
+
 def get_last_search():
-    """Get last search string performed with succes"""
+    '''Get last search string performed with succes'''
     return GUI.library_view.model().last_search
 
+
 def get_curent_virtual():
-    """The virtual library, can't be a temporary VL"""
+    '''The virtual library, can't be a temporary VL'''
     data = current_db().data
     return data.get_base_restriction_name(), data.get_base_restriction()
 
+
 def get_curent_restriction_search():
-    """The search restriction is a top level filtre, based on the saved searches"""
+    '''The search restriction is a top level filtre, based on the saved searches'''
     data = current_db().data
     name = data.get_search_restriction_name()
     return name, get_saved_searches().get(name, data.search_restriction)
 
+
 def get_virtual_libraries():
-    """Get all virtual library set in the database"""
+    '''Get all virtual library set in the database'''
     return current_db().prefs.get('virtual_libraries', {})
 
+
 def get_saved_searches():
-    """Get all saved searches set in the database"""
+    '''Get all saved searches set in the database'''
     return current_db().prefs.get('saved_searches', {})
 
 
 def get_marked(label: str=None):
-    """
+    '''
     Get the marked books
     
     label:
         Filtre to only label. No case sensitive
     
     return: { label : [id,] }
-    """
+    '''
     
     rslt = {}
     for k,v in current_db().data.marked_ids.items():
@@ -156,10 +170,11 @@ def get_marked(label: str=None):
         return rslt
     else:
         label = str(label).lower()
-        return { label:rslt[label] }
+        return {label:rslt[label]}
+
 
 def set_marked(label: str, book_ids: List[int], append=False, reset=False):
-    """
+    '''
     Set the marked books
     
     label:
@@ -174,7 +189,7 @@ def set_marked(label: str, book_ids: List[int], append=False, reset=False):
     
     book_ids:
         Book id to affect the label
-    """
+    '''
     label = str(label).lower()
     marked = {} if reset else current_db().data.marked_ids.copy()
     
@@ -187,11 +202,13 @@ def set_marked(label: str, book_ids: List[int], append=False, reset=False):
         for k in del_id:
             del marked[k]
     
-    marked.update( {idx:label for idx in book_ids} )
+    marked.update({idx:label for idx in book_ids})
     current_db().data.set_marked_ids(marked)
+
 
 def get_category_icons_map():
     return GUI.tags_view.model().category_custom_icons
+
 
 def get_tags_browsable_fields(use_defaults=False, order_override: List[str]=None, include_composite=True):
     if use_defaults:

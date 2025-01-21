@@ -62,10 +62,11 @@ from .librarys import get_category_icons_map, get_tags_browsable_fields
 #               Widgets
 # ----------------------------------------------
 
+
 class ImageTitleLayout(QHBoxLayout):
-    """
+    '''
     A reusable layout widget displaying an image followed by a title
-    """
+    '''
     def __init__(self, icon_name: str, title: str, parent=None):
         QHBoxLayout.__init__(self, parent)
         self.title_image_label = QLabel(parent)
@@ -89,10 +90,11 @@ class ImageTitleLayout(QHBoxLayout):
         self.title_image_label.setMaximumSize(32, 32)
         self.title_image_label.setScaledContents(True)
 
+
 class CheckableTableWidgetItem(QTableWidgetItem):
-    """
+    '''
     For use in a table cell, displays a checkbox that can potentially be tristate
-    """
+    '''
     def __init__(self, checked: bool=False, text: str='', is_tristate=False, is_read_only=False):
         QTableWidgetItem.__init__(self, text)
         self.is_read_only = is_read_only
@@ -112,21 +114,22 @@ class CheckableTableWidgetItem(QTableWidgetItem):
                 self.setCheckState(Qt.CheckState.Unchecked)
     
     def get_boolean_value(self) -> bool:
-        """
+        '''
         Return a boolean value indicating whether checkbox is checked
         If this is a tristate checkbox, a partially checked value is returned as None
-        """
+        '''
         if self.checkState() == Qt.PartiallyChecked:
             return None
         else:
             return self.checkState() == Qt.Checked
 
+
 class DateDelegate(_DateDelegate):
-    """
+    '''
     Delegate for dates. Because this delegate stores the
     format as an instance variable, a new instance must be created for each
     column. This differs from all the other delegates.
-    """
+    '''
     def __init__(self, fmt='dd MMM yyyy', default_to_today=True, parent=None):
         DateDelegate.__init__(self, parent)
         self.format = get_date_format(default_fmt=fmt)
@@ -160,9 +163,10 @@ class DateDelegate(_DateDelegate):
         else:
             model.setData(index, qt_from_dt(val), Qt.EditRole)
 
+
 class DateTableWidgetItem(QTableWidgetItem):
     def __init__(self, date_read: datetime, default_to_today=False, fmt=None, is_read_only=False):
-        if date_read is None or date_read == UNDEFINED_DATE and default_to_today:
+        if date_read is None or (date_read == UNDEFINED_DATE and default_to_today):
             date_read = now()
         self.is_read_only = is_read_only
         if is_read_only:
@@ -173,6 +177,7 @@ class DateTableWidgetItem(QTableWidgetItem):
             QTableWidgetItem.__init__(self, '')
             self.setData(Qt.DisplayRole, qt_from_dt(date_read))
 
+
 class RatingTableWidgetItem(QTableWidgetItem):
     def __init__(self, rating: int, is_read_only=False):
         QTableWidgetItem.__init__(self, '')
@@ -180,6 +185,7 @@ class RatingTableWidgetItem(QTableWidgetItem):
         self.is_read_only = is_read_only
         if is_read_only:
             self.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
+
 
 class TextIconWidgetItem(QTableWidgetItem):
     def __init__(self, text: str, icon_name: str, tooltip=None, is_read_only=False):
@@ -190,10 +196,11 @@ class TextIconWidgetItem(QTableWidgetItem):
         if is_read_only:
             self.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
 
+
 class ReadOnlyTableWidgetItem(QTableWidgetItem):
-    """
+    '''
     For use in a table cell, displays text the user cannot select or modify.
-    """
+    '''
     def __init__(self, text: str):
         text = text or ''
         QTableWidgetItem.__init__(self, text)
@@ -370,6 +377,7 @@ class FieldsValueTreeWidget(QTreeWidget):
         
         return rslt
 
+
 class SelectFieldValuesWidget(FieldsValueTreeWidget):
     def __init__(self, book_ids: List[int]=None, parent=None):
         'If book_ids is not None, display a entry that contain a subset of Notes for listed books'
@@ -410,6 +418,7 @@ class SelectFieldValuesWidget(FieldsValueTreeWidget):
         
         return rslt
 
+
 class SelectNotesWidget(FieldsValueTreeWidget):
     def __init__(self, book_ids: List[int]=None, parent=None):
         'If book_ids is not None, display a entry that contain a subset of Notes for listed books'
@@ -417,10 +426,10 @@ class SelectNotesWidget(FieldsValueTreeWidget):
         self.update_texts(empty=_('No notes'))
     
     def _build_content_map(self, book_ids: Union[List[int], None]) -> Dict[str, List[Tuple[str, int]]]:
-        """
+        '''
         Return item_ids for items that have notes in the specified field or all fields if field_name is None.
         If book_ids if passed, return for entry only relative to this book list.
-        """
+        '''
         
         items_map = self._dbAPI.get_all_items_that_have_notes()
         
@@ -455,14 +464,16 @@ class ReadOnlyLineEdit(QLineEdit):
         QLineEdit.__init__(self, text, parent)
         self.setEnabled(False)
 
+
 class NoWheelComboBox(QComboBox):
-    """
+    '''
     For combobox displayed in a table cell using the mouse wheel has nasty interactions
     due to the conflict between scrolling the table vs scrolling the combobox item.
     Inherit from this class to disable the combobox changing value with mouse wheel.
-    """
+    '''
     def wheelEvent(self, event):
         event.ignore()
+
 
 class ImageComboBox(NoWheelComboBox):
     
@@ -535,6 +546,7 @@ class ListComboBox(QComboBox):
     def selected_value(self) -> str:
         return self.currentText()
 
+
 class KeyValueComboBox(QComboBox):
     def __init__(
         self,
@@ -575,6 +587,7 @@ class KeyValueComboBox(QComboBox):
     
     def key_value_changed(self, idx: int):
         self.setToolTip(return_line_long_text(self.tooltip_map.get(self.selected_key(), '')))
+
 
 class CustomColumnComboBox(QComboBox):
     def __init__(self, custom_columns: Dict[str ,ColumnMetadata], selected_column: str='', parent=None):
@@ -619,6 +632,7 @@ class CustomColumnComboBox(QComboBox):
     def column_changed(self, idx: int):
         self.setToolTip(return_line_long_text(self.description_map.get(self.selected_name(), '')))
 
+
 class ReorderedComboBox(QComboBox):
     def __init__(self, strip_items=True, parent=None):
         QComboBox.__init__(self, parent)
@@ -657,17 +671,18 @@ class ReorderedComboBox(QComboBox):
     
     def get_items_list(self):
         if self.strip_items:
-            return [self.itemText(i).strip() for i in range(0, self.count())]
+            return [self.itemText(i).strip() for i in range(self.count())]
         else:
-            return [self.itemText(i) for i in range(0, self.count())]
+            return [self.itemText(i) for i in range(self.count())]
+
 
 class DragDropLineEdit(QLineEdit):
-    """
+    '''
     Unfortunately there is a flaw in the Qt implementation which means that
     when the QComboBox is in editable mode that dropEvent is not fired
     if you drag into the editable text area. Working around this by having
     a custom LineEdit() set for the parent combobox.
-    """
+    '''
     def __init__(self, drop_mode: str, parent=None):
         QLineEdit.__init__(self, parent)
         self.drop_mode = drop_mode
@@ -677,8 +692,8 @@ class DragDropLineEdit(QLineEdit):
         event.acceptProposedAction()
     
     def dragEnterEvent(self, event):
-        if int(event.possibleActions() & Qt.CopyAction) + \
-           int(event.possibleActions() & Qt.MoveAction) == 0:
+        event_code = int(event.possibleActions() & Qt.CopyAction) + int(event.possibleActions() & Qt.MoveAction)
+        if event_code == 0:
             return
         data = self._get_data_from_event(event)
         if data:
@@ -706,13 +721,14 @@ class DragDropLineEdit(QLineEdit):
             urls = [u.toString().strip() for u in md.urls()]
             return urls
 
+
 class DragDropComboBox(ReorderedComboBox):
-    """
+    '''
     Unfortunately there is a flaw in the Qt implementation which means that
     when the QComboBox is in editable mode that dropEvent is not fired
     if you drag into the editable text area. Working around this by having
     a custom LineEdit() set for the parent combobox.
-    """
+    '''
     def __init__(self, drop_mode='url', parent=None):
         ReorderedComboBox.__init__(self, parent)
         self.drop_line_edit = DragDropLineEdit(drop_mode, parent)

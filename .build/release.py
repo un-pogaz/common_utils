@@ -3,14 +3,14 @@
 __license__   = 'GPL v3'
 __copyright__ = '2022, un_pogaz based on code from Grant Drake'
 
-"""
+'''
 Creates a GitHub release for a plugin, including uploading the zip file.
 
 Invocation should be via each plugin release.cmd, which will ensure that:
 - Working directory is set to the <plugin> subfolder
 - Zip file for plugin is rebuilt for latest local code/translations
 - Pass through the CALIBRE_GITHUB_TOKEN environment variable value
-"""
+'''
 
 import configparser
 import json
@@ -33,6 +33,7 @@ def read_repos_detail() -> str:
     
     return origin[len('https://github.com/'):-len('.git')]
 
+
 def read_plugin_details() -> Tuple[str, str, str]:
     short_name = os.path.split(os.getcwd())[1]
     initFile = os.path.join(os.getcwd(), '__init__.py')
@@ -48,12 +49,13 @@ def read_plugin_details() -> Tuple[str, str, str]:
             plugin_name = nameMatches[0]
         else:
             raise RuntimeError('Could not find plugin name in __init__.py')
-        versionMatches = re.findall(r"\s+version\s*=\s*\(([^\)]*)\)", content)
+        versionMatches = re.findall(r'\s+version\s*=\s*\(([^\)]*)\)', content)
         if versionMatches:
             version = versionMatches[0].replace(',','.').replace(' ','')
 
-    print(f"Plugin to be released for: '{plugin_name}' v{version}")
+    print(f'Plugin to be released for: {plugin_name!r} v{version}')
     return short_name, plugin_name, version
+
 
 def get_plugin_zip_path(plugin_name: str) -> str:
     zip_file = os.path.join(os.getcwd(), '-- versioning', plugin_name+'.zip')
@@ -61,6 +63,7 @@ def get_plugin_zip_path(plugin_name: str) -> str:
         print(f'ERROR: No zip file found for this plugin at: {zip_file}')
         raise FileNotFoundError(zip_file)
     return zip_file
+
 
 def read_change_log_for_version(version: str) -> str:
     changeLogFile = os.path.join(os.getcwd(), 'changelog.md')
@@ -95,6 +98,7 @@ def read_change_log_for_version(version: str) -> str:
     print(f'ChangeLog details found: {len(changeLines):d} lines')
     return '\n'.join(changeLines)
 
+
 def check_if_release_exists(api_repo_url: str, api_token: str, tag_name: str):
     # If we have already released this plugin version then we have a problem
     # Most likely have forgotten to bump the version number?
@@ -112,6 +116,7 @@ def check_if_release_exists(api_repo_url: str, api_token: str, tag_name: str):
             print('Existing release for this version not found, OK to proceed')
         else:
             raise RuntimeError('Failed to check release existing API due to:',e)
+
 
 def create_GitHub_release(api_repo_url: str, api_token: str, plugin_name: str, tag_name: str, changeBody: str):
     endpoint = api_repo_url + '/releases'
@@ -141,6 +146,7 @@ def create_GitHub_release(api_repo_url: str, api_token: str, plugin_name: str, t
     except error.HTTPError as e:
         raise RuntimeError('Failed to create release due to:',e)
 
+
 def upload_zip_to_release(api_token: str, upload_url: str, zip_file: str, tag_name: str):
     dst = os.path.splitext(zip_file)[0] +'-'+tag_name+'.zip'
     os.rename(zip_file, dst)
@@ -165,14 +171,15 @@ def upload_zip_to_release(api_token: str, upload_url: str, zip_file: str, tag_na
     except error.HTTPError as e:
         raise RuntimeError('Failed to upload zip due to:',e)
 
+
 def run_command(command_line: Union[list, str], wait=False) -> Popen:
-    """
+    '''
     Lauch a command line and return the subprocess
     
     :param command_line:    command line to execute
     :param wait:            Wait for the file to be closed
     :return:                The subprocess returned by the Popen call
-    """
+    '''
     
     if not isinstance(command_line, str):
         for idx in range(len(command_line)):
@@ -253,7 +260,6 @@ def build_MobileRead_post():
     
     bb_list_close()
     
-    
     with open(output_file, 'w', newline='\n') as f:
         f.write(MobileRead_body)
         f.write('\n\n[B]Version History:[/B]\n')
@@ -262,7 +268,7 @@ def build_MobileRead_post():
     print(f'{output_file} builded')
 
 
-if __name__=="__main__":
+if __name__=='__main__':
     api_token = os.environ.get('CALIBRE_GITHUB_TOKEN')
     if not api_token:
         raise RuntimeError('No GitHub API token found. Please set it in CALIBRE_GITHUB_TOKEN variable.')

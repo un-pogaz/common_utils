@@ -29,6 +29,7 @@ TEMPLATE_PREFIX = 'TEMPLATE: '
 TEMPLATE_ERROR = 'TEMPLATE_ERROR: '
 TEMPLATE_FIELD = '{template}'
 
+
 def check_template(template, show_error=False) -> bool:
     db = current_db()
     error_msgs = [
@@ -58,6 +59,7 @@ def check_template(template, show_error=False) -> bool:
             return error
     return True
 
+
 class TemplateEditorDialog(TemplateDialog):
     def __init__(self, parent=None, mi=None, fm=None, template_text=''):
         self.db = current_db()
@@ -84,6 +86,7 @@ class TemplateEditorDialog(TemplateDialog):
         self.template = self.textbox.toPlainText().rstrip()
         TemplateDialog.accept(self)
 
+
 def open_template_dialog(
     mi: List[Metadata]=None,
     template_text: str=None,
@@ -92,6 +95,7 @@ def open_template_dialog(
     d = TemplateEditorDialog(parent=parent, mi=mi or [], template_text=template_text or '')
     rslt = d.exec()
     return rslt, d.template
+
 
 class TemplateEditorDialogButton(QPushButton):
     def __init__(self, show_icon=True, show_text=True, parent=None):

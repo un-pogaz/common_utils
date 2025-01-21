@@ -33,15 +33,19 @@ def get_gui() -> Main:
     from calibre.gui2.ui import get_gui
     return get_gui()
 
+
 GUI = get_gui()
+
 
 def current_db() -> LibraryDatabase:
     return getattr(GUI,'current_db', None)
 
 
 PLUGIN_CLASSE = None
+
+
 def get_plugin_attribut(name: str, default=None):
-    """Retrieve a attribut on the main plugin class"""
+    '''Retrieve a attribut on the main plugin class'''
     
     global PLUGIN_CLASSE
     if not PLUGIN_CLASSE:
@@ -59,6 +63,7 @@ def get_plugin_attribut(name: str, default=None):
     
     return getattr(PLUGIN_CLASSE, name, default)
 
+
 ROOT = __name__.split('.')[1]
 
 # Global definition of our plugin name. Used for common functions that require this.
@@ -70,8 +75,10 @@ DEBUG_PRE = get_plugin_attribut('DEBUG_PRE', PLUGIN_NAME)
 PLUGIN_INSTANCE = find_plugin(PLUGIN_NAME)
 
 BASE_TIME = monotonic()
+
+
 def debug_print(*args, **kw):
-    """
+    '''
     Print a output assigned to the plugin
     
     **kw
@@ -83,7 +90,7 @@ def debug_print(*args, **kw):
     
     file: output file, else stdout
     flush: flush buffer
-    """
+    '''
     
     if DEBUG:
         pre = kw.get('pre', DEBUG_PRE)
@@ -110,7 +117,7 @@ def debug_print(*args, **kw):
             prints(pre, *args, **kw)
         else:
             prints(*args, **kw)
-        #prints(DEBUG_PRE,'[{:.2f}]'.format(monotonic()-BASE_TIME),':', *args, **kw)
+        # prints(DEBUG_PRE,'[{:.2f}]'.format(monotonic()-BASE_TIME),':', *args, **kw)
 
 
 # ----------------------------------------------
@@ -119,14 +126,17 @@ def debug_print(*args, **kw):
 
 THEME_COLOR = ['', 'dark', 'light']
 
+
 def get_theme_name() -> str:
-    """Get the theme color of Calibre"""
+    '''Get the theme color of Calibre'''
     if CALIBRE_VERSION >= (6,0,0):
         return THEME_COLOR[1] if QApplication.instance().is_dark_theme else THEME_COLOR[2]
     return THEME_COLOR[0]
 
+
 def linux(path: str) -> str:
     return path.replace('\\', '/')
+
 
 def get_icon_themed_names(icon_name) -> List[str]:
     # images/<icon_name>-for-dark-theme.png
@@ -144,14 +154,16 @@ def get_icon_themed_names(icon_name) -> List[str]:
     rslt.append(icon_name)
     return rslt
 
+
 if not hasattr(QIcon, 'ic'):
     QIcon.ic = lambda x: QIcon(I(x))
 
+
 def get_icon(icon_name: str) -> QIcon:
-    """
+    '''
     Retrieve a QIcon for the named image from the zip file if it exists,
     or if not then from Calibre's image cache.
-    """
+    '''
     
     if isinstance(icon_name, QIcon):
         return icon_name
@@ -174,11 +186,12 @@ def get_icon(icon_name: str) -> QIcon:
     
     return QIcon()
 
+
 def get_pixmap(icon_name: str) -> QPixmap:
-    """
+    '''
     Retrieve a QPixmap for the named image
     Any icons belonging to the plugin must be prefixed with 'images/'
-    """
+    '''
     
     if icon_name:
         icon_name = linux(icon_name).strip('/')
@@ -219,29 +232,34 @@ def get_pixmap(icon_name: str) -> QPixmap:
         if rslt:
             return rslt
 
+
 def local_resource(*subfolders: Optional[List[str]]) -> str:
-    """
+    '''
     Returns a path to the user's local resources folder
     If a subfolder name parameter is specified, appends this to the path
-    """
+    '''
     
     rslt = os.path.join(config_dir, 'resources', *[f.replace('/','-').replace('\\','-') for f in subfolders])
     if iswindows:
         rslt = os.path.normpath(rslt)
     return linux(rslt)
+
+
 local_resource.IMAGES = local_resource('images')+'/'
+
 
 def _class_name(obj, inside) -> str:
     if not isinstance(obj, type):
         obj = obj.__class__
     return obj.__name__+'('+inside+')'
 
+
 class PathDict(dict):
     'dict than contain only path string as keys'
     
     def _k(self, __key):
         if not isinstance(__key, str):
-            raise KeyError("Key can only can only be str. Type pased: "+ type(__key).__name__)
+            raise KeyError('Key can only can only be str. Type pased: '+ type(__key).__name__)
         if not __key:
             raise KeyError("Key can't be a empty string")
         return linux(__key)
@@ -268,6 +286,7 @@ class PathDict(dict):
             raise KeyError(__key)
         else:
             return __default
+
 
 class ZipResources(PathDict):
     def __init__(self, zip_path: str, preload_keys: List[str]=None):
@@ -305,6 +324,7 @@ class ZipResources(PathDict):
                     rslt[entry] = data
         return rslt
 
+
 class PluginResources(ZipResources):
     def __init__(self, preload_keys: List[str]=None):
         from calibre.utils.zipfile import ZipFile
@@ -327,6 +347,7 @@ class PluginResources(ZipResources):
     def __repr__(self):
         return _class_name(self, repr(list(self.keys())))
 
+
 # Global definition of our plugin resources. Used to share between the xxxAction and xxxBase
 # classes if you need any zip images to be displayed on the configuration dialog.
 PLUGIN_RESOURCES = PluginResources()
@@ -343,8 +364,10 @@ def get_date_format(tweak_name: str='gui_timestamp_display_format', default_fmt:
         format = default_fmt
     return format
 
+
 def truncate_title(title: str, max_length: int=75) -> str:
     return (title[:max_length] + '…') if len(title) > max_length else title
+
 
 def get_image_map(subdir: str=None) -> Dict[str, QIcon]:
     rslt = {}
@@ -357,6 +380,7 @@ def get_image_map(subdir: str=None) -> Dict[str, QIcon]:
                 rslt[linux(name)] = get_icon(name)
     
     return rslt
+
 
 def split_long_text(text: str, max_length: int=70) -> List[str]:
     'Split a long text to various lines with a max lenght for each one'
@@ -395,8 +419,10 @@ def split_long_text(text: str, max_length: int=70) -> List[str]:
     
     return rslt
 
+
 def return_line_long_text(text: str, max_length: int=70) -> str:
     return '\n'.join(split_long_text(text=text, max_length=max_length))
+
 
 # ----------------------------------------------
 #               Ohters
@@ -415,10 +441,11 @@ def duplicate_entry(lst: Iterable) -> List:
     'retrieve the entry in double inside a iterable'
     return list({x for x in lst if lst.count(x) > 1})
 
+
 # Simple Regex
-class regex():
-    
+class regex:
     import re as _re
+    
     def __init__(self, flag=None):
         
         # set the default flag
@@ -469,14 +496,17 @@ class regex():
         
         def __str__(self):
             return self.msg
+
+
 regex = regex()
-"""Easy Regex"""
+'''Easy Regex'''
+
 
 class PREFS_json(JSONConfig):
-    """
+    '''
     Use plugin name to create a JSONConfig file
     to store the preferences for plugin
-    """
+    '''
     
     def __init__(self):
         self._is_init = True
@@ -509,18 +539,19 @@ class PREFS_json(JSONConfig):
         return self
     
     def copy(self):
-        """
+        '''
         get a copy dict of this instance
-        """
+        '''
         rslt = {copy.deepcopy(k):copy.deepcopy(v) for k,v in self.items()}
         rslt.update({copy.deepcopy(k):copy.deepcopy(v) for k,v in self.defaults.items() if k not in rslt})
         return rslt
 
+
 class PREFS_dynamic(DynamicConfig):
-    """
+    '''
     Use plugin name to create a DynamicConfig file
     to store the preferences for plugin
-    """
+    '''
     
     def __init__(self):
         self._no_commit = False
@@ -547,9 +578,9 @@ class PREFS_dynamic(DynamicConfig):
         self.commit()
     
     def copy(self):
-        """
+        '''
         get a copy dict of this instance
-        """
+        '''
         rslt = {}
         for k,v in self.items():
             rslt[copy.deepcopy(k)] = copy.deepcopy(v)
@@ -559,12 +590,13 @@ class PREFS_dynamic(DynamicConfig):
                 rslt[k] = copy.deepcopy(v)
         return rslt
 
+
 class PREFS_library(dict):
-    """
+    '''
     Create a dictionary of preference stored in the library
     
     Defined a custom namespaced at the root of __init__.py // __init__.PREFS_NAMESPACE
-    """
+    '''
     
     def __init__(self, key='settings', defaults={}):
         dict.__init__(self)
@@ -672,9 +704,9 @@ class PREFS_library(dict):
         self.commit()
     
     def copy(self):
-        """
+        '''
         get a copy dict of this instance
-        """
+        '''
         rslt = {copy.deepcopy(k):copy.deepcopy(v) for k,v in self.items()}
         rslt.update({copy.deepcopy(k):copy.deepcopy(v) for k,v in self.defaults.items() if k not in rslt})
         return rslt

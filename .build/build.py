@@ -3,7 +3,7 @@
 __license__   = 'GPL v3'
 __copyright__ = '2022, un_pogaz based on code from JimmXinu and Grant Drake'
 
-"""
+'''
 Creates an uncompressed zip file for the plugin.
 Plugin zips are uncompressed so to not negatively impact calibre load times.
 
@@ -12,7 +12,7 @@ Plugin zips are uncompressed so to not negatively impact calibre load times.
 
 All subfolders of the plugin folder will be included, unless prefixed with '.'
 i.e. .build and .tx will not be included in the zip.
-"""
+'''
 
 import os
 import re
@@ -27,17 +27,19 @@ CALIBRE_CONFIG_DIRECTORY = os.environ.get(
 )
 PLUGINS_DIRECTORY = os.path.join(CALIBRE_CONFIG_DIRECTORY, 'plugins')
 
+
 def get_calibre_bin(calibre_bin: str) -> str:
     return os.path.join(os.environ.get('CALIBRE_DIRECTORY', ''), calibre_bin)
 
+
 def run_command(command_line: Union[list, str], wait=False) -> Popen:
-    """
+    '''
     Lauch a command line and return the subprocess
     
     :param command_line:    command line to execute
     :param wait:            Wait for the file to be closed
     :return:                The subprocess returned by the Popen call
-    """
+    '''
     
     if not isinstance(command_line, str):
         for idx in range(len(command_line)):
@@ -49,6 +51,7 @@ def run_command(command_line: Union[list, str], wait=False) -> Popen:
     if wait:
         subproc.wait()
     return subproc
+
 
 def read_plugin_name() -> Tuple[str, str]:
     init_file = os.path.join(os.getcwd(), '__init__.py')
@@ -69,8 +72,9 @@ def read_plugin_name() -> Tuple[str, str]:
         if version_matches:
             version = '.'.join(re.findall(r'\d+', version_matches[0]))
     
-    print(f'Plugin \'{name}\' v{version} will be zipped to: "{zip_file_name}"')
+    print(f'Plugin {name!r} v{version} will be zipped to: "{zip_file_name}"')
     return zip_file_name, version
+
 
 def update_translations():
     for po in glob('translations/**/*.po', recursive=True):
@@ -81,11 +85,13 @@ def update_translations():
             os.path.abspath(po),
         ], wait=True)
 
+
 def create_zip_file(filename, mode, files):
     with zipfile.ZipFile(filename, mode, zipfile.ZIP_STORED) as zip:
         for file in files:
             if os.path.isfile(file):
                 zip.write(file, file)
+
 
 def build_plugin():
     
@@ -118,7 +124,8 @@ def build_plugin():
         os.remove(out)
     os.rename(PLUGIN, out)
     
-    print(f"Plugin '{PLUGIN}' build with succes.")
+    print(f'Plugin {PLUGIN!r} build with succes.')
 
-if __name__=="__main__":
+
+if __name__=='__main__':
     build_plugin()

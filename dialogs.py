@@ -72,9 +72,9 @@ from . import GUI, PLUGIN_NAME, PREFS_NAMESPACE, current_db, debug_print, get_ic
 
 
 class KeyboardConfigDialog(Dialog):
-    """
+    '''
     This dialog is used to allow editing of keyboard shortcuts.
-    """
+    '''
     def __init__(self, group_name: str, parent=None):
         self.group_name = group_name
         Dialog.__init__(self,
@@ -100,11 +100,13 @@ class KeyboardConfigDialog(Dialog):
         self.keyboard_widget.commit()
         Dialog.accept(self)
 
+
 def edit_keyboard_shortcuts_dialog(plugin_action: InterfaceAction, parent=None):
     getattr(plugin_action, 'rebuild_menus', ())()
     d = KeyboardConfigDialog(plugin_action.action_spec[0], parent=parent)
     if d.exec():
         GUI.keyboard.finalize()
+
 
 class KeyboardConfigDialogButton(QPushButton):
     def __init__(self, show_icon=True, parent=None):
@@ -198,9 +200,9 @@ class LibraryPrefsViewerDialog(Dialog):
                 return
         
         from calibre.gui2.dialogs.confirm_delete import confirm
-        message = '<p>'+_('Are you sure you want to change your settings in this library for this plugin?')+'</p>' \
-                  '<p>'+_('Any settings in other libraries or stored in a JSON file in your calibre plugins ' \
-                  'folder will not be touched.')+'</p>'
+        message = ('<p>'+_('Are you sure you want to change your settings in this library for this plugin?')+'</p>'
+                   '<p>'+_('Any settings in other libraries or stored in a JSON file in your calibre plugins '
+                   'folder will not be touched.')+'</p>')
         if not confirm(message, 'library_prefs_viewer_dialog_apply_settings:'+self.namespace, self):
             return
         
@@ -210,9 +212,9 @@ class LibraryPrefsViewerDialog(Dialog):
     
     def _reset_settings(self):
         from calibre.gui2.dialogs.confirm_delete import confirm
-        message = '<p>'+_('Are you sure you want to clear your settings in this library for this plugin?')+'</p>' \
-                  '<p>'+_('Any settings in other libraries or stored in a JSON file in your calibre plugins ' \
-                  'folder will not be touched.')+'</p>'
+        message = ('<p>'+_('Are you sure you want to clear your settings in this library for this plugin?')+'</p>'
+                   '<p>'+_('Any settings in other libraries or stored in a JSON file in your calibre plugins '
+                   'folder will not be touched.')+'</p>')
         if not confirm(message, 'library_prefs_viewer_dialog_reset_settings:'+self.namespace, self):
             return
         
@@ -222,9 +224,11 @@ class LibraryPrefsViewerDialog(Dialog):
         self._populate_settings()
         Dialog.accept(self)
 
+
 def library_prefs_dialog(prefs_namespace: str=PREFS_NAMESPACE, parent=None) -> Dialog.DialogCode:
     d = LibraryPrefsViewerDialog(prefs_namespace, parent)
     return d.exec()
+
 
 class LibraryPrefsViewerDialogButton(QPushButton):
     
@@ -338,6 +342,7 @@ class ProgressDialog(QProgressDialog):
     
     def job_progress(self):
         raise NotImplementedError()
+
 
 class ViewLogDialog(Dialog):
     def __init__(self, title: str, html: str, parent=None):
@@ -505,6 +510,7 @@ def pick_archive_to_import(parent=None) -> str:
         return None
     return archives[0]
 
+
 def pick_archive_to_export(parent=None) -> str:
     fd = FileDialog(parent=parent or GUI,
         name='owip archive dialog',
@@ -517,6 +523,7 @@ def pick_archive_to_export(parent=None) -> str:
         return None
     return fd.get_files()[0]
 
+
 def pick_json_to_import(parent=None) -> str:
     archives = choose_files(parent or GUI,
         name='json dialog',
@@ -527,6 +534,7 @@ def pick_json_to_import(parent=None) -> str:
     if not archives:
         return None
     return archives[0]
+
 
 def pick_json_to_export(parent=None) -> str:
     fd = FileDialog(parent=parent or GUI,
