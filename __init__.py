@@ -442,6 +442,18 @@ def duplicate_entry(lst: Iterable) -> List:
     return list({x for x in lst if lst.count(x) > 1})
 
 
+def refresh_gui(lst_id: List[int], covers_changed=True, tag_browser_changed=True):
+    GUI.iactions['Edit Metadata'].refresh_gui(
+        lst_id,
+        covers_changed=covers_changed,
+        tag_browser_changed=tag_browser_changed,
+    )
+
+
+def library_name() -> str:
+    return GUI.iactions['Choose Library'].library_name()
+
+
 # Simple Regex
 class regex:
     import re as _re

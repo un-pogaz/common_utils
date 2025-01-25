@@ -1,5 +1,9 @@
 # Changelog - common_utils
 
+## 2025/01/25
+- add refresh_gui(): refresh the metadata displayed into the gui
+- add library_name(): return the name of the current library
+
 ## 2024/12/13
 - add saved_code.py, to store various code not callable by import
   - add initialize_embedded_plugin(): do initialize a embedded plugin
