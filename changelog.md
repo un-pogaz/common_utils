@@ -1,5 +1,8 @@
 # Changelog - common_utils
 
+## 2025/07/29
+- refactoring regex
+
 ## 2025/01/25
 - add refresh_gui(): refresh the metadata displayed into the gui
 - add library_name(): return the name of the current library

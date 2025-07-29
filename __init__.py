@@ -492,22 +492,21 @@ class regex:
     def loop(self, pattern, repl, string, flag=None):
         flag = flag or self.flag
         i = 0
-        while self.search(pattern, string, flag):
+        compile = regex._re.compile(pattern, flag)
+        while compile.search(string):
             if i > 1000:
-                raise regex.Exception('the pattern and substitution string caused an infinite loop', pattern, repl)
-            string = self.simple(pattern, repl, string, flag)
+                raise RegexException('The pattern and substitution string caused an infinite loop', pattern, repl)
+            string = compile.sub(repl, string)
             i+=1
-            
         return string
-    
-    class Exception(BaseException):
-        def __init__(self, msg, pattern=None, repl=None):
-            self.pattern = pattern
-            self.repl = repl
-            self.msg = msg
-        
-        def __str__(self):
-            return self.msg
+
+
+class RegexException(Exception):
+    def __init__(self, msg, pattern=None, repl=None):
+        Exception.__init__(self, msg)
+        self.pattern = pattern
+        self.repl = repl
+        self.msg = msg
 
 
 regex = regex()
