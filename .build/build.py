@@ -21,10 +21,14 @@ from glob import glob
 from subprocess import PIPE, Popen
 from typing import Tuple, Union
 
-CALIBRE_CONFIG_DIRECTORY = os.environ.get(
-    'CALIBRE_CONFIG_DIRECTORY',
-    os.path.join(os.environ.get('appdata'), 'calibre'),
-)
+
+CALIBRE_CONFIG_DIRECTORY = os.environ.get('CALIBRE_CONFIG_DIRECTORY')
+if not CALIBRE_CONFIG_DIRECTORY:
+    CALIBRE_CONFIG_DIRECTORY = os.path.join(os.environ.get('appdata'), 'calibre')
+if not CALIBRE_CONFIG_DIRECTORY:
+    bdir = os.path.expanduser(os.getenv('XDG_CONFIG_HOME', '~/.config'))
+    CALIBRE_CONFIG_DIRECTORY = os.path.abspath(os.path.join(bdir, 'calibre'))
+
 PLUGINS_DIRECTORY = os.path.join(CALIBRE_CONFIG_DIRECTORY, 'plugins')
 
 

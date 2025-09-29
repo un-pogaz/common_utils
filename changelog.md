@@ -1,5 +1,8 @@
 # Changelog - common_utils
 
+## 2025/09/29
+- support Linux
+
 ## 2025/07/29
 - refactoring regex
 
