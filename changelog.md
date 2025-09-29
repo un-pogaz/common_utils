@@ -2,6 +2,7 @@
 
 ## 2025/09/29
 - support Linux
+- fix fatal freeze with ProgressDialog (linux)
 
 ## 2025/07/29
 - refactoring regex

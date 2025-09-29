@@ -291,7 +291,7 @@ class ProgressDialog(QProgressDialog):
         if not book_ids:
             debug_print('No book_ids passed to '+ str(self.__class__.__name__) +'. Skiped.')
         else:
-            QTimer.singleShot(0, self._job_progress)
+            QTimer.singleShot(1, self._job_progress)
             self.exec()
             
             self.db.clean()
