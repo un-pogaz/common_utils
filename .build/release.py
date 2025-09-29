@@ -9,7 +9,7 @@ Creates a GitHub release for a plugin, including uploading the zip file.
 Invocation should be via each plugin release.cmd, which will ensure that:
 - Working directory is set to the <plugin> subfolder
 - Zip file for plugin is rebuilt for latest local code/translations
-- Pass through the CALIBRE_GITHUB_TOKEN environment variable value
+- Pass through the GITHUB_TOKEN environment variable value
 '''
 
 import configparser
@@ -269,9 +269,9 @@ def build_MobileRead_post():
 
 
 if __name__=='__main__':
-    api_token = os.environ.get('CALIBRE_GITHUB_TOKEN')
+    api_token = os.environ.get('GITHUB_TOKEN')
     if not api_token:
-        raise RuntimeError('No GitHub API token found. Please set it in CALIBRE_GITHUB_TOKEN variable.')
+        raise RuntimeError('No GitHub API token found. Please set it in GITHUB_TOKEN variable.')
     
     repos_name = read_repos_detail()
     
