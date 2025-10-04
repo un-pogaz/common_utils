@@ -191,7 +191,7 @@ class ColumnMetadata:
         self.metadata = copy.deepcopy(metadata)
         self._custom = is_custom
         
-        self._multiple = self.metadata['is_multiple']
+        self._multiple = self.metadata['is_multiple'] or {}
         if self.is_csp:
             self._multiple = MutipleValue({'ui_to_list': ',', 'list_to_ui': ', ', 'cache_to_list': ','})
         if self._multiple:
@@ -469,8 +469,8 @@ class ColumnMetadata:
         return self.metadata.get('kind', None)
     
     @property
-    def search_terms(self) -> str:
-        return self.metadata.get('search_terms', None)
+    def search_terms(self) -> list:
+        return self.metadata.get('search_terms', [])
     
     @property
     def label(self) -> str:
@@ -481,8 +481,8 @@ class ColumnMetadata:
         return self.metadata.get('colnum', None)
     
     @property
-    def display(self) -> str:
-        return self.metadata.get('display', None)
+    def display(self) -> dict:
+        return self.metadata.get('display', {})
     
     @property
     def is_custom(self) -> bool:
