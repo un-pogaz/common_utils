@@ -99,7 +99,7 @@ def create_zip_file(filename, mode, files):
 
 def build_plugin():
     
-    PLUGIN, version = read_plugin_name()
+    zip_name, version = read_plugin_name()
     
     update_translations()
     
@@ -117,18 +117,18 @@ def build_plugin():
     files.extend(glob('**/LICENSE', recursive=True))
     files.extend(glob('**/CREDITS', recursive=True))
     
-    create_zip_file(PLUGIN, 'w', files)
+    create_zip_file(zip_name, 'w', files)
     
-    run_command([get_calibre_bin('calibre-customize'), '-a', PLUGIN], wait=True)
+    run_command([get_calibre_bin('calibre-customize'), '-a', zip_name], wait=True)
     
     versioning = os.path.join(os.getcwd(), '-- versioning')
     os.makedirs(versioning, exist_ok=True)
-    out = os.path.join(versioning, PLUGIN)
+    out = os.path.join(versioning, zip_name)
     if os.path.exists(out):
         os.remove(out)
-    os.rename(PLUGIN, out)
+    os.rename(zip_name, out)
     
-    print(f'Plugin {PLUGIN!r} build with succes.')
+    print(f'Plugin {zip_name!r} build with succes.')
 
 
 if __name__=='__main__':
