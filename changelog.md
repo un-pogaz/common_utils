@@ -1,5 +1,8 @@
 # Changelog - common_utils
 
+## 2025/10/09
+- fix edge case for malformed comments custom columns
+
 ## 2025/09/29
 - support Linux
 - fix fatal freeze with ProgressDialog (linux)

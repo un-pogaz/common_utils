@@ -371,7 +371,7 @@ class ColumnMetadata:
 
     @typeproperty
     def _is_long_text(self) -> bool:
-        return bool(self._is_comments and self.display.get('interpret_as', None)== 'long-text')
+        return bool(self._is_comments and (self.display.get('interpret_as', 'long-text') == 'long-text'))
     
     @property
     def is_composite(self) -> bool:
