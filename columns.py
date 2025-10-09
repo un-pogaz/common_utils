@@ -362,16 +362,16 @@ class ColumnMetadata:
         return bool(self.label == 'comments' or (self.datatype == 'comments' and self.display.get('interpret_as', None) != 'short-text'))
     
     @typeproperty
-    def _is_html(self) -> bool:
-        return bool(self.label == 'comments' or (self._is_comments and self.display.get('interpret_as', None) == 'html'))
+    def _is_long_text(self) -> bool:
+        return bool(self._is_comments and self.display.get('interpret_as', None) == 'long-text')
     
     @typeproperty
     def _is_markdown(self) -> bool:
         return bool(self._is_comments and self.display.get('interpret_as', None) == 'markdown')
-
+    
     @typeproperty
-    def _is_long_text(self) -> bool:
-        return bool(self._is_comments and (self.display.get('interpret_as', 'long-text') == 'long-text'))
+    def _is_html(self) -> bool:
+        return bool(self.label == 'comments' or (self._is_comments and self.display.get('interpret_as', 'html') == 'html'))
     
     @property
     def is_composite(self) -> bool:
