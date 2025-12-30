@@ -631,6 +631,16 @@ def get_float(only_custom: Optional[bool]=None) -> Dict[str, ColumnMetadata]:
     return _get_columns_type(ColumnTypes.float, only_custom)
 
 
+def get_integer(only_custom: Optional[bool]=None) -> Dict[str, ColumnMetadata]:
+    '''
+    only_custom:
+        True= Only custom
+        False= Only default
+        None= Both
+    '''
+    return _get_columns_type(ColumnTypes.integer, only_custom)
+
+
 def get_datetime(only_custom: Optional[bool]=None) -> Dict[str, ColumnMetadata]:
     '''
     only_custom:
@@ -835,8 +845,8 @@ if __name__ == '__main__':
     
     prints('All functions:')
     for f in [get_all_columns,
-              get_names, get_tags, get_enumeration, get_float, get_datetime, get_rating, get_title,
-              get_series, get_series_index, get_text, get_bool, get_html, get_markdown, get_long_text,
+              get_names, get_tags, get_enumeration, get_float, get_integer, get_datetime, get_rating,
+              get_title, get_series, get_series_index, get_text, get_bool, get_html, get_markdown, get_long_text,
               get_composite_text, get_composite_tag, get_categories]:
         prints(f.__name__, list(f().keys()))
         prints()

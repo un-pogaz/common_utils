@@ -1,5 +1,8 @@
 # Changelog - common_utils
 
+## 2025/12/30
+- add get_integer() columns
+
 ## 2025/10/09
 - fix edge case for malformed comments custom columns
 
