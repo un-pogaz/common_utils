@@ -1,5 +1,8 @@
 # Changelog - common_utils
 
+## 2026/01/21
+- use Python cache for get_icon()
+
 ## 2025/12/30
 - add get_integer() columns
 

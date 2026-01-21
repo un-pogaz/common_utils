@@ -11,6 +11,7 @@ except NameError:
 
 import copy
 import os
+from functools import lru_cache
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 try:
@@ -159,6 +160,14 @@ if not hasattr(QIcon, 'ic'):
     QIcon.ic = lambda x: QIcon(I(x))
 
 
+@lru_cache(maxsize=32)
+def get_icon_cached(icon_name: str) -> QIcon:
+    # separate function to not duplicate
+    # Calibre's image cache
+    pixmap = get_pixmap(icon_name)
+    return QIcon(pixmap) if pixmap else QIcon()
+
+
 def get_icon(icon_name: str) -> QIcon:
     '''
     Retrieve a QIcon for the named image from the zip file if it exists,
@@ -174,15 +183,7 @@ def get_icon(icon_name: str) -> QIcon:
             # We know this is definitely not an icon belonging to this plugin
             return QIcon.ic(icon_name)
         
-        rslt = PLUGIN_RESOURCES.ICONS.get(icon_name, None)
-        if not rslt:
-            pixmap = get_pixmap(icon_name)
-            if pixmap:
-                rslt = QIcon(pixmap)
-                PLUGIN_RESOURCES.ICONS[icon_name] = rslt
-        
-        if rslt:
-            return rslt
+        return get_icon_cached(icon_name)
     
     return QIcon()
 
@@ -214,23 +215,20 @@ def get_pixmap(icon_name: str) -> QPixmap:
             # We know this is definitely not an icon belonging to this plugin
             return from_resources(icon_name)
         
-        rslt = PLUGIN_RESOURCES.PIXMAP.get(icon_name, None)
+        # test user overide
+        rslt = from_resources(os.path.join(PLUGIN_NAME, icon_name.split('/', 1)[-1]))
         if not rslt:
-            # test user overide
-            rslt = from_resources(os.path.join(PLUGIN_NAME, icon_name.split('/', 1)[-1]))
-            if not rslt:
-                # inside plugin ZIP
-                for name in get_icon_themed_names(icon_name):
-                    if name in PLUGIN_RESOURCES:
-                        rslt = QPixmap()
-                        rslt.loadFromData(PLUGIN_RESOURCES[name])
-                        break
-            
-            if rslt:
-                PLUGIN_RESOURCES.PIXMAP[icon_name] = rslt
+            # inside plugin ZIP
+            for name in get_icon_themed_names(icon_name):
+                if name in PLUGIN_RESOURCES:
+                    rslt = QPixmap()
+                    rslt.loadFromData(PLUGIN_RESOURCES[name])
+                    break
         
         if rslt:
             return rslt
+    
+    return None
 
 
 def local_resource(*subfolders: Optional[List[str]]) -> str:
@@ -330,9 +328,6 @@ class PluginResources(ZipResources):
         from calibre.utils.zipfile import ZipFile
         ZipResources.__init__(self, PLUGIN_INSTANCE.plugin_path)
         preload_keys = [linux(k) for k in preload_keys or []]
-        
-        self.ICONS = PathDict()
-        self.PIXMAP = PathDict()
         
         with ZipFile(self.zip_path, 'r') as zf:
             for entry in zf.namelist():
