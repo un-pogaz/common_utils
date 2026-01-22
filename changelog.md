@@ -1,5 +1,9 @@
 # Changelog - common_utils
 
+## 2026/01/22
+- refactor ZipResources
+  - remove PathDict and PluginResources
+
 ## 2026/01/21
 - use Python cache for get_icon()
 

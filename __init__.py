@@ -11,6 +11,7 @@ except NameError:
 
 import copy
 import os
+from collections.abc import Iterator
 from functools import lru_cache
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
@@ -28,6 +29,7 @@ from calibre.gui2 import show_restart_warning
 from calibre.gui2.ui import Main
 from calibre.utils.config import DynamicConfig, JSONConfig, config_dir
 from calibre.utils.monotonic import monotonic
+from calibre.utils.zipfile import ZipFile
 
 
 def get_gui() -> Main:
@@ -246,106 +248,78 @@ def local_resource(*subfolders: Optional[List[str]]) -> str:
 local_resource.IMAGES = local_resource('images')+'/'
 
 
-def _class_name(obj, inside) -> str:
-    if not isinstance(obj, type):
-        obj = obj.__class__
-    return obj.__name__+'('+inside+')'
-
-
-class PathDict(dict):
-    'dict than contain only path string as keys'
-    
-    def _k(self, __key):
-        if not isinstance(__key, str):
-            raise KeyError('Key can only can only be str. Type pased: '+ type(__key).__name__)
-        if not __key:
-            raise KeyError("Key can't be a empty string")
-        return linux(__key)
-    
-    def __contains__(self, __key: str) -> bool:
-        return dict.__contains__(self, self._k(__key))
-    
-    def __setitem__(self, __key: str, __value):
-        return dict.__setitem__(self, self._k(__key), __value)
-    
-    def __getitem__(self, __key: str) -> Any:
-        return dict.__getitem__(self, self._k(__key))
-    
-    def __delitem__(self, __key):
-        return dict.__delitem__(self, self._k(__key))
-    
-    def get(self, __key, __default) -> Any:
-        return dict.get(self, self._k(__key), __default)
-    
-    def pop(self, __key, __default: Any=Any) -> Any:
-        if __key in self:
-            return dict.pop(__key)
-        if __default == Any:
-            raise KeyError(__key)
-        else:
-            return __default
-
-
-class ZipResources(PathDict):
-    def __init__(self, zip_path: str, preload_keys: List[str]=None):
-        PathDict.__init__(self)
+class ZipResources:
+    def __init__(self, zip_path: str):
         self.zip_path = linux(zip_path)
-        self.load_many(preload_keys)
-    
-    def __getitem__(self, __key: str) -> Union[bytes, Any]:
-        if __key in self:
-            return PathDict.__getitem__(self, __key)
-        else:
-            data = self.load(__key)
-            if data is None:
-                raise KeyError(__key)
-            return data
-    
-    def __str__(self):
-        return _class_name(self, repr(self.zip_path)+', '+str(list(self.keys())))
+        self._instance: ZipFile = None
+        self._deep: int = 0
     
     def __repr__(self):
-        return _class_name(self,'zip_path='+ repr(self.zip_path)+', '+repr(list(self.keys())))
+        return f'<{self.__class__.__name__}({self.zip_path!r})>'
     
-    def load(self, key: str) -> Union[bytes, Any]:
-        return self.load_many([key]).get(key, None)
+    __str__ = __repr__
     
-    def load_many(self, keys: Optional[List[str]]) -> Dict[str, Union[bytes, str]]:
-        names = {linux(n) for n in (keys or []) if n}
+    def keys(self) -> Tuple[str]:
+        return tuple(map(linux, self.instance.namelist()))
+    
+    def __contains__(self, key: str) -> bool:
+        return key in self.keys()
+    
+    def __iter__(self) -> Iterator[str]:
+        yield from self.keys()
+    
+    def __getitem__(self, key: str) -> Union[bytes, Any]:
+        with self:
+            if key not in self:
+                raise KeyError(key)
+            return self.load_many([key])[key]
+    
+    def get(self, key: str, default: Any) -> Any:
+        with self:
+            if key not in self:
+                return default
+            return self.__getitem__(key)
+    
+    def __enter__(self) -> 'ZipResources':
+        if not self._instance:
+            self._instance = ZipFile(self.zip_path, 'r')
+        self._deep += 1
+        return self
+    
+    def __exit__(self, *args):
+        if not self._instance:
+            return
+        self._deep -= 1
+        if self._deep > 0:
+            return
+        self._deep = 0
+        self._instance.close()
+        self._instance = None
+    
+    @property
+    def instance(self) -> ZipFile:
+        if self._instance:
+            return self._instance
+        with self:
+            return self._instance
+    
+    def load_many(self, keys: List[str]) -> Dict[str, Union[bytes, str]]:
         rslt = {}
-        from calibre.utils.zipfile import ZipFile
-        with ZipFile(self.zip_path, 'r') as zf:
-            for entry in zf.namelist():
-                if entry in names:
-                    data = zf.read(entry)
-                    self[entry] = data
+        with self:
+            for entry in map(linux, filter(None, keys)):
+                if entry in self:
+                    data = self.instance.read(entry)
                     rslt[entry] = data
         return rslt
 
 
-class PluginResources(ZipResources):
-    def __init__(self, preload_keys: List[str]=None):
-        from calibre.utils.zipfile import ZipFile
-        ZipResources.__init__(self, PLUGIN_INSTANCE.plugin_path)
-        preload_keys = [linux(k) for k in preload_keys or []]
-        
-        with ZipFile(self.zip_path, 'r') as zf:
-            for entry in zf.namelist():
-                if entry in preload_keys:
-                    self.__setitem__(entry, zf.read(entry))
-                if entry.startswith('images/') and os.path.splitext(entry)[1].lower() == '.png':
-                    self.__setitem__(entry, zf.read(entry))
-    
-    def __str__(self):
-        return _class_name(self, str(list(self.keys())))
-    
-    def __repr__(self):
-        return _class_name(self, repr(list(self.keys())))
-
-
 # Global definition of our plugin resources. Used to share between the xxxAction and xxxBase
 # classes if you need any zip images to be displayed on the configuration dialog.
-PLUGIN_RESOURCES = PluginResources()
+PLUGIN_RESOURCES = ZipResources(PLUGIN_INSTANCE.plugin_path)
+with PLUGIN_RESOURCES:
+    for entry in PLUGIN_RESOURCES:
+        if entry.startswith('images/') and os.path.splitext(entry)[1].lower() == '.png':
+            get_icon(entry)
 
 
 # ----------------------------------------------
