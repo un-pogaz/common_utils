@@ -221,11 +221,12 @@ def get_pixmap(icon_name: str) -> QPixmap:
         rslt = from_resources(os.path.join(PLUGIN_NAME, icon_name.split('/', 1)[-1]))
         if not rslt:
             # inside plugin ZIP
-            for name in get_icon_themed_names(icon_name):
-                if name in PLUGIN_RESOURCES:
-                    rslt = QPixmap()
-                    rslt.loadFromData(PLUGIN_RESOURCES[name])
-                    break
+            with PLUGIN_RESOURCES:
+                for name in get_icon_themed_names(icon_name):
+                    if name in PLUGIN_RESOURCES:
+                        rslt = QPixmap()
+                        rslt.loadFromData(PLUGIN_RESOURCES[name])
+                        break
         
         if rslt:
             return rslt
