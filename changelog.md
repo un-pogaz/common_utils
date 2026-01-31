@@ -1,5 +1,8 @@
 # Changelog - common_utils
 
+## 2026/01/31
+- add pages to standard columns
+
 ## 2026/01/22
 - refactor ZipResources
   - remove PathDict and PluginResources

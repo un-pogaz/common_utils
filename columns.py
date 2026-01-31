@@ -791,7 +791,9 @@ def get_possible_columns() -> List[str]:
     '''
     standard = ['title', 'authors', 'tags', 'series', 'publisher', 'pubdate', 'rating', 'languages', 'last_modified', 'timestamp', 'comments', 'author_sort', 'title_sort', 'marked']
     if CALIBRE_VERSION >= (6,17,0):
-        standard += ['id', 'path']
+        standard.extend(('id', 'path'))
+    if CALIBRE_VERSION >= (9,00,0):
+        standard.append('pages')
     
     def predicate(column):
         if column.is_custom and not (column.is_composite or column._is_series_index):
