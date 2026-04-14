@@ -16,16 +16,16 @@ from functools import lru_cache
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 try:
-    from qt.core import QApplication, QIcon, QPixmap
+    from qt.core import QIcon, QPixmap
 except ImportError:
-    from PyQt5.Qt import QApplication, QIcon, QPixmap
+    from PyQt5.Qt import QIcon, QPixmap
 
 from calibre import prints
 from calibre.constants import DEBUG, iswindows
 from calibre.constants import numeric_version as CALIBRE_VERSION
 from calibre.customize.ui import find_plugin
 from calibre.db.legacy import LibraryDatabase
-from calibre.gui2 import show_restart_warning
+from calibre.gui2 import is_dark_theme, show_restart_warning
 from calibre.gui2.ui import Main
 from calibre.utils.config import DynamicConfig, JSONConfig, config_dir
 from calibre.utils.monotonic import monotonic
@@ -133,7 +133,7 @@ THEME_COLOR = ['', 'dark', 'light']
 def get_theme_name() -> str:
     '''Get the theme color of Calibre'''
     if CALIBRE_VERSION >= (6,0,0):
-        return THEME_COLOR[1] if QApplication.instance().is_dark_theme else THEME_COLOR[2]
+        return THEME_COLOR[1] if is_dark_theme() else THEME_COLOR[2]
     return THEME_COLOR[0]
 
 

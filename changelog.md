@@ -1,5 +1,8 @@
 # Changelog - common_utils
 
+## 2026/04/14
+- safer dark theme detection
+
 ## 2026/01/31
 - add pages to standard columns
 
