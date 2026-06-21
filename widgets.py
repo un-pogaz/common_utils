@@ -134,10 +134,9 @@ class DateDelegate(_DateDelegate):
         DateDelegate.__init__(self, parent)
         self.format = get_date_format(default_fmt=fmt)
         self.default_to_today = default_to_today
-        self.parent = parent
 
     def createEditor(self, option, index, parent=None):
-        parent = parent or self.parent or GUI
+        parent = parent or self.parent() or GUI
         qde = QStyledItemDelegate.createEditor(self, parent, option, index)
         qde.setDisplayFormat(self.format)
         qde.setMinimumDateTime(UNDEFINED_QDATETIME)
