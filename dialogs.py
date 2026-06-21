@@ -121,7 +121,7 @@ class KeyboardConfigDialogButton(QPushButton):
     def edit_shortcuts(self):
         from . import PLUGIN_INSTANCE
         plugin_action = PLUGIN_INSTANCE.load_actual_plugin(GUI)
-        edit_keyboard_shortcuts_dialog(plugin_action)
+        edit_keyboard_shortcuts_dialog(plugin_action, self.parent())
 
 
 class LibraryPrefsViewerDialog(Dialog):
@@ -239,10 +239,9 @@ class LibraryPrefsViewerDialogButton(QPushButton):
         self.setToolTip(_('View data stored in the library database for this plugin'))
         self.clicked.connect(self.library_prefs_dialog)
         self.prefs_namespace = prefs_namespace
-        self.parent = parent
 
     def library_prefs_dialog(self):
-        if library_prefs_dialog(self.prefs_namespace, self.parent):
+        if library_prefs_dialog(self.prefs_namespace, self.parent()):
             self.library_prefs_changed.emit()
 
 

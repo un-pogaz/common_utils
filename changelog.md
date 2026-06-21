@@ -1,5 +1,8 @@
 # Changelog - common_utils
 
+## 2026/06/21
+- fix passing focus on LibraryPrefsViewerDialogButton and KeyboardConfigDialogButton
+
 ## 2026/04/14
 - safer dark theme detection
 
