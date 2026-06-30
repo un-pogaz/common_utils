@@ -1,5 +1,8 @@
 # Changelog - common_utils
 
+## 2026/06/30
+- don't preload plugin images when no GUI launched
+
 ## 2026/06/21
 - fix passing focus on LibraryPrefsViewerDialogButton and KeyboardConfigDialogButton
 

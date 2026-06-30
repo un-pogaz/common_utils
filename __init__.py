@@ -319,6 +319,8 @@ class ZipResources:
 PLUGIN_RESOURCES = ZipResources(PLUGIN_INSTANCE.plugin_path)
 with PLUGIN_RESOURCES:
     for entry in PLUGIN_RESOURCES:
+        if not GUI:
+            break
         if entry.startswith('images/') and os.path.splitext(entry)[1].lower() == '.png':
             get_icon(entry)
 
