@@ -768,7 +768,7 @@ def get_possible_fields() -> Tuple[List[str], List[str]]:
     return: all_fields, writable_fields
     '''
     def predicate(column):
-        if column.name not in ['id' , 'au_map', 'timestamp', 'formats', 'ondevice', 'news', 'series_sort', 'path', 'in_tag_browser'] and column.type:
+        if column.name not in ['id', 'au_map', 'timestamp', 'formats', 'ondevice', 'news', 'series_sort', 'path', 'in_tag_browser'] and column.type:
             return True
         else:
             return False

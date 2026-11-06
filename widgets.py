@@ -589,13 +589,13 @@ class KeyValueComboBox(QComboBox):
 
 
 class CustomColumnComboBox(QComboBox):
-    def __init__(self, custom_columns: Dict[str ,ColumnMetadata], selected_column: str='', parent=None):
+    def __init__(self, custom_columns: Dict[str, ColumnMetadata], selected_column: str='', parent=None):
         QComboBox.__init__(self, parent)
         self.populate_combo(custom_columns=custom_columns, selected_column=selected_column)
         self.currentIndexChanged.connect(self.column_changed)
         self.column_changed(-1)
     
-    def populate_combo(self, custom_columns: Dict[str ,ColumnMetadata], selected_column: str=''):
+    def populate_combo(self, custom_columns: Dict[str, ColumnMetadata], selected_column: str=''):
         self.clear()
         self.custom_columns = cc = OrderedDict()
         self.custom_columns['']=''
@@ -618,7 +618,7 @@ class CustomColumnComboBox(QComboBox):
         if name:
             return name
     
-    def selected_entry(self) -> Tuple[str ,ColumnMetadata]:
+    def selected_entry(self) -> Tuple[str, ColumnMetadata]:
         name = self.selected_name()
         if name:
             return name, self.custom_columns.get(name, None)
