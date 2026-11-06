@@ -602,7 +602,7 @@ class CustomColumnComboBox(QComboBox):
         self.description_map['']=''
         for entry in custom_columns.values():
             if entry:
-                cc[entry.name] = f'{entry.display_name} ({entry.name})'
+                cc[entry.name] = entry.field_name
                 tt[entry.name] = entry.description
         
         selected_idx = 0

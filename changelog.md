@@ -2,6 +2,7 @@
 
 ## 2026/11/06
 - add formating field_name()
+- add field_name column property
 
 ## 2026/06/30
 - don't preload plugin images when no GUI launched

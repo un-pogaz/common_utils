@@ -282,6 +282,11 @@ class ColumnMetadata:
         return self.metadata.get('name', None)
     
     @property
+    def field_name(self) -> str:
+        display_name = self.display_name or self.name
+        return f'{display_name} ({self.name})'
+    
+    @property
     def description(self) -> str:
         return self.display.get('description', None)
     
