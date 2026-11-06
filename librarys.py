@@ -9,7 +9,7 @@ try:
 except NameError:
     pass  # load_translations() added in calibre 1.9
 
-from typing import List
+from typing import Dict, List
 
 from calibre.gui2 import error_dialog
 
@@ -219,3 +219,24 @@ def get_tags_browsable_fields(use_defaults=False, order_override: List[str]=None
         tbo = current_db().new_api.pref('tag_browser_category_order', [])
     
     return category_display_order(tbo, get_categories(include_composite=include_composite).keys())
+
+
+def field_name(field: str, field_metadata: Dict) -> str:
+    name = None
+    if field == 'isbn':
+        name = 'ISBN'
+    if field == 'uuid':
+        name = 'UUID'
+    if field == 'library_name':
+        name = _('Library name')
+    if field in {'title_sort', 'sort'}:
+        field = 'title_sort'
+        name = field_metadata['sort']['name']
+    if field.endswith('_index'):
+        field_serie = field[:-len('_index')]
+        name = field_metadata.get(field_serie, {}).get('name')
+        if name:
+            name = name + ' ' + _('Index')
+    if not name:
+        name = field_metadata[field].get('name') or field
+    return f'{name} ({field})'

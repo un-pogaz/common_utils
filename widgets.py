@@ -56,7 +56,7 @@ from calibre.utils.date import UNDEFINED_DATE, datetime, format_date, now
 from . import GUI, current_db, debug_print, get_date_format, get_icon, get_pixmap, return_line_long_text
 from .columns import ColumnMetadata, get_all_identifiers
 from .compatibility import qt_from_dt
-from .librarys import get_category_icons_map, get_tags_browsable_fields
+from .librarys import field_name, get_category_icons_map, get_tags_browsable_fields
 
 # ----------------------------------------------
 #               Widgets
@@ -249,8 +249,7 @@ class FieldsValueTreeWidget(QTreeWidget):
         
         def create_root_item(parent, field, items):
             icon = category_icons[field]
-            name = self._dbAPI.field_metadata[field]['name']
-            root = create_tree_item(parent, f'{name} ({field})', field, icon)
+            root = create_tree_item(parent, field_name(field, self._dbAPI.field_metadata[field]), field, icon)
             
             for data in items:
                 if self._dbAPI.field_metadata[field]['datatype'] == 'rating':

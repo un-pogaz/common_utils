@@ -1,5 +1,8 @@
 # Changelog - common_utils
 
+## 2026/11/06
+- add formating field_name()
+
 ## 2026/06/30
 - don't preload plugin images when no GUI launched
 
