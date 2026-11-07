@@ -1,5 +1,8 @@
 # Changelog - common_utils
 
+## 2026/11/07
+- add ExportMetadataDialog
+
 ## 2026/11/06
 - add formating field_name()
 - add field_name column property

@@ -14,12 +14,13 @@ import shutil
 import sys
 import time
 from locale import Error
-from typing import Any, List
+from typing import Any, Dict, List, Set
 
 try:
     from qt.core import (
         QAbstractItemView,
         QApplication,
+        QCheckBox,
         QDialogButtonBox,
         QFileDialog,
         QGridLayout,
@@ -28,6 +29,7 @@ try:
         QLabel,
         QLineEdit,
         QListWidget,
+        QListWidgetItem,
         QProgressDialog,
         QPushButton,
         QRadioButton,
@@ -43,6 +45,7 @@ except ImportError:
     from PyQt5.Qt import (
         QAbstractItemView,
         QApplication,
+        QCheckBox,
         QDialogButtonBox,
         QFileDialog,
         QGridLayout,
@@ -51,6 +54,7 @@ except ImportError:
         QLabel,
         QLineEdit,
         QListWidget,
+        QListWidgetItem,
         QProgressDialog,
         QPushButton,
         QRadioButton,
@@ -63,12 +67,15 @@ except ImportError:
         pyqtSignal,
     )
 
+from calibre.constants import ismacos
 from calibre.gui2 import FileDialog, choose_files, error_dialog, question_dialog
 from calibre.gui2.actions import InterfaceAction
 from calibre.gui2.keyboard import ShortcutConfig
 from calibre.gui2.widgets2 import Dialog
+from calibre.utils.icu import sort_key
 
-from . import GUI, PLUGIN_NAME, PREFS_NAMESPACE, current_db, debug_print, get_icon, local_resource
+from . import GUI, PLUGIN_NAME, PREFS_NAMESPACE, PREFS_library, current_db, debug_print, get_icon, local_resource
+from .librarys import field_name, no_launch_error
 
 
 class KeyboardConfigDialog(Dialog):
@@ -496,6 +503,127 @@ class ImageDialog(Dialog):
                 return error_dialog(self, _('Cannot import image'), _('Source image does not exist!'), show=True)
             shutil.copyfile(source_file_path, dest_path)
         Dialog.accept(self)
+
+
+class ExportMetadataDialog(Dialog):
+    DEFAULTS = {
+        'sort_order': {'id':0, 'authors':1, 'series':2, 'series_index':3, 'title':4},
+        'fields': ['id', 'authors', 'series', 'series_index', 'title'],
+        'series_with_index': False,
+    }
+    
+    def __init__(self, library_prefs: PREFS_library, fields: Set[str], title: str=None, parent=None):
+        self.library_prefs = library_prefs
+        self.fields = set(fields or [])
+        plugin_name = PLUGIN_NAME.replace(' ', '')
+        
+        for k,v in self.DEFAULTS.items():
+            if k not in self.library_prefs.defaults:
+                self.library_prefs.defaults[k] = v
+        
+        Dialog.__init__(self,
+            title=title or _('Export metadata'),
+            name=f'plugin.{plugin_name}:ExportMetadataDialog',
+            parent=parent,
+        )
+
+    def setup_ui(self):
+        l = QVBoxLayout(self)
+        self.setLayout(l)
+        
+        l.addWidget(QLabel(_('Fields to export in output:'), self))
+        self.list = QListWidget(self)
+        self.list.setDragEnabled(True)
+        self.list.setDragDropMode(QListWidget.DragDropMode.InternalMove)
+        self.list.setDefaultDropAction(Qt.DropAction.CopyAction if ismacos else Qt.DropAction.MoveAction)
+        self.list.setAlternatingRowColors(True)
+        self.list.setSelectionMode(QListWidget.SelectionMode.MultiSelection)
+        
+        l.addWidget(self.list)
+        l.addWidget(QLabel(_('Drag and drop to re-arrange fields'), self))
+        
+        self.options = QHBoxLayout()
+        l.addLayout(self.options)
+        self.series_with_index = QCheckBox(_('Add the index to the series-type fields'), self)
+        self.series_with_index.setChecked(self.library_prefs['series_with_index'])
+        self.options.addWidget(self.series_with_index)
+        self.options.addStretch()
+        
+        h = QHBoxLayout()
+        l.addLayout(h)
+        h.addStretch()
+        self.select_all_button = QPushButton(_('Select &all'))
+        self.select_all_button.clicked.connect(self.select_all)
+        self.select_none_button = QPushButton(_('Select &none'))
+        self.select_none_button.clicked.connect(self.select_none)
+        self.select_visible_button = QPushButton(_('Select &visible'))
+        self.select_visible_button.clicked.connect(self.select_visible)
+        h.addWidget(self.select_all_button)
+        h.addWidget(self.select_none_button)
+        h.addWidget(self.select_visible_button)
+        
+        l.addWidget(self.bb)
+        
+        self.poplate_list()
+
+    def poplate_list(self):
+        sort_order = self.library_prefs['sort_order']
+        fields = self.library_prefs['fields']
+        fm = current_db().field_metadata
+
+        def key_buider(field):
+            name = field_name(field, fm)
+            return (sort_order.get(field, 1000), sort_key(name)), name, field
+
+        self.list.clear()
+        for x, name, field in sorted(map(key_buider, self.fields)):
+            item = QListWidgetItem(name, self.list)
+            item.setData(Qt.ItemDataRole.UserRole, field)
+            item.setCheckState(Qt.CheckState.Checked if field in fields else Qt.CheckState.Unchecked)
+
+    def select_all(self):
+        for row in range(self.list.count()):
+            self.list.item(row).setCheckState(Qt.CheckState.Checked)
+
+    def select_none(self):
+        for row in range(self.list.count()):
+            self.list.item(row).setCheckState(Qt.CheckState.Unchecked)
+
+    def select_visible(self):
+        state = GUI.library_view.get_state()
+        hidden = set(state['hidden_columns'])
+        for row in range(self.list.count()):
+            item = self.list.item(row)
+            field = item.data(Qt.ItemDataRole.UserRole)
+            item.setCheckState(Qt.CheckState.Unchecked if field in hidden else Qt.CheckState.Checked)
+
+    def accept(self):
+        sort_order = {}
+        fields = {}
+        for row in range(self.list.count()):
+            item = self.list.item(row)
+            field = item.data(Qt.ItemDataRole.UserRole)
+            sort_order[field] = row
+            if item.checkState() == Qt.CheckState.Checked:
+                fields[field] = item.text()
+        if not fields:
+            return no_launch_error(_('No field selected'))
+        
+        series_with_index = self.series_with_index.isChecked()
+        rslt = self.export_action(
+            fields=fields,
+            series_with_index=series_with_index,
+        )
+        if not rslt:
+            return
+        
+        self.library_prefs['sort_order'] = sort_order
+        self.library_prefs['fields'] = list(fields.keys())
+        self.library_prefs['series_with_index'] = series_with_index
+        Dialog.accept(self)
+
+    def export_action(self, fields: Dict[str, str], series_with_index: bool) -> bool:
+        return NotImplemented
 
 
 def pick_archive_to_import(parent=None) -> str:
